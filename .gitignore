@@ -1,0 +1,42 @@
+# LaTeX build directory
+/out/
+
+# Local planning documents
+/design/
+
+# Root-level generated documents
+/prompt_as_code.pdf
+/main_book_template.pdf
+
+# LaTeX auxiliary files
+*.aux
+*.aex
+*.bbl
+*.bcf
+*.blg
+*.fdb_latexmk
+*.fls
+*.lof
+*.log
+*.lot
+*.out
+*.run.xml
+*.synctex.gz
+*.toc
+*.xdv
+_minted-*/
+
+# Editor and operating-system files
+*.swp
+*~
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# IDE settings
+/.idea/
+*.code-workspace
+
+# VS Code personal files
+/.vscode/*
+!/.vscode/settings.json

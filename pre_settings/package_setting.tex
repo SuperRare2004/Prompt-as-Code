@@ -1,0 +1,138 @@
+% Page layout
+\usepackage{geometry}
+\geometry{a4paper,left=3.18cm,right=3.18cm,top=2.54cm,bottom=2.54cm}
+
+% Figures, tables, and colors
+\usepackage{graphicx}
+\usepackage[table,xcdraw]{xcolor}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{colortbl}
+\usepackage{float}
+\usepackage{footnote}
+\usepackage{longtable}
+\usepackage{lscape}
+\usepackage{makecell}
+\usepackage{multirow}
+\usepackage{subfigure}
+\usepackage{threeparttable}
+\usepackage{caption}
+
+\renewcommand{\figurename}{图}
+\renewcommand{\tablename}{表}
+
+% Mathematics and theorem environments
+\usepackage{amsmath,amsthm,amsfonts,amssymb,mathrsfs}
+\usepackage{bbding}
+\usepackage[framemethod=tikz]{mdframed}
+
+\newtheorem{theorem}{定理}[section]
+\newtheorem{definition}{定义}[section]
+\newtheorem{lemma}{引理}[section]
+\newtheorem{proposition}{命题}[section]
+\newtheorem{property}{性质}[section]
+\newtheorem{axiom}{公理}[section]
+\newtheorem{corollary}{推论}[section]
+\newtheorem{exercise}{习题}[section]
+\renewcommand{\proofname}{\bfseries 证明}
+\allowdisplaybreaks[4]
+
+% Code and algorithms
+\usepackage{listings}
+\usepackage{minted}
+\usepackage{algorithm}
+\usepackage{algorithmicx}
+\usepackage{algpseudocode}
+
+\floatname{algorithm}{Algorithm}
+\renewcommand{\algorithmicrequire}{\textbf{Input:}}
+\renewcommand{\algorithmicensure}{\textbf{Output:}}
+
+\makeatletter
+\newenvironment{breakablealgorithm}
+{
+  \begin{center}
+  \refstepcounter{algorithm}
+  \hrule height.8pt depth0pt \kern2pt
+  \renewcommand{\caption}[2][\relax]{
+    {\raggedright\textbf{算法~\thealgorithm} ##2\par}
+    \ifx\relax##1\relax
+      \addcontentsline{loa}{algorithm}{\protect\numberline{\thealgorithm}##2}
+    \else
+      \addcontentsline{loa}{algorithm}{\protect\numberline{\thealgorithm}##1}
+    \fi
+    \kern2pt\hrule\kern2pt
+  }
+}
+{
+  \kern2pt\hrule\relax
+  \end{center}
+}
+\makeatother
+
+% Chapter and contents formatting
+\usepackage{titletoc}
+\usepackage[explicit]{titlesec}
+
+\titlecontents{chapter}[0pt]{\addvspace{1.5pt}\filright\bfseries}
+  {\contentspush{\thecontentslabel \quad}}
+  {}{\titlerule*[8pt]{.}\contentspage}
+
+\ctexset{
+  part/name = {第, 部分},
+  part/number = \Roman{part}
+}
+
+% Diagrams
+\usepackage{tikz}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\usetikzlibrary{
+  arrows,
+  arrows.meta,
+  backgrounds,
+  calc,
+  positioning,
+  shapes.geometric
+}
+
+% Lists, spacing, and appendices
+\usepackage{enumitem}
+\usepackage{setspace}
+\usepackage[toc,page]{appendix}
+
+\setenumerate[1]{itemsep=0pt,partopsep=0pt,parsep=\parskip,topsep=5pt}
+\setitemize[1]{itemsep=0pt,partopsep=0pt,parsep=\parskip,topsep=5pt}
+\setdescription{itemsep=0pt,partopsep=0pt,parsep=\parskip,topsep=5pt}
+
+% References and links
+\usepackage[round,sort,comma,numbers]{natbib}
+\usepackage[
+  colorlinks=true,
+  linkcolor=black,
+  citecolor=black,
+  urlcolor=black
+]{hyperref}
+
+\renewcommand\cite[1]{\citeauthor{#1} \citeyear{#1}}
+\renewcommand\citep[1]{\citeyear{#1}}
+\renewcommand\citet[1]{\citeauthor{#1}}
+\bibliographystyle{plainnat}
+
+% Utilities
+\usepackage{framed}
+\usepackage{stfloats}
+
+\newcommand{\tabincell}[2]{\begin{tabular}{@{}#1@{}}#2\end{tabular}}
+
+\definecolor{bg}{rgb}{0.95,0.95,0.95}
+\definecolor{myBGcolor}{RGB}{204,204,255}
+
+% Headers and footers
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\setlength{\headheight}{13pt}
+\cfoot{}
+\rfoot{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0.4pt}

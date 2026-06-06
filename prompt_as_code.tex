@@ -1,0 +1,103 @@
+\documentclass[10pt,oneside,fontset=fandol]{ctexbook}
+% Fandol 随 TeX Live 提供，可在本地和 Overleaf 上保持一致。
+
+\input{pre_settings/package_setting.tex}
+\input{pre_settings/macros.tex}
+
+\usepackage{multicol}
+\usepackage{xltabular}
+\usepackage{bm}
+\usetikzlibrary{fit}
+
+
+\lstset{
+  language=Python,
+  basicstyle=\ttfamily\small,
+  numbers=left,
+  numberstyle=\tiny\color{gray},
+  stepnumber=1,
+  numbersep=5pt,
+  showstringspaces=false,
+  breaklines=true,
+  frame=single,
+  captionpos=b,
+  keywordstyle=\color{blue},
+  identifierstyle=\color{black},
+  stringstyle=\color{red},
+  commentstyle=\color{green!50!black},
+  rulecolor=\color{black},
+  frameround=B,
+}
+
+\linespread{1.5}
+
+\newcommand{\booktitlecn}{提示即代码：面向真实问题的 AI 协作方法}
+% English title: Prompt as Code: Solving Real-World Problems with AI Collaboration
+\newcommand{\bookauthors}{Jintao Ke, Rui Su, Xinglu Liu}
+
+\begin{document}
+\numberwithin{equation}{chapter}
+\numberwithin{figure}{chapter}
+\numberwithin{table}{chapter}
+\captionsetup[figure]{margin=1.5cm,font=small,labelfont={bf},name={图},labelsep=colon,textfont={it}}
+\captionsetup[table]{margin=1.5cm,font=small,labelfont={bf},name={表},labelsep=colon,textfont={it}}
+
+\frontmatter
+
+\begin{titlepage}
+	\begin{center}
+        \vspace{2cm}
+		{\linespread{1.2}\selectfont\Huge\bfseries \booktitlecn\par}
+		\vspace{1.5cm}
+		\linespread{1}\selectfont
+		\vspace{4cm}
+		{\Large \textbf{Authors}\par}
+		\vspace{0.8cm}
+		{\Large \bookauthors\par}
+		\vspace{3cm}
+	\end{center}
+\end{titlepage}
+
+\tableofcontents
+\listoffigures
+\listoftables
+
+\input{sections/00_preface}
+
+\mainmatter
+
+\part{新的工作方式：AI协作的基础}
+\input{sections/01_ai_toolbox}
+\input{sections/02_prompting_basics}
+
+\part{说清楚问题：问题建模与数据描述}
+\input{sections/03_problem_modeling}
+\input{sections/04_data_thinking}
+
+\part{喂给AI好数据：数据准备与处理}
+\input{sections/05_data_cleaning}
+\input{sections/06_feature_engineering}
+
+\part{与AI共建模型：核心机器学习方法}
+\input{sections/07_ml_basics}
+\input{sections/08_traditional_ml}
+\input{sections/09_neural_networks}
+\input{sections/10_rl_and_sequence_modeling}
+\input{sections/11_large_language_models}
+
+\part{不轻信AI：批判性评估与边界识别}
+\input{sections/12_ai_errors}
+\input{sections/13_validating_ai_outputs}
+\input{sections/14_ai_boundaries}
+
+\part{从实验到落地：完整项目实战}
+\input{sections/15_complete_project}
+\input{sections/16_case_study_one}
+\input{sections/17_case_study_two}
+\input{sections/18_future_engineer}
+
+\backmatter
+\nocite{*}
+\bibliography{bib_Reference/example}
+
+\end{document}
