@@ -109,12 +109,12 @@
 \usepackage[round,sort,comma,numbers]{natbib}
 \usepackage[
   colorlinks=true,
-  linkcolor=black,
-  citecolor=black,
-  urlcolor=black
+  linkcolor=blue,
+  citecolor=blue,
+  urlcolor=blue
 ]{hyperref}
 
-\renewcommand\cite[1]{\citeauthor{#1} \citeyear{#1}}
+\renewcommand\cite[1]{(\citeauthor{#1}, \citeyear{#1})}
 \renewcommand\citep[1]{\citeyear{#1}}
 \renewcommand\citet[1]{\citeauthor{#1}}
 \bibliographystyle{plainnat}
