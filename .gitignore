@@ -40,3 +40,6 @@ Desktop.ini
 # VS Code personal files
 /.vscode/*
 !/.vscode/settings.json
+
+# Inkscape SVG files
+/svg-inkscape/
