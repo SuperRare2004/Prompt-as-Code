@@ -125,6 +125,29 @@
 
 \newcommand{\tabincell}[2]{\begin{tabular}{@{}#1@{}}#2\end{tabular}}
 
+% Quote block: left accent bar + light background
+\mdfdefinestyle{blockquotestyle}{%
+  skipabove=\medskipamount,
+  skipbelow=\medskipamount,
+  leftline=true,
+  rightline=false,
+  topline=false,
+  bottomline=false,
+  linewidth=3pt,
+  linecolor=black!28,
+  backgroundcolor=black!4,
+  innertopmargin=8pt,
+  innerbottommargin=8pt,
+  innerleftmargin=12pt,
+  innerrightmargin=6pt,
+}
+\renewenvironment{quote}{%
+  \begin{mdframed}[style=blockquotestyle]%
+  \small\linespread{1.3}\selectfont%
+}{%
+  \end{mdframed}%
+}
+
 \definecolor{bg}{rgb}{0.95,0.95,0.95}
 \definecolor{myBGcolor}{RGB}{204,204,255}
 
