@@ -1,38 +1,36 @@
-﻿\chapter{传统机器学习模型}
+\chapter{传统机器学习模型}
 
-本章将深入探讨传统机器学习领域中一些广泛应用的模型。我们将这些模型分为两大类：处理\textbf{监督学习}问题的模型和处理\textbf{无监督学习}问题的模型。对于每个模型，本章重点讨论其核心假设、适用条件、评价方式和常见失效情形，使读者能够判断 AI 推荐或实现的模型是否适合当前问题。
+机器学习模型的种类繁多，但从学习方式来看，可以先沿两条主线区分。一条是\textbf{监督学习（Supervised Learning）}，训练数据包含特征和对应标签，模型目标是学习从特征到标签的映射函数；另一条是\textbf{无监督学习（Unsupervised Learning）}，训练数据只有特征而没有标签，模型目标是发现数据内部的结构。
 
-\section{监督学习}
-在开始介绍具体模型之前，我们需要回顾监督学习的核心目标：寻找一个函数 $g(\mathbf{x}|\mathbf{w})$，使得对于给定的输入特征 $\mathbf{x}$，模型能够尽可能准确地预测标签 $y$。监督学习模型旨在从带有标签（已知输出）的数据中学习输入和输出之间的映射关系。根据输出是离散类别还是连续数值，监督学习问题又可细分为回归问题和分类问题。
+监督学习又可以根据标签类型进一步细分。当标签是连续数值时，任务称为\textbf{回归（Regression）}，例如预测房价、预测交通流量；当标签是有限个离散类别时，任务称为\textbf{分类（Classification）}，例如判断邮件是否为垃圾邮件、识别图像中的物体。回归与分类共享同一类学习范式，都需要带标签的数据、都需要定义损失函数、都通过优化参数来提升预测能力，区别仅在于输出的类型与对应的损失函数形式。
 
-\subsection{回归问题模型}
-回归问题旨在预测一个连续的数值型输出。例如，预测房屋价格、股票走势或商品销量。
+本章关注的重点不在于手工实现每一种算法，而在于理解每个模型的核心假设、适用条件与常见失效模式，从而在 AI 协作建模时能够判断推荐方案是否合适、验证生成结果是否可靠。
 
-在回归任务中，模型好坏通常不能只看一个指标。常见指标包括 MAE、MSE/RMSE、MAPE 和 \(R^2\)。其中，MAE 直接衡量平均绝对误差，单位与原始标签相同；RMSE 会放大较大的预测偏差，适合关注大误差代价较高的场景；MAPE（Mean Absolute Percentage Error）衡量相对误差，定义为
+\section{回归模型}
+
+回归问题旨在预测连续数值型输出。训练数据形如 $\{(\mathbf{x}_i, y_i)\}_{i=1}^N$，其中 $y_i \in \mathbb{R}$，模型目标是学习一个函数 $f(\mathbf{x};\theta)$，使得在新样本上的预测 $\hat{y} = f(\mathbf{x};\theta)$ 尽量接近真实值。
+
+在回归任务中，模型好坏通常不能只看一个指标。常见指标包括 MAE、MSE/RMSE、MAPE 和 $R^2$。其中，MAE 直接衡量平均绝对误差，单位与原始标签相同；RMSE 会放大较大的预测偏差，适合关注大误差代价较高的场景；MAPE 衡量相对误差，定义为
 \[
 \mathrm{MAPE}=\frac{1}{N}\sum_{i=1}^{N}\left|\frac{y_i-\hat{y}_i}{y_i}\right|\times100\%.
 \]
-例如，MAPE 为 \(8\%\) 可以理解为预测值平均偏离真实值约 \(8\%\)。它在需求预测、销量预测和交通流量预测中很常用，因为这些任务往往关心“相对偏差有多大”。不过，当真实值 \(y_i\) 接近 0 或等于 0 时，MAPE 会变得不稳定，因此使用时需要结合数据范围判断是否合适。
+例如，MAPE 为 $8\%$ 可以理解为预测值平均偏离真实值约 $8\%$。它在需求预测、销量预测和交通流量预测中很常用，因为这些任务往往关心"相对偏差有多大"。不过，当真实值 $y_i$ 接近 0 或等于 0 时，MAPE 会变得不稳定，因此使用时需要结合数据范围判断是否合适。
 
-\paragraph{Linear Regression（线性回归）}
-\paragraph{理论基础}
-线性回归是最简单也是最基础的回归模型。它假设输入特征与输出变量之间存在线性关系。其目标是找到一条最佳拟合的直线（或更高维空间中的超平面），使得数据点到这条直线的距离（误差）之和最小。
+\subsection{线性回归}
 
-对于单个特征 $X$ 和输出 $Y$，线性回归模型的数学表达式为：
-$$ Y = \beta_0 + \beta_1 X + \epsilon $$
-其中：
-\begin{itemize}
-    \item $Y$ 是因变量（我们要预测的目标）。
-    \item $X$ 是自变量（输入特征）。
-    \item $\beta_0$ 是截距（当 $X=0$ 时 $Y$ 的值）。
-    \item $\beta_1$ 是斜率（$X$ 每增加一个单位， $Y$ 的平均变化量）。
-    \item $\epsilon$ 是误差项，表示模型无法解释的随机误差。
-\end{itemize}
-对于多个特征 $X_1, X_2, \ldots, X_n$，模型可以推广为多元线性回归：
-$$ Y = \beta_0 + \beta_1 X_1 + \beta_2 X_2 + \ldots + \beta_n X_n + \epsilon $$
-模型的目标是找到最优的 $\beta_0, \beta_1, \ldots, \beta_n$ 值，通常通过最小化残差平方和（Residual Sum of Squares, RSS）来实现，即：
-$$ \min_{\beta_0, \ldots, \beta_n} \sum_{i=1}^{m} (y_i - (\beta_0 + \beta_1 x_{i1} + \ldots + \beta_n x_{in}))^2 $$
-这里 $m$ 是样本数量，$y_i$ 是第 $i$ 个样本的真实值，$x_{ij}$ 是第 $i$ 个样本的第 $j$ 个特征。
+线性回归是最简单也是最基础的回归模型，假设输入特征与输出变量之间存在线性关系。对于单个特征 $X$ 和输出 $Y$，模型为
+\[
+Y = \beta_0 + \beta_1 X + \epsilon,
+\]
+其中 $\beta_0$ 是截距，$\beta_1$ 是斜率，$\epsilon$ 是误差项。推广到多个特征 $X_1, X_2, \ldots, X_n$ 时，模型变为多元线性回归：
+\[
+Y = \beta_0 + \beta_1 X_1 + \beta_2 X_2 + \ldots + \beta_n X_n + \epsilon.
+\]
+模型的目标是找到最优的 $\beta_0, \beta_1, \ldots, \beta_n$，通常通过最小化残差平方和（Residual Sum of Squares, RSS）来实现：
+\[
+\min_{\beta_0, \ldots, \beta_n} \sum_{i=1}^{m} \left(y_i - (\beta_0 + \beta_1 x_{i1} + \ldots + \beta_n x_{in})\right)^2.
+\]
+线性回归简单、易于理解和解释，是许多更复杂模型的基石。然而，它要求特征与目标之间存在线性关系；如果这一假设不成立，模型性能会受到明显限制。
 
 \paragraph{实现占位}
 我们将使用 \texttt{scikit-learn} 自带的 diabetes 数据集演示 \texttt{LinearRegression}。该数据集来自真实医学观测，目标变量是一年后的疾病进展指标；这里选取体重指数（BMI）作为单一解释变量，便于直观看到线性回归如何拟合连续数值。
@@ -40,144 +38,93 @@ $$ \min_{\beta_0, \ldots, \beta_n} \sum_{i=1}^{m} (y_i - (\beta_0 + \beta_1 x_{i
 \begin{quote}
 \textbf{【实现占位】} 本段原有代码不直接迁入；后续案例将以 AI 协作过程、关键决策和验证结果为主。
 \end{quote}
-线性回归模型简单、易于理解和解释，是许多更复杂模型的基石。然而，它要求特征与目标之间存在线性关系，如果这种假设不成立，模型的性能会受到限制。
 
-\paragraph{Polynomial Regression（多项式回归）}
-\paragraph{理论基础}
-当特征与目标变量之间存在非线性关系时，简单的线性回归可能无法很好地捕捉这种模式。多项式回归通过在原始特征中添加多项式特征（如 $X^2, X^3$ 等）来扩展线性模型，从而能够拟合非线性的数据。本质上，多项式回归仍然是线性回归的一种形式，因为它对变换后的特征（例如 $X, X^2$）是线性的。
+\subsection{多项式回归}
+
+当特征与目标变量之间存在非线性关系时，简单的线性回归可能无法很好地捕捉这种模式。多项式回归通过在原始特征中添加多项式特征（如 $X^2, X^3$ 等）来扩展线性模型，从而能够拟合非线性的数据。本质上，多项式回归仍然是线性回归的一种形式，因为它对变换后的特征是线性的。
 
 对于单个特征 $X$ 和 $Y$，一个 $d$ 次多项式回归模型表示为：
-$$ Y = \beta_0 + \beta_1 X + \beta_2 X^2 + \ldots + \beta_d X^d + \epsilon $$
-这里，模型学习的是多项式系数 $\beta_0, \ldots, \beta_d$。
+\[
+Y = \beta_0 + \beta_1 X + \beta_2 X^2 + \ldots + \beta_d X^d + \epsilon.
+\]
+选择合适的阶数非常重要：阶数过高可能导致过拟合，阶数过低可能导致欠拟合。
 
 \paragraph{实现占位}
-我们继续使用 diabetes 数据集中的 BMI 特征。与前一个例子不同，这里加入二次项，观察多项式特征是否能捕捉 BMI 与疾病进展之间的非线性关系。
+我们继续使用 diabetes 数据集中的 BMI 特征，加入二次项，观察多项式特征是否能捕捉 BMI 与疾病进展之间的非线性关系。
 
 \begin{quote}
 \textbf{【实现占位】} 本段原有代码不直接迁入；后续案例将以 AI 协作过程、关键决策和验证结果为主。
 \end{quote}
-多项式回归能够捕捉数据中的非线性关系，提高了模型的灵活性。然而，选择合适的阶数很重要。过高的阶数可能导致模型过拟合（对训练数据拟合得太好，但对新数据表现差），而过低的阶数可能导致欠拟合（无法捕捉数据的真实模式）。
 
-\paragraph{Stepwise Regression（逐步回归）}
-\paragraph{理论基础}
-逐步回归是一种用于特征选择的方法，它通过迭代地添加或删除特征来构建回归模型。其目标是找到一个最优的特征子集，既能提供良好的预测能力，又能保持模型的简洁性。逐步回归主要有三种变体：
-\begin{itemize}
-    \item \textbf{向前选择（Forward Selection）}：从没有特征的模型开始，每次添加一个对模型改进最大的特征，直到没有显著的改进。
-    \item \textbf{向后消除（Backward Elimination）}：从包含所有特征的模型开始，每次删除一个对模型影响最小的特征，直到删除会导致模型显著退化的特征。
-    \item \textbf{逐步（Stepwise）}：结合了向前选择和向后消除，每一步都考虑添加或删除特征，以在每一步找到最佳模型。
-\end{itemize}
-逐步回归通常基于统计显著性（如p值）或信息准则（如AIC、BIC）来决定特征的添加或删除。
+\subsection{正则化线性模型：岭回归、Lasso 与弹性网}
 
-\paragraph{实现占位}
-\texttt{scikit-learn} 库本身没有直接提供一步到位的逐步回归函数，因为其统计学上的假设较多，且在现代机器学习中，通常有更稳健的特征选择方法（如Lasso、RFE等）。但我们可以通过循环和评估指标手动实现一个简单的向前选择过程。
+普通线性回归在特征数量较多、特征之间存在多重共线性或训练样本相对较少时，容易出现参数估计不稳定或过拟合的问题。正则化线性模型在损失函数中添加惩罚项，通过约束参数的大小来缓解这些问题。根据惩罚项形式的不同，正则化线性模型主要分为三种：岭回归、Lasso 和弹性网，分别对应 $L_2$ 惩罚、$L_1$ 惩罚及两者的结合。
 
-\begin{quote}
-\textbf{【实现占位】} 本段原有代码不直接迁入；后续案例将以 AI 协作过程、关键决策和验证结果为主。
-\end{quote}
-逐步回归是一种有效的特征选择策略，可以帮助我们构建更简洁、更具解释性的模型，并可能提高模型的泛化能力（避免过拟合）。然而，它的贪婪性质可能无法找到全局最优的特征子集，并且在特征数量非常大时计算成本较高。
+\textbf{岭回归（Ridge Regression）}在普通最小二乘的损失函数中添加了 $L_2$ 惩罚项：
+\[
+J_{\text{Ridge}}(\beta) = \sum_{i=1}^{m} (y_i - \hat{y}_i)^2 + \alpha \sum_{j=1}^{n} \beta_j^2,
+\]
+其中 $\alpha \geq 0$ 是正则化参数。当 $\alpha$ 增大时，对系数的惩罚越大，模型系数会趋向于零，从而降低模型复杂度、减少过拟合风险。岭回归的 $L_2$ 惩罚项会缩小所有系数，但不会使任何系数完全变为零（除非 $\alpha$ 趋于无穷大），这意味着它不会进行特征选择。
 
-\paragraph{Ridge Regression（岭回归）}
-\paragraph{理论基础}
-岭回归是一种L2正则化的线性回归模型，用于处理多重共线性问题（即特征之间高度相关）或过拟合。它在普通最小二乘法（OLS）的损失函数中添加了一个惩罚项，该惩罚项与模型系数的平方和成正比。
-
-普通线性回归的损失函数（RSS）：
-$$ J(\beta) = \sum_{i=1}^{m} (y_i - \hat{y}_i)^2 = \sum_{i=1}^{m} (y_i - (\beta_0 + \sum_{j=1}^{n} \beta_j x_{ij}))^2 $$
-岭回归的损失函数：
-$$ J_{Ridge}(\beta) = \sum_{i=1}^{m} (y_i - \hat{y}_i)^2 + \alpha \sum_{j=1}^{n} \beta_j^2 $$
-其中：
-\begin{itemize}
-    \item $\alpha \geq 0$ 是正则化参数（也称为惩罚系数），它控制惩罚项的强度。
-    \item 当 $\alpha = 0$ 时，岭回归退化为普通线性回归。
-    \item 当 $\alpha$ 增大时，对系数的惩罚越大，模型系数会趋向于零，从而降低模型的复杂度，减少过拟合的风险。
-\end{itemize}
-岭回归的L2惩罚项会缩小所有系数，但不会使任何系数完全变为零（除非 $\alpha$ 趋于无穷大），这意味着它不会进行特征选择。
-
-从几何角度看，普通最小二乘的损失函数可以画成一组椭圆形等高线，最优解位于等高线的中心；而岭回归相当于要求参数向量落在一个 $L_2$ 球内。最终解出现在“损失等高线”和“参数约束球”相切的位置。由于 $L_2$ 球是光滑的，相切点通常不会正好落在坐标轴上，因此岭回归倾向于把所有系数一起缩小，而不是直接把某些系数压成 0。
+从几何角度看，普通最小二乘的损失函数可以画成一组椭圆形等高线，最优解位于等高线的中心；而岭回归相当于要求参数向量落在一个 $L_2$ 球内。最终解出现在"损失等高线"和"参数约束球"相切的位置。由于 $L_2$ 球是光滑的，相切点通常不会正好落在坐标轴上，因此岭回归倾向于把所有系数一起缩小，而不是直接把某些系数压成 0。
 
 % 【图示占位】源稿图示待按本书风格重绘。
 
 相关图示 中的椭圆表示损失函数等高线，圆形或菱形表示参数约束范围。Ridge 的相切点多落在坐标轴之外，因此常表现为整体收缩；Lasso 的尖角更容易与等高线相切在坐标轴上，因此可能把某些特征系数直接压为 0。
 
+\textbf{Lasso 回归（Least Absolute Shrinkage and Selection Operator）}采用 $L_1$ 惩罚：
+\[
+J_{\text{Lasso}}(\beta) = \sum_{i=1}^{m} (y_i - \hat{y}_i)^2 + \alpha \sum_{j=1}^{n} |\beta_j|.
+\]
+$L_1$ 惩罚具有"稀疏性"的特点：它能够将某些不重要特征的系数直接压缩为零，从而实现自动特征选择。从等高线图上看，Lasso 的 $L_1$ 约束区域像一个带尖角的菱形；损失函数等高线向外扩张时，很容易先碰到菱形的尖角，而这些尖角正好位于某些坐标轴上，意味着某些参数会被压缩为 0。这使得 Lasso 特别适合高维场景下的特征筛选。但当存在高度相关的特征时，Lasso 倾向于随机选择其中一个特征而忽略其他特征。
+
+\textbf{弹性网（ElasticNet）}结合了岭回归和 Lasso 的优点，在损失函数中同时包含 $L_1$ 和 $L_2$ 惩罚项：
+\[
+J_{\text{ElasticNet}}(\beta) = \sum_{i=1}^{m} (y_i - \hat{y}_i)^2 + \alpha \rho \sum_{j=1}^{n} |\beta_j| + \frac{\alpha (1-\rho)}{2} \sum_{j=1}^{n} \beta_j^2,
+\]
+其中 $\alpha \geq 0$ 是总的正则化强度，$\rho \in [0, 1]$ 是 $L_1$ 与 $L_2$ 惩罚的混合比例。当 $\rho = 1$ 时，弹性网退化为 Lasso；当 $\rho = 0$ 时，退化为岭回归。弹性网在处理高维数据和多重共线性时兼顾了特征选择能力和估计稳定性，实践中通常通过交叉验证选择最优的 $\alpha$ 和 $\rho$ 值。
+
 \paragraph{实现占位}
-\texttt{scikit-learn} 中的 \texttt{Ridge} 模型可以直接应用岭回归。
+\texttt{scikit-learn} 中分别有 \texttt{Ridge}、\texttt{Lasso} 和 \texttt{ElasticNet} 模型可以直接使用。
 
 \begin{quote}
 \textbf{【实现占位】} 本段原有代码不直接迁入；后续案例将以 AI 协作过程、关键决策和验证结果为主。
 \end{quote}
-岭回归通过L2正则化有效地解决了多重共线性和过拟合问题，尤其适用于特征之间存在一定相关性的情况。它能够收缩模型系数，但不会将其完全归零。
 
-\paragraph{Lasso Regression（Lasso 回归）}
-\paragraph{理论基础}
-Lasso（Least Absolute Shrinkage and Selection Operator）回归是一种L1正则化的线性回归模型。与岭回归类似，它也在损失函数中添加了一个惩罚项，但这个惩罚项是模型系数的绝对值之和。
+\subsection{逐步回归}
 
-Lasso回归的损失函数：
-$$ J_{Lasso}(\beta) = \sum_{i=1}^{m} (y_i - \hat{y}_i)^2 + \alpha \sum_{j=1}^{n} |\beta_j| $$
-其中 $\alpha \geq 0$ 同样是正则化参数。
+逐步回归是一种特征选择方法，通过迭代地添加或删除特征来构建回归模型，目标是找到一个最优的特征子集，在提供良好预测能力的同时保持模型的简洁性。主要有三种变体：\textbf{向前选择（Forward Selection）}从空集开始逐步添加最有用的特征；\textbf{向后消除（Backward Elimination）}从包含所有特征的模型开始逐步删除影响最小的特征；\textbf{逐步法（Stepwise）}则结合两者，每步都考虑添加或删除特征。决定特征是否加入或删除的标准通常基于统计显著性（如 $p$ 值）或信息准则（如 AIC、BIC）。
 
-Lasso回归与岭回归的关键区别在于惩罚项的形式。L1惩罚项（绝对值）具有“稀疏性”的特点，它能够将某些不重要特征的系数直接压缩为零，从而实现特征选择。这使得Lasso回归在处理具有大量冗余特征或需要进行特征选择的场景中非常有用。
-
-从等高线图上看，Lasso 的 $L_1$ 约束区域像一个带尖角的菱形。损失函数等高线向外扩张时，很容易先碰到菱形的尖角，而这些尖角正好位于某些坐标轴上。这意味着某些参数会被压缩为 0。也正因为如此，Lasso 不只是“防止过拟合”的正则化方法，还是一种自动特征选择方法：系数为 0 的特征可以被视为在当前模型中被剔除。
-
-相关图示 对比了两种约束区域的形状。理解这一区别后，就能更自然地解释为什么 Ridge 常用于稳定估计和缓解共线性，而 Lasso 常用于高维场景下的特征筛选。
+逐步回归是一种有效的特征选择策略，可以帮助构建更简洁、更具解释性的模型。然而，它的贪婪性质可能无法找到全局最优特征子集，并且在特征数量非常大时计算成本较高。在现代机器学习中，通常有更稳健的特征选择方法（如 Lasso、递归特征消除等）可以替代。
 
 \paragraph{实现占位}
-\texttt{scikit-learn} 中的 \texttt{Lasso} 模型可以实现Lasso回归。
+\texttt{scikit-learn} 没有内置逐步回归函数，但可以通过循环和评估指标手动实现向前选择过程。
 
 \begin{quote}
 \textbf{【实现占位】} 本段原有代码不直接迁入；后续案例将以 AI 协作过程、关键决策和验证结果为主。
 \end{quote}
-Lasso回归在处理高维数据和需要特征选择时非常有效，因为它能将不重要特征的系数压缩为零。但当存在高度相关的特征时，Lasso倾向于随机选择一个特征而忽略其他特征。
 
-\paragraph{ElasticNet（弹性网）}
-\paragraph{理论基础}
-弹性网回归（ElasticNet）结合了岭回归（L2正则化）和Lasso回归（L1正则化）的优点。它在损失函数中同时包含L1和L2惩罚项。
+\section{分类模型}
 
-弹性网的损失函数：
-$$ J_{ElasticNet}(\beta) = \sum_{i=1}^{m} (y_i - \hat{y}_i)^2 + \alpha \rho \sum_{j=1}^{n} |\beta_j| + \frac{\alpha (1-\rho)}{2} \sum_{j=1}^{n} \beta_j^2 $$
-其中：
-\begin{itemize}
-    \item $\alpha \geq 0$ 是总的正则化强度。
-    \item $\rho \in [0, 1]$ 是L1惩罚项与L2惩罚项的混合比例。
-    \item 当 $\rho = 1$ 时，弹性网退化为Lasso回归。
-    \item 当 $\rho = 0$ 时，弹性网退化为岭回归。
-\end{itemize}
-弹性网结合了Lasso的特征选择能力和岭回归在处理多重共线性时的稳定性。当存在多重共线性且需要进行特征选择时，弹性网通常是一个更好的选择。
+分类问题旨在预测离散类别标签。训练数据形如 $\{(\mathbf{x}_i, y_i)\}_{i=1}^N$，其中 $y_i \in \{1, 2, \ldots, K\}$，模型目标是学习从特征到类别的映射函数。与回归不同，分类模型通常先输出属于各类别的概率，再根据阈值或最大概率原则做出最终类别判断。
 
-\paragraph{实现占位}
-\texttt{scikit-learn} 中的 \texttt{ElasticNet} 模型实现了弹性网回归。
+\subsection{逻辑回归}
 
-\begin{quote}
-\textbf{【实现占位】} 本段原有代码不直接迁入；后续案例将以 AI 协作过程、关键决策和验证结果为主。
-\end{quote}
-弹性网回归是Lasso和岭回归的折衷，它在处理高维数据和多重共线性时表现出色。通过调整 $\alpha$ 和 $\rho$ 参数，可以灵活地控制模型的正则化强度和特征选择的程度。在实践中，通常使用交叉验证来选择最优的 $\alpha$ 和 $\rho$ 值。
-
-
-\subsection{分类问题模型}
-分类问题旨在预测一个离散的类别标签。例如，判断一封邮件是否为垃圾邮件、识别图像中的物体种类或预测客户是否会流失。
-
-\paragraph{Logistic Regression（逻辑回归）}
-\paragraph{理论基础}
-尽管名字中带有“回归”，但逻辑回归实际上是一个广泛用于二分类（0或1，是或否）的线性模型。
-
-\subparagraph{模型定义}
-考虑一个二分类问题，我们假设在给定观测值 $\mathbf{x}_n$ 的情况下，属于类别 $C_1$ ($y_n=1$) 的概率可以写作一个 Logistic 函数（或称为 Sigmoid 函数）：
+尽管名字中带有"回归"，逻辑回归实际上是一个广泛用于二分类的线性模型。它假设在给定观测值 $\mathbf{x}_n$ 的情况下，属于类别 $C_1$（$y_n=1$）的概率可以写作 Logistic 函数（即 Sigmoid 函数）：
 \begin{equation}
-    P(y_n=1|\mathbf{x}_n) = \sigma (w_0 + \mathbf{w}^{\textrm{T}} \mathbf{x}_n) =  \frac{e^{w_0 + \mathbf{w}^{\textrm{T}} \mathbf{x}_n }}{1 + e^{w_0 + \mathbf{w}^{\textrm{T}} \mathbf{x}_n}}
+    P(y_n=1|\mathbf{x}_n) = \sigma(w_0 + \mathbf{w}^{\textrm{T}} \mathbf{x}_n) = \frac{e^{w_0 + \mathbf{w}^{\textrm{T}} \mathbf{x}_n}}{1 + e^{w_0 + \mathbf{w}^{\textrm{T}} \mathbf{x}_n}}.
 \end{equation}
 这等价于 Logit 形式（对数几率）：
 \begin{equation}
-    \log \left( \frac{P(y_n=1|\mathbf{x}_n)}{1 - P(y_n=1|\mathbf{x}_n)} \right) = w_0 + \mathbf{w}^{\textrm{T}} \mathbf{x}_n
+    \log \left( \frac{P(y_n=1|\mathbf{x}_n)}{1 - P(y_n=1|\mathbf{x}_n)} \right) = w_0 + \mathbf{w}^{\textrm{T}} \mathbf{x}_n.
 \end{equation}
-其中，等式左边称为Logit。
-
-决策规则非常直观：首先计算概率 $P(y_n=1|\mathbf{x}_n)$，如果该概率大于 0.5，则预测为类别 $C_1$；否则预测为类别 $C_2$ ($y_n=0$)。
-
-相关图示 展示了 Logistic 函数最重要的性质：无论线性输入 $w_0+\mathbf{w}^{\textrm{T}}\mathbf{x}$ 取多大或多小，输出都会被压缩到 $0$ 和 $1$ 之间，因此可以被解释为概率。当输入接近 0 时，曲线斜率最大，模型对特征变化最敏感；当输入非常大或非常小时，曲线趋于饱和，预测概率接近 1 或 0。
+决策规则直观：计算概率 $P(y_n=1|\mathbf{x}_n)$，若大于 0.5 则预测类别 $C_1$；否则预测类别 $C_2$（$y_n=0$）。相关图示 展示了 Logistic 函数最重要的性质：无论线性输入取多大或多小，输出都会被压缩到 $0$ 和 $1$ 之间，因此可以被解释为概率。
 
 % 【图示占位】源稿图示待按本书风格重绘。
 
-\subparagraph{应用实例：学习时间与考试通过率}
-为了直观理解，我们看一个具体的例子。假设有一组 20 名学生，他们的复习时间（0 到 6 小时）与是否通过考试（0 或 1）的数据如下表所示。
+\paragraph{应用实例：学习时间与考试通过率}
+
+为了直观理解，考虑一个具体的例子。假设有一组 20 名学生，他们的复习时间（0 到 6 小时）与是否通过考试（0 或 1）的数据如下表所示。
 
 \begin{table}[H]
     \centering
@@ -196,7 +143,7 @@ $$ J_{ElasticNet}(\beta) = \sum_{i=1}^{m} (y_i - \hat{y}_i)^2 + \alpha \rho \sum
     }
 \end{table}
 
-通过逻辑回归拟合，我们可以得到如下的模型系数表：
+通过逻辑回归拟合，可以得到如下模型系数表：
 
 \begin{table}[H]
     \centering
@@ -212,8 +159,10 @@ $$ J_{ElasticNet}(\beta) = \sum_{i=1}^{m} (y_i - \hat{y}_i)^2 + \alpha \rho \sum
     \end{tabular}
 \end{table}
 
-结果显示“学习时间”与通过概率显著相关 ($p=0.0167 < 0.05$)。基于拟合出的参数 $w_0 = -4.0777$ 和 $w_1 = 1.5046$，我们可以预测不同学习时间下的通过概率：
-$$ P(\text{Pass}|x) = \frac{1}{1 + e^{-(-4.0777 + 1.5046 \cdot x)}} $$
+结果显示"学习时间"与通过概率显著相关（$p=0.0167 < 0.05$）。基于拟合出的参数 $w_0 = -4.0777$ 和 $w_1 = 1.5046$，可以预测不同学习时间下的通过概率：
+\[
+P(\text{Pass}|x) = \frac{1}{1 + e^{-(-4.0777 + 1.5046 \cdot x)}}.
+\]
 
 部分预测结果如下表所示：
 
@@ -234,31 +183,27 @@ $$ P(\text{Pass}|x) = \frac{1}{1 + e^{-(-4.0777 + 1.5046 \cdot x)}} $$
     \end{tabular}
 \end{table}
 
-可以看到，当学习时间为 3 小时，通过概率约为 0.61；而当学习时间增加到 5 小时，通过概率则高达 0.97。
+可以看到，学习时间为 3 小时时通过概率约为 0.61；增加到 5 小时后，通过概率高达 0.97。
 
-\subparagraph{参数估计：极大似然法 (Maximum Likelihood)}
-逻辑回归的参数求解通常不使用最小二乘法，而是使用极大似然估计 (MLE)。
-令 $z_n = P(y_n=1|\mathbf{x}_n)$。对于 $N$ 个样本，似然函数 $L(\mathbf{w}, w_0)$ 定义为所有样本被正确分类的联合概率：
-\begin{equation}
-    L(\mathbf{w}, w_0|\mathcal{X}) = \prod_{n=1}^{N} (z_n) ^{y_n} (1 - z_n)^ {1 - y_n}
-\end{equation}
-为了方便计算，我们通常通过取负对数将最大化似然问题转化为最小化误差函数，即交叉熵 (Cross-Entropy)误差 ：
-\begin{equation}
-    E(\mathbf{w}, w_0|\mathcal{X}) = - \log L(\mathbf{w}, w_0|\mathcal{X}) = - \sum_{n=1}^{N} \left[ y_n \log z_n + (1 - y_n) \log (1 - z_n) \right]
-\end{equation}
+\paragraph{参数估计与梯度下降}
 
-\subparagraph{优化算法：梯度下降 (Gradient Descent)}
-由于上述误差函数没有闭式解，我们需要使用迭代算法（如梯度下降）来求解。
-利用链式法则，我们可以推导出参数 $w_j$ 的更新公式。
-已知 Logistic 函数的导数为 $\frac{\text{d} z}{\text{d} a} = z (1-z)$ ，误差函数对权重的梯度为：
+逻辑回归的参数求解使用极大似然估计（MLE）。令 $z_n = P(y_n=1|\mathbf{x}_n)$，对于 $N$ 个样本，似然函数定义为所有样本被正确分类的联合概率：
 \begin{equation}
-    \frac{\partial E}{\partial w_j} = \sum_{n=1}^N (z_n - y_n) x_{nj}
+    L(\mathbf{w}, w_0|\mathcal{X}) = \prod_{n=1}^{N} (z_n)^{y_n} (1 - z_n)^{1 - y_n}.
 \end{equation}
-因此，梯度下降的更新规则为（其中 $\eta$ 为学习率）：
+为了便于计算，通常取负对数转化为最小化交叉熵误差：
 \begin{equation}
-    w_j \leftarrow w_j - \eta \sum_{n=1}^N (z_n - y_n) x_{nj}
+    E(\mathbf{w}, w_0|\mathcal{X}) = - \sum_{n=1}^{N} \left[ y_n \log z_n + (1 - y_n) \log (1 - z_n) \right].
 \end{equation}
-这一公式非常优雅，它直观地表示：权重的调整量与预测误差 $(y_n - z_n)$ 和输入特征 $x_{nj}$ 成正比。
+由于上述误差函数没有闭式解，需要使用梯度下降法迭代求解。利用 Logistic 函数的导数 $\frac{\mathrm{d} z}{\mathrm{d} a} = z(1-z)$，可以推导出参数 $w_j$ 的梯度：
+\begin{equation}
+    \frac{\partial E}{\partial w_j} = \sum_{n=1}^N (z_n - y_n) x_{nj},
+\end{equation}
+相应的梯度下降更新规则为（其中 $\eta$ 为学习率）：
+\begin{equation}
+    w_j \leftarrow w_j - \eta \sum_{n=1}^N (z_n - y_n) x_{nj}.
+\end{equation}
+这一公式很优雅：权重的调整量与预测误差 $(y_n - z_n)$ 和输入特征 $x_{nj}$ 成正比。
 
 \begin{algorithm}[H]
     \caption{逻辑回归梯度下降算法}
@@ -281,7 +226,6 @@ $$ P(\text{Pass}|x) = \frac{1}{1 + e^{-(-4.0777 + 1.5046 \cdot x)}} $$
     \end{algorithmic}
 \end{algorithm}
 
-
 \paragraph{实现占位}
 我们将使用 \texttt{scikit-learn} 库中的 \texttt{LogisticRegression} 模型。
 
@@ -289,287 +233,150 @@ $$ P(\text{Pass}|x) = \frac{1}{1 + e^{-(-4.0777 + 1.5046 \cdot x)}} $$
 \textbf{【实现占位】} 本段原有代码不直接迁入；后续案例将以 AI 协作过程、关键决策和验证结果为主。
 \end{quote}
 
-\paragraph{Multinomial Logit Models（多项逻辑回归/Softmax回归）}
-\paragraph{理论基础}
-当分类问题的类别数量 \(K>2\) 时，二分类逻辑回归就需要推广为多项逻辑回归（Multinomial Logit Model），也常称为 Softmax 回归。二分类逻辑回归只需要回答“属于正类的概率是多少”，而多分类问题需要同时回答“属于第 1 类、第 2 类、\(\ldots\)、第 \(K\) 类的概率分别是多少”。
+\paragraph{多项逻辑回归与 Softmax 回归}
 
-首先需要重新表示标签。对于 \(K\) 分类问题，通常采用独热编码（One-hot Encoding）。例如对于 3 分类问题，如果样本属于类别 1，则
-\[
-\mathbf{y}_n=(1,0,0);
-\]
-如果样本属于类别 2，则
-\[
-\mathbf{y}_n=(0,1,0).
-\]
-也就是说，\(\mathbf{y}_n\) 中只有真实类别对应的位置为 1，其余位置为 0。这样的写法便于后面把“真实类别对应的预测概率”从所有类别概率中取出来。
-
-\subparagraph{模型得分：每个类别一条线性函数}
-在二分类逻辑回归中，模型先计算一个线性得分
-\[
-z=w_0+\mathbf{w}^{T}\mathbf{x},
-\]
-再用 Sigmoid 把它变成属于正类的概率。多项逻辑回归则为每个类别 \(k\) 都定义一个线性得分：
+当分类问题的类别数量 $K>2$ 时，二分类逻辑回归需要推广为多项逻辑回归（Multinomial Logit Model），也常称为 Softmax 回归。它为每个类别 $k$ 定义一个线性得分：
 \[
 s_{nk}=w_{k0}+\mathbf{w}_{k}^{T}\mathbf{x}_n,\qquad k=1,\ldots,K.
 \]
-这里的 \(s_{nk}\) 通常称为 logit。它本身还不是概率，可以为正、为负，也不要求所有类别得分相加为 1。直观地说，\(s_{nk}\) 表示“模型认为样本 \(n\) 属于类别 \(k\) 的原始倾向”。
-
-\subparagraph{Softmax 函数}
-为了把 \(K\) 个任意实数得分转换成一组合法概率，我们引入 Softmax 函数：
+这些得分本身还不是概率，可以为正或为负，不要求相加为 1。Softmax 函数将它们转换为一组合法概率：
 \begin{equation}
-    z_{nk}=P(C_k | \mathbf{x}_n) = \frac{\exp( w_{k0} + \mathbf{w}_k^{\textrm{T}} \mathbf{x}_n )}{\sum_{j=1}^K \exp(w_{j0} + \mathbf{w}_j^{\textrm{T}} \mathbf{x}_n ) }.
+    z_{nk}=P(C_k | \mathbf{x}_n) = \frac{\exp(w_{k0} + \mathbf{w}_k^{\textrm{T}} \mathbf{x}_n)}{\sum_{j=1}^K \exp(w_{j0} + \mathbf{w}_j^{\textrm{T}} \mathbf{x}_n)}.
 \end{equation}
-Softmax 有三个重要性质。第一，所有 \(z_{nk}\) 都大于 0；第二，所有类别概率之和为 1；第三，原始得分越大的类别，转换后的概率通常也越大。因此，它既保留了“得分越高越可能”的直觉，又能输出完整的概率分布。
+Softmax 有三个重要性质：所有 $z_{nk}$ 都大于 0；所有类别概率之和为 1；原始得分越大的类别，转换后的概率通常也越大。预测时，模型选择概率最大的类别：$\hat{y}_n=\arg\max_{k} z_{nk}$。
 
-例如，某个三分类模型对一个样本给出三个 logits：
-\[
-s_{n1}=2.0,\qquad s_{n2}=1.0,\qquad s_{n3}=0.1.
-\]
-经过 Softmax 后，可能得到
-\[
-z_{n1}=0.66,\qquad z_{n2}=0.24,\qquad z_{n3}=0.10.
-\]
-若真实类别是第 1 类，则模型希望 \(z_{n1}\) 越大越好；若真实类别是第 2 类，则模型希望 \(z_{n2}\) 越大越好。也就是说，多分类训练的核心仍然是：\textbf{让真实类别在模型下出现的概率尽可能大}。
-
-
-\subparagraph{损失函数与参数学习}
-和二分类逻辑回归一样，多项逻辑回归也可以从极大似然估计理解。对单个样本 \(n\)，由于 \(\mathbf{y}_n\) 是 one-hot 向量，样本真实标签在模型下出现的概率可以写为
-\[
-\prod_{k=1}^{K} z_{nk}^{y_{nk}}.
-\]
-这个式子看起来复杂，但含义很简单：因为只有真实类别对应的 \(y_{nk}=1\)，其余类别的 \(y_{nk}=0\)，所以乘积最后只会留下真实类别对应的预测概率。例如，如果真实类别是第 2 类，那么它就等于 \(z_{n2}\)。
-
-把所有样本联合起来，多分类似然函数为
-\[
-L(\{\mathbf{w}_k,w_{k0}\}_{k=1}^{K}|\mathcal{X})
-=
-\prod_{n=1}^{N}\prod_{k=1}^{K} z_{nk}^{y_{nk}}.
-\]
-训练目标是让这个似然尽可能大。为了便于优化，通常取负对数，得到多分类交叉熵误差函数：
+对于标签采用独热编码的 $K$ 分类问题，多分类交叉熵损失函数为：
 \begin{equation}
-    E (\{\mathbf{w}_k, w_{k0}\}_k | \mathcal{X}) = - \sum_{n=1}^N \sum_{k=1}^K y_{nk} \log z_{nk}
+    E(\{\mathbf{w}_k, w_{k0}\}_k | \mathcal{X}) = - \sum_{n=1}^N \sum_{k=1}^K y_{nk} \log z_{nk}.
 \end{equation}
-其中 \(z_{nk}\) 是模型预测样本 \(n\) 属于类别 \(k\) 的概率。由于 \(y_{nk}\) 是 one-hot 编码，上式对每个样本实际上只惩罚真实类别对应的概率：
-\[
--\sum_{k=1}^{K}y_{nk}\log z_{nk}
-=
--\log z_{n,y_n}.
-\]
-因此，如果模型给真实类别很低概率，损失会很大；如果模型给真实类别很高概率，损失会较小。这一点与二分类交叉熵完全一致，只是从“正类/负类”推广到了 \(K\) 个类别。
-
-通过梯度下降法，可以得到针对第 \(j\) 个类别的参数更新规则：
+由于 $y_{nk}$ 是独热向量，上式对每个样本实际上只惩罚真实类别对应的概率：$-\log z_{n,y_n}$。参数更新规则为：
 \begin{equation}
-    \Delta \mathbf{w}_j = \eta \sum_{n=1}^N (y_{nj} - z_{nj}) \mathbf{x}_n
+    \Delta \mathbf{w}_j = \eta \sum_{n=1}^N (y_{nj} - z_{nj}) \mathbf{x}_n.
 \end{equation}
-这与二分类逻辑回归的更新形式非常一致，只是现在需要对每个类别 \(j\) 分别进行更新。若样本真实属于类别 \(j\)，则 \(y_{nj}=1\)，当模型给该类别的概率 \(z_{nj}\) 偏低时，\(y_{nj}-z_{nj}\) 为正，会推动该类别的参数更倾向于这个样本；若样本不属于类别 \(j\)，则 \(y_{nj}=0\)，更新项为 \(-z_{nj}\)，会抑制该类别对这个样本给出过高概率。
-
-预测时，模型会选择概率最大的类别：
-\[
-\hat{y}_n=\arg\max_{k} z_{nk}.
-\]
-但需要注意，Softmax 回归并不是只输出一个硬标签，而是先输出一整组类别概率。这个概率分布在很多场景中很有用：例如，如果最高概率只有 0.42，而第二高概率为 0.39，就说明模型其实并不十分确定，后续决策时可以保留这种不确定性。
+需要注意的是，Softmax 回归并不只输出一个硬标签，而是先输出一整组类别概率。如果最高概率只有 0.42 而第二高为 0.39，说明模型并不确定，后续决策时可以保留这种不确定性。
 
 相关图示 的作用是说明 Softmax 并不是只给出一个类别标签，而是先为每个类别计算概率，再选择概率最大的类别作为预测结果。在二维特征空间中，不同类别概率最大的区域共同形成多分类决策边界。
 
 % 【图示占位】源稿图示待按本书风格重绘。
 
-阅读相关图示 时，可以把左侧的二维点看作每个样本的两个特征，把背景颜色看作模型在该位置最倾向预测的类别。对任意一个输入点，模型并不是直接输出“红类”“蓝类”或“绿类”，而是先分别计算三个类别的线性得分（logits），再通过 Softmax 将这些得分归一化为三项概率。图中的概率条展示了这一点：概率最大的类别会成为最终预测结果，但其余类别的概率仍然保留下来，因此 Softmax 回归给出的不是硬性的标签规则，而是一个完整的多分类概率分布。决策边界则对应“两个类别概率相等”的位置。
+\subsection{支持向量机}
 
-\paragraph{Support Vector Machines (支持向量机)}
-\paragraph{理论基础}
-支持向量机 (SVM) 是一种二分类模型，其基本模型定义为特征空间上的间隔最大的线性分类器。SVM 的核心思想非常直观：在特征空间中找到一个超平面 (Hyperplane)，将不同类别的样本分隔开，并且使得这个超平面到最近的样本点的距离（即间隔，Margin）最大化。
+支持向量机（SVM）是一种二分类模型，核心思想是在特征空间中找到一个超平面（Hyperplane），将不同类别的样本分隔开，并使这个超平面到最近样本点的距离（即间隔，Margin）最大化。统计学习理论表明，拥有最大间隔的超平面具有最好的泛化能力。
 
-统计学习理论表明，拥有最大间隔的超平面具有最好的泛化能力（Generalization Error 最小）。
+\paragraph{超平面与间隔}
 
-\subparagraph{超平面与间隔 (Hyperplane and Margin)}
-假设给定一个特征空间上的数据集 $\mathcal{X}=\{(\mathbf{x}_{n},y_{n})\}_{n=1}^{N}$，其中 $y_n \in \{+1, -1\}$。
-线性可分支持向量机利用一个线性方程来划分数据：
+假设给定数据集 $\mathcal{X}=\{(\mathbf{x}_{n},y_{n})\}_{n=1}^{N}$，其中 $y_n \in \{+1, -1\}$。线性可分 SVM 用一个线性方程来划分数据：
 \begin{equation}
-    \mathbf{w}^{\textrm{T}}\mathbf{x} + w_0 = 0
+    \mathbf{w}^{\textrm{T}}\mathbf{x} + w_0 = 0.
 \end{equation}
-其中 $\mathbf{w}$ 是法向量，决定了超平面的方向；$w_0$ 是截距，决定了超平面与原点的距离 。
-
-对于任意数据点 $\mathbf{x}$，其到超平面的距离为：
+对于任意数据点 $\mathbf{x}$，其到超平面的距离为 $\frac{|\mathbf{w}^{\textrm{T}}\mathbf{x} + w_0|}{||\mathbf{w}||}$。通过缩放 $\mathbf{w}$ 和 $w_0$，使得距离超平面最近的样本点满足 $|\mathbf{w}^{\textrm{T}}\mathbf{x} + w_0| = 1$，这些点被称为支持向量。几何间隔的总宽度为：
 \begin{equation}
-    \text{Distance} = \frac{|\mathbf{w}^{\textrm{T}}\mathbf{x} + w_0|}{||\mathbf{w}||}
+    \text{Margin} = \frac{2}{||\mathbf{w}||}.
 \end{equation}
+因此，最大化间隔等价于最小化 $\frac{1}{2}||\mathbf{w}||^2$。
 
-为了找到唯一的“规范最佳分隔超平面” (Canonical Optimal Separating Hyperplane)，我们通过缩放 $\mathbf{w}$ 和 $w_0$，使得距离超平面最近的样本点满足 $|\mathbf{w}^{\textrm{T}}\mathbf{x} + w_0| = 1$ 。此时，这些最近的点被称为支持向量 (Support Vectors)。
-
-几何间隔 (Margin) 的总宽度为支持向量到超平面距离的两倍：
-\begin{equation}
-    \text{Margin} = \frac{2}{||\mathbf{w}||}
-\end{equation}
-因此，最大化间隔等价于最小化 $||\mathbf{w}||$ (或者最小化 $\frac{1}{2}||\mathbf{w}||^2$) 。
-
-相关图示 展示的是 hard-margin SVM 的理想情形：两类样本完全线性可分，并且所有样本都位于间隔边界之外或恰好落在间隔边界上。实线表示最终的分类超平面，满足 $\mathbf{w}^{\textrm{T}}\mathbf{x}+w_0=0$；两条虚线分别表示 $\mathbf{w}^{\textrm{T}}\mathbf{x}+w_0=1$ 和 $\mathbf{w}^{\textrm{T}}\mathbf{x}+w_0=-1$。被圈出的样本点就是支持向量，它们直接决定了间隔的位置和宽度；远离边界的样本虽然参与训练，但对最终分隔面的位置影响较小。
+相关图示 展示了硬间隔 SVM 的理想情形：两类样本完全线性可分，实线是最终分类超平面，两条虚线分别表示 $\mathbf{w}^{\textrm{T}}\mathbf{x}+w_0=\pm 1$。被圈出的样本点就是支持向量，它们直接决定了间隔的位置和宽度；远离边界的样本虽然参与训练，但对最终分隔面的位置影响较小。
 
 % 【图示占位】源稿图示待按本书风格重绘。
 
-这张图强调的是 hard-margin SVM 的基本思想：可行的分隔超平面不止一条，但 SVM 选择的是离两类样本都尽可能远的那一条。换句话说，它不是只追求“分对”，还追求“分得有余量”。这个余量越大，模型对小幅扰动越不敏感，通常也具有更好的泛化能力。后面讨论 soft-margin SVM 时，我们再放松“所有样本必须在间隔之外”这一要求，允许少量样本进入间隔甚至被错分，并用松弛变量 $\xi_n$ 和正则化参数 $C$ 控制这种容忍程度。
+\paragraph{优化问题：对偶推导与支持向量}
 
-\paragraph{SVM 的优化问题}
-\subparagraph{原始问题 (Primal Problem)}
-为了正确分类所有样本并最大化间隔，我们需要求解以下凸二次规划问题 (Convex Quadratic Programming) ：
+为了正确分类所有样本并最大化间隔，需要求解以下凸二次规划问题：
 \begin{equation}
 \begin{aligned}
     \min_{\mathbf{w}, w_0} \quad & \frac{1}{2} ||\mathbf{w}||^2 \\
-    \textrm{s.t.} \quad & y_n (\mathbf{w}^{\textrm{T}} \mathbf{x}_n + w_0) \geq 1, \quad \forall n \in \{1,...,N\}
+    \textrm{s.t.} \quad & y_n (\mathbf{w}^{\textrm{T}} \mathbf{x}_n + w_0) \geq 1, \quad \forall n.
 \end{aligned}
 \end{equation}
-约束条件保证了所有样本都被正确分类且位于间隔边界之外。
 
-\subparagraph{拉格朗日对偶 (Lagrangian Dual)}
-为了求解上述约束优化问题，我们引入拉格朗日乘子 $\alpha_i \ge 0$，构造拉格朗日函数：
+\textbf{拉格朗日对偶（Lagrangian Dual）。}引入拉格朗日乘子 $\alpha_n \ge 0$，构造拉格朗日函数：
 \begin{equation}
-    L(\mathbf{w}, w_0, \mathbf{\alpha}) = \frac{1}{2}||\mathbf{w}||^2 - \sum_{n=1}^{N}\alpha_n [y_n(\mathbf{w}^{\textrm{T}}\mathbf{x}_n + w_0) - 1]
+    L(\mathbf{w}, w_0, \mathbf{\alpha}) = \frac{1}{2}||\mathbf{w}||^2 - \sum_{n=1}^{N}\alpha_n [y_n(\mathbf{w}^{\textrm{T}}\mathbf{x}_n + w_0) - 1].
 \end{equation}
-令 $L$ 对 $\mathbf{w}$ 和 $w_0$ 的偏导为 0，我们得到：
-\begin{equation}
-    \mathbf{w} = \sum_{n=1}^{N} \alpha_n y_n \mathbf{x}_n, \quad \sum_{n=1}^{N} \alpha_n y_n = 0
-\end{equation}
-将其代回拉格朗日函数，得到对偶问题 (Dual Problem) ：
+令 $L$ 对 $\mathbf{w}$ 和 $w_0$ 的偏导为 0，得到 $\mathbf{w} = \sum_{n=1}^{N} \alpha_n y_n \mathbf{x}_n$ 和 $\sum_{n=1}^{N} \alpha_n y_n = 0$。将其代回后，得到对偶问题：
 \begin{equation}
 \begin{aligned}
     \max_{\alpha} \quad & \sum_{n=1}^{N} \alpha_n - \frac{1}{2}\sum_{i=1}^{N}\sum_{j=1}^{N} \alpha_i \alpha_j y_i y_j \mathbf{x}_i^{\textrm{T}}\mathbf{x}_j \\
-    \textrm{s.t.} \quad & \sum_{n=1}^{N} \alpha_n y_n = 0, \quad \alpha_n \ge 0
+    \textrm{s.t.} \quad & \sum_{n=1}^{N} \alpha_n y_n = 0, \quad \alpha_n \ge 0.
 \end{aligned}
 \end{equation}
-通过求解对偶问题得到 $\alpha^*$ 后，即可计算出最优权重 $\mathbf{w}^*$ 和截距 $w_0^*$。
-这种对偶形式的一个重要优势是：它只涉及样本之间的内积 $\mathbf{x}_i^{\textrm{T}}\mathbf{x}_j$，这为引入核函数 (Kernel Function) 奠定了基础 。
+对偶问题的一个重要优势是它只涉及样本之间的内积 $\mathbf{x}_i^{\textrm{T}}\mathbf{x}_j$，这为引入核函数奠定了基础。
 
-\subparagraph{KKT 条件与支持向量}
-最优解必须满足 Karush-Kuhn-Tucker (KKT) 条件，其中互补松弛条件 (Complementary Slackness) 指出 ：
-\begin{equation}
-    \alpha_n [y_n(\mathbf{w}^{\textrm{T}}\mathbf{x}_n + w_0) - 1] = 0
-\end{equation}
-这意味着只有当 $y_n(\mathbf{w}^{\textrm{T}}\mathbf{x}_n + w_0) = 1$ 时，对应的 $\alpha_n$ 才可能不为 0。也就是说，只有位于间隔边界上的样本点（支持向量）才会影响模型的参数，其余样本点对模型没有影响。
+\textbf{KKT 条件与支持向量。}最优解必须满足互补松弛条件 $\alpha_n [y_n(\mathbf{w}^{\textrm{T}}\mathbf{x}_n + w_0) - 1] = 0$，这意味着只有位于间隔边界上的样本点（支持向量）的 $\alpha_n$ 才可能不为 0，其余样本点对最终分隔面没有影响。
 
 \paragraph{SVM 手算示例}
-为了深入理解，我们来看一个简单的二维手算例子。
-给定正类样本 $\mathbf{x}_1=(3,3)^\top, \mathbf{x}_2=(4,3)^\top$，负类样本 $\mathbf{x}_3=(1,1)^\top$。
 
-我们需要最小化 $\frac{1}{2}(w_1^2 + w_2^2)$，满足以下约束：
+给定正类样本 $\mathbf{x}_1=(3,3)^\top, \mathbf{x}_2=(4,3)^\top$，负类样本 $\mathbf{x}_3=(1,1)^\top$。需要最小化 $\frac{1}{2}(w_1^2 + w_2^2)$，满足以下约束：
 \begin{align*}
     1 - 3w_1 - 3w_2 - w_0 &\le 0 \\
     1 - 4w_1 - 3w_2 - w_0 &\le 0 \\
-    1 + w_1 + w_2 + w_0 &\le 0
+    1 + w_1 + w_2 + w_0 &\le 0.
 \end{align*}
-通过求解 KKT 条件方程组，我们可以得到最优解：
-$$ w_1 = w_2 = 0.5, \quad w_0 = -2 $$
-此时，支持向量为 $\mathbf{x}_1$ 和 $\mathbf{x}_3$。
-最终的分隔超平面方程为：
-\begin{equation}
-    0.5 x_1 + 0.5 x_2 - 2 = 0
-\end{equation}
+通过求解 KKT 条件方程组，得到最优解 $w_1 = w_2 = 0.5$，$w_0 = -2$，支持向量为 $\mathbf{x}_1$ 和 $\mathbf{x}_3$。最终分隔超平面方程为 $0.5 x_1 + 0.5 x_2 - 2 = 0$。
 
+\paragraph{软间隔与正则化}
 
-\paragraph{软间隔与正则化 (Soft Margin)}
-现实数据往往充满噪声，不是线性可分的。为了允许少量的分类错误，我们引入松弛变量 (Slack Variables) $\xi_n \ge 0$ 。
-新的优化目标变为：
+现实数据往往充满噪声，并不总是线性可分的。为了允许少量的分类错误，引入松弛变量 $\xi_n \ge 0$，新的优化目标变为：
 \begin{equation}
-    \min_{\mathbf{w}, w_0} \frac{1}{2}||\mathbf{w}||^2 + C \sum_{n=1}^{N} \xi_n
+    \min_{\mathbf{w}, w_0} \frac{1}{2}||\mathbf{w}||^2 + C \sum_{n=1}^{N} \xi_n,
 \end{equation}
-约束条件变为 $y_n (\mathbf{w}^{\textrm{T}} \mathbf{x}_n + w_0) \geq 1 - \xi_n$ 。
-其中 $C$ 是正则化参数：
-\begin{itemize}
-    \item $C$ 越大，对误分类的惩罚越大，模型趋向于硬间隔（容易过拟合）。
-    \item $C$ 越小，容忍更多的误分类，间隔越宽（泛化能力可能更强）。
-\end{itemize}
+约束条件变为 $y_n (\mathbf{w}^{\textrm{T}} \mathbf{x}_n + w_0) \geq 1 - \xi_n$。其中 $C$ 是正则化参数：$C$ 越大，对误分类的惩罚越大，模型趋向于硬间隔（容易过拟合）；$C$ 越小，容忍更多误分类，间隔越宽（泛化能力可能更强）。实际建模时，$C$ 通常通过验证集或交叉验证选择。
 
 % 【图示占位】源稿图示待按本书风格重绘。
 
-相关图示 可以从三类样本来理解。第一类样本位于间隔边界之外，满足原来的硬间隔约束，此时 $\xi_n=0$。第二类样本虽然仍在分类超平面的正确一侧，但已经进入两条间隔边界之间，此时 $0<\xi_n<1$，表示它违反了“离边界至少有一个单位间隔”的要求。第三类样本落到了分类超平面的错误一侧，此时通常有 $\xi_n\geq 1$，表示样本已经被错分。
+相关图示 中，位于间隔边界之外的样本 $\xi_n=0$；进入两条间隔边界之间的样本 $0<\xi_n<1$；落到分类超平面错误一侧的样本通常有 $\xi_n\geq 1$。
 
-因此，soft-margin SVM 并不是放弃最大间隔思想，而是在最大间隔和训练误差之间做折中。若 $C$ 很大，违反间隔的代价很高，模型会尽量把每个训练样本都分对，结果更接近 hard-margin SVM；若 $C$ 较小，模型允许更多样本进入间隔或被错分，从而可能得到更宽的间隔和更平滑的分类边界。实际建模时，$C$ 通常通过验证集或交叉验证选择。
+\paragraph{核函数}
 
-\paragraph{核函数 (Kernel Methods)}
-对于非线性数据，SVM通过核技巧 (Kernel Trick) 将原始低维空间的样本 $\mathbf{x}$ 映射到高维特征空间 $\Phi(\mathbf{x})$，使其在高维空间线性可分。
-
-在对偶问题中，我们只需要计算映射后的内积 $\Phi(\mathbf{x}_i)^{\textrm{T}}\Phi(\mathbf{x}_j)$。核函数 $K(\mathbf{x}_i, \mathbf{x}_j)$ 允许我们直接在低维空间计算这个高维内积，而无需显式地知道 $\Phi$ 。
-
-常见的核函数包括 ：
+对于非线性数据，SVM 通过核技巧（Kernel Trick）将原始低维空间的样本 $\mathbf{x}$ 隐式映射到高维特征空间，使其在高维空间线性可分。核函数 $K(\mathbf{x}_i, \mathbf{x}_j)$ 允许直接在低维空间计算高维内积，常见核函数包括：
 \begin{itemize}
-    \item 多项式核 (Polynomial Kernel): $K(\mathbf{x}, \mathbf{x}') = (\mathbf{x}^T \mathbf{x}' + 1)^q$
-    \item 高斯径向基核 (RBF Kernel): $K(\mathbf{x}, \mathbf{x}') = \exp \left( - \frac{||\mathbf{x} - \mathbf{x}'||^2}{2 s^2} \right)$
-    \item Sigmoid 核: $K(\mathbf{x}, \mathbf{x}') = \tanh (2 \mathbf{x}^T \mathbf{x}' + 1)$
+    \item 多项式核：$K(\mathbf{x}, \mathbf{x}') = (\mathbf{x}^T \mathbf{x}' + 1)^q$；
+    \item 高斯径向基核（RBF）：$K(\mathbf{x}, \mathbf{x}') = \exp \left( - \frac{||\mathbf{x} - \mathbf{x}'||^2}{2 s^2} \right)$；
+    \item Sigmoid 核：$K(\mathbf{x}, \mathbf{x}') = \tanh (2 \mathbf{x}^T \mathbf{x}' + 1)$。
 \end{itemize}
 
-
 \paragraph{实现占位}
-我们将使用 \texttt{scikit-learn} 中的 \texttt{SVC} 类来演示线性 SVM 和非线性 (RBF核) SVM 的使用。
+我们将使用 \texttt{scikit-learn} 中的 \texttt{SVC} 类来演示线性 SVM 和非线性（RBF 核）SVM 的使用。
 
 \begin{quote}
 \textbf{【实现占位】} 本段原有代码不直接迁入；后续案例将以 AI 协作过程、关键决策和验证结果为主。
 \end{quote}
-SVM是一种非常强大的分类器，尤其在处理中小型数据集、高维数据和具有清晰决策边界的问题时表现优异。核技巧使其能够处理复杂的非线性问题。但其训练时间在处理非常大的数据集时可能较长，并且对参数选择敏感。
 
-\paragraph{Decision Trees（决策树）}
-\paragraph{理论基础}
-决策树是一种非参数的监督学习方法，既可以用于分类也可以用于回归。其核心思想采用“分而治之”（divide-and-conquer）的策略，通过一系列递归的划分步骤将特征空间识别为多个矩形区域。
+SVM 在处理中小型数据集、高维数据和具有清晰决策边界的问题时表现优异，核技巧使其能够处理复杂的非线性问题。但其训练时间在非常大的数据集上可能较长，并且对参数选择敏感。
 
-\subparagraph{树的结构与节点}
-决策树由两种类型的节点组成：
-\begin{itemize}
-    \item \textbf{内部决策节点 (Internal decision node)}：包含一个测试函数（Test Function），基于特征的离散结果标记分支，定义了输入空间中的判别边界（Discriminant）。
-    \item \textbf{叶节点 (Terminal leaf node)}：定义了输入空间的一个局部区域，落入该区域的实例具有相同的输出值（分类标签或回归数值）。
-\end{itemize}
+\subsection{决策树}
 
-相关图示 可以从特征空间划分的角度理解决策树：每一次节点测试都相当于在特征空间中画出一条划分边界，多个节点递归叠加后，就形成了若干个局部区域。每个叶节点对应其中一个区域，并给出该区域内样本的预测类别或预测数值。
+决策树是一种非参数的监督学习方法，既可以用于分类也可以用于回归。其核心思想采用"分而治之"（divide-and-conquer）的策略，通过一系列递归的划分步骤将特征空间分割为多个区域。决策树由两种节点组成：\textbf{内部决策节点（Internal decision node）}包含一个测试函数，基于特征划分出多个分支；\textbf{叶节点（Terminal leaf node）}定义了特征空间的一个局部区域，落入该区域的实例具有相同的预测输出。
+
+相关图示 可以从特征空间划分的角度理解决策树：每一次节点测试都相当于在特征空间中画出一条划分边界，多个节点递归叠加后形成若干个局部区域。与线性模型用一条整体边界分割空间不同，决策树通过多次轴向切分形成阶梯状区域，解释性强，但树过深时容易把训练数据中的局部噪声切分出来。
 
 % 【图示占位】源稿图示待按本书风格重绘。
 
-相关图示 体现了决策树与线性模型的差异：线性模型通常用一条整体边界分割空间，而决策树通过多次轴向切分形成阶梯状区域。这种结构解释性强，但若树过深，也容易把训练数据中的局部噪声切分出来。
+\paragraph{分类树的构建与纯度度量}
 
-\subparagraph{分类树的构建与纯度度量}
-构建树的目标是通过一系列分裂（Splits）使得节点随着树的加深变得更加“纯净”（Pure）。为了量化纯度，我们通常使用以下指标：
-
-1. 分类错误率 (Classification Error Rate)：
-$$ E = 1 - \max\limits_k \hat{p}_{mk} $$
-其中 $\hat{p}_{mk}$ 是第 $m$ 个区域中属于第 $k$ 类的样本比例。
-
-2. 交叉熵 (Cross-Entropy)：
+构建决策树的目标是通过一系列分裂使节点随着树的加深变得更加"纯净"。常用的纯度度量包括三种：分类错误率 $E = 1 - \max_k \hat{p}_{mk}$；交叉熵（信息增益）
 \begin{equation}
-    D = - \sum_{k=1}^K \hat{p}_{mk} \log \hat{p}_{mk}
+    D = - \sum_{k=1}^K \hat{p}_{mk} \log \hat{p}_{mk};
 \end{equation}
-如果节点是纯的（包含单类样本），熵值较小；当 $\hat{p}_{mk} = 1/K$ 时熵值最大 。
-
-3. 基尼指数 (Gini Index)：
+以及基尼指数
 \begin{equation}
-    G = \sum_{k=1}^K \hat{p}_{mk} (1-\hat{p}_{mk}) = 1 - \sum_{k=1}^K \hat{p}_{mk}^2
+    G = 1 - \sum_{k=1}^K \hat{p}_{mk}^2,
 \end{equation}
-基尼指数衡量了 $K$ 个类别对应的总方差。如果所有 $\hat{p}_{mk}$ 都接近 0 或 1，基尼指数取小值，表示节点纯度高。
+其中 $\hat{p}_{mk}$ 是第 $m$ 个区域中属于第 $k$ 类的样本比例。在分裂时，算法尝试所有属性，选择能使纯度增加最大的属性作为测试函数。
 
-
-
-在分裂时，算法会尝试所有属性，选择能够使熵或基尼指数最小化（即纯度增加最大）的属性作为测试函数 。
-
-\subparagraph{回归树 (Regression Tree)}
-决策树同样适用于回归问题。回归树的构建目标是寻找特征空间的划分区域 $R_1, ..., R_J$ 以最小化残差平方和 (RSS) ：
+对于回归树，构建目标是最小化残差平方和：
 \begin{equation}
-    \textrm{RSS} = \sum_{j=1}^J \sum_{i \in R_j} (y_i - \hat{y}_{R_j})^2
+    \textrm{RSS} = \sum_{j=1}^J \sum_{i \in R_j} (y_i - \hat{y}_{R_j})^2,
 \end{equation}
 其中 $\hat{y}_{R_j}$ 是第 $j$ 个区域内训练观测值的平均响应。
-对于特定节点 $m$，预测值 $g_m$ 通常为该节点内所有样本的均值。如果节点内的均方误差 $E_m$ 小于阈值 $\theta$，则停止分裂并将该节点设为叶节点。
 
-\subparagraph{过拟合与剪枝 (Over-fitting and Pruning)}
-完全生长的树容易过拟合训练数据，导致泛化能力差。解决策略包括：
-\begin{itemize}
-    \item \textbf{预剪枝 (Pre-pruning)}：在树生长过程中提前停止。例如限制最大树深度（Max Depth）或节点分裂所需的最小样本数，亦或是进行显著性测试。
-    \item \textbf{后剪枝 (Post-pruning)}：先生成一棵非常大的树 $T_0$，然后将其剪枝为子树。一种常用的方法是代价复杂度剪枝 (Cost Complexity Pruning)，引入参数 $\alpha$ 来权衡树的复杂度（叶节点数量 $|T|$）和对训练数据的拟合程度。
-\end{itemize}
+\paragraph{过拟合与剪枝}
 
-相关图示 强调的是“树越大不一定越好”。未剪枝的大树可能把训练集中的偶然噪声也记住，因此训练误差很低但测试误差较高；剪枝后的子树牺牲一部分训练集拟合能力，换取更稳定的泛化表现。
+完全生长的树容易过拟合训练数据，导致泛化能力差。解决策略包括两类：\textbf{预剪枝（Pre-pruning）}在树生长过程中提前停止，例如限制最大树深度或节点分裂所需的最小样本数；\textbf{后剪枝（Post-pruning）}先生成一棵非常大的树，然后利用代价复杂度剪枝（Cost Complexity Pruning）将其剪成子树，通过参数 $\alpha$ 权衡树的复杂度与对训练数据的拟合程度。
 
 % 【图示占位】源稿图示待按本书风格重绘。
 
-相关图示 中被剪掉的分支通常对应样本很少、收益有限或主要拟合噪声的局部划分。剪枝后的模型不一定在训练集上误差最低，但更符合机器学习中“泛化优先”的目标。
-
-\paragraph{模型优缺点}
-\begin{itemize}
-    \item \textbf{优点}：易于解释，可视化效果好，比线性回归更直观地反映人类决策过程，且能处理定性预测变量而无需虚拟变量 。
-    \item \textbf{缺点}：预测精度通常低于其他复杂模型，且缺乏稳健性（Robustness）——数据的微小变化可能导致生成的树结构发生巨大变化。
-\end{itemize}
+决策树的主要优点是易于解释、可视化效果好，能处理定性预测变量而无需虚拟变量。主要缺点是预测精度通常低于其他复杂模型，且对数据的微小变化敏感，可能导致树结构发生巨大变化。
 
 \paragraph{实现占位}
 我们将使用 \texttt{scikit-learn} 中的 \texttt{DecisionTreeClassifier} 模型，并利用 \texttt{plot\_tree} 进行可视化。
@@ -578,18 +385,11 @@ $$ E = 1 - \max\limits_k \hat{p}_{mk} $$
 \textbf{【实现占位】} 本段原有代码不直接迁入；后续案例将以 AI 协作过程、关键决策和验证结果为主。
 \end{quote}
 
-决策树通过递归分割特征空间来建立模型。虽然单棵树容易过拟合且对数据波动敏感，但通过剪枝技术可以改善其泛化能力。更重要的是，决策树是后续集成方法（如随机森林）的基石。
+\subsection{随机森林}
 
-\paragraph{Random Forest（随机森林）}
-\paragraph{理论基础}
-随机森林是一种集成学习方法，它通过构建大量的决策树，并将它们的预测结果进行平均（回归）或投票（分类）来提高模型的准确性和鲁棒性。随机森林的核心思想是“集体的智慧”。
+随机森林是一种集成学习方法，通过构建大量决策树并将它们的预测结果进行平均（回归）或投票（分类）来提高模型的准确性和鲁棒性。随机森林的构建包含两个关键的随机性来源：\textbf{自助采样法（Bagging / Bootstrap Aggregating）}从原始训练数据集中有放回地随机抽取样本，生成多个不同的子数据集，每个子数据集用于训练一棵独立的决策树；\textbf{特征随机性}在每个节点进行分裂时随机选择特征的一个子集，增加树之间的多样性。
 
-随机森林的构建过程包含两个关键的随机性：
-\begin{itemize}
-    \item \textbf{自助采样法（Bagging / Bootstrap Aggregating）：} 从原始训练数据集中有放回地随机抽取样本，生成多个不同的子数据集。每个子数据集用于训练一棵独立的决策树。这使得每棵树看到的数据略有不同。
-    \item \textbf{特征随机性：} 在构建每棵决策树时，当考虑在每个节点进行分裂时，不是考虑所有特征，而是随机选择特征的一个子集来寻找最佳分裂点。这增加了树之间的多样性。
-\end{itemize}
-通过这些随机性，随机森林中的每棵树都具有一定的独立性，从而减少了单棵决策树的过拟合风险，并提高了模型的泛化能力。
+通过这些随机性，随机森林中的每棵树都具有一定的独立性，从而减少了单棵决策树的过拟合风险，提高了模型的泛化能力。随机森林还能提供特征重要性评估，帮助我们理解哪些特征对预测最关键。缺点是模型解释性不如单棵决策树直观。
 
 \paragraph{实现占位}
 我们将使用 \texttt{scikit-learn} 中的 \texttt{RandomForestClassifier} 模型。
@@ -597,260 +397,146 @@ $$ E = 1 - \max\limits_k \hat{p}_{mk} $$
 \begin{quote}
 \textbf{【实现占位】} 本段原有代码不直接迁入；后续案例将以 AI 协作过程、关键决策和验证结果为主。
 \end{quote}
-随机森林是一种性能强大、泛化能力强的集成学习模型。它能够有效处理高维数据，并且对噪声和异常值具有较强的鲁棒性。它还能提供特征重要性评估，帮助我们理解哪些特征对预测最关键。缺点是模型解释性不如单棵决策树直观。
 
+\section{无监督学习模型}
 
-\section{无监督学习}
-无监督学习（Unsupervised Learning）处理的是没有标签的数据（即只有特征 $\mathbf{x}$ 而没有标签 $y$）。其目标是发现数据中固有的结构、“通常发生什么”以及“有趣的模式”。
-常见的应用包括：
-\begin{itemize}
-    \item \textbf{聚类 (Clustering)}：将相似的样本分组（例如 K-Means, GMM）。
-    \item \textbf{降维 (Dimensionality Reduction)}：发现能够代表原始数据大部分信息的潜在因子（例如 PCA）。
-\end{itemize}
+无监督学习处理的是没有标签的数据，即只有特征 $\mathbf{x}$ 而没有标签 $y$。其目标是发现数据中固有的结构、规律和模式。常见的应用包括聚类（将相似的样本分组）和降维（发现能够代表原始数据大部分信息的潜在结构）。与监督学习相比，无监督学习的评估往往更困难，因为没有"标准答案"可以直接对比。
 
-\subsection{K-Means Clustering（K-均值聚类）}
-\paragraph{理论基础}
-K-均值聚类旨在将数据集 $\{\mathbf{x}_1, ..., \mathbf{x}_N\}$ 划分为 $K$ 个簇。
-\begin{itemize}
-    \item \textbf{目标}：找到 $K$ 个簇中心（参考向量）$\boldsymbol{\mu}_k$，并分配每个数据点到最近的簇中心，使得簇内平方和（Inertia）最小化。
-    \item \textbf{目标函数}：
-    \begin{equation}
-        J = \sum_{n=1}^N \sum_{k=1}^K r_{nk} ||\mathbf{x}_n - \boldsymbol{\mu}_k||^2
-    \end{equation}
-    其中 $r_{nk} \in \{0, 1\}$ 是二值指示变量。如果数据点 $\mathbf{x}_n$ 被分配给簇 $k$，则 $r_{nk}=1$，否则为 0。
-\end{itemize}
+\subsection{K-均值聚类}
 
-\subparagraph{算法流程}
-K-Means 算法是一个迭代优化过程：
-\begin{enumerate}
-    \item \textbf{初始化}：选择 $K$ 个初始簇中心 $\boldsymbol{\mu}_k$。
-    \item \textbf{分配阶段 (E-step 思想)}：固定 $\boldsymbol{\mu}_k$，优化 $r_{nk}$。将每个数据点分配给最近的簇中心：
-    $$ r_{nk} = 1 \quad \text{if } k = \arg\min_j ||\mathbf{x}_n - \boldsymbol{\mu}_j||^2 $$
-    \item \textbf{更新阶段 (M-step 思想)}：固定 $r_{nk}$，优化 $\boldsymbol{\mu}_k$。重新计算簇中心为该簇所有点的均值。
-    \item 重复步骤 2 和 3 直到收敛。
-\end{enumerate}
-
-\subparagraph{数学推导：为什么更新质心要取均值？}
-在更新阶段，我们需要固定 $r_{nk}$ 并最小化目标函数 $J$。对 $\boldsymbol{\mu}_k$ 求偏导并令其为 0：
+K-均值聚类旨在将数据集 $\{\mathbf{x}_1, \ldots, \mathbf{x}_N\}$ 划分为 $K$ 个簇，目标是找到 $K$ 个簇中心 $\boldsymbol{\mu}_k$ 并分配每个数据点到最近的簇中心，使得簇内平方和（Inertia）最小化：
 \begin{equation}
-    \frac{\partial J}{\partial \boldsymbol{\mu}_k} = \sum_{n=1}^N r_{nk} \frac{\partial}{\partial \boldsymbol{\mu}_k} ||\mathbf{x}_n - \boldsymbol{\mu}_k||^2 = -2 \sum_{n=1}^N r_{nk} (\mathbf{x}_n - \boldsymbol{\mu}_k) = 0
+    J = \sum_{n=1}^N \sum_{k=1}^K r_{nk} ||\mathbf{x}_n - \boldsymbol{\mu}_k||^2,
 \end{equation}
-展开后得到：
-\begin{equation}
-    \sum_{n=1}^N r_{nk} \mathbf{x}_n = \sum_{n=1}^N r_{nk} \boldsymbol{\mu}_k
-\end{equation}
-由于 $\boldsymbol{\mu}_k$ 与 $n$ 无关，可以提出来，最终得到：
-\begin{equation}
-    \boldsymbol{\mu}_k = \frac{\sum_{n=1}^N r_{nk} \mathbf{x}_n}{\sum_{n=1}^N r_{nk}}
-\end{equation}
-这证明了在平方误差准则下，簇内所有点的算术平均值确实是使误差最小的最优质心。
+其中 $r_{nk} \in \{0, 1\}$ 是二值指示变量，$r_{nk}=1$ 表示数据点 $\mathbf{x}_n$ 被分配给簇 $k$。
 
-相关图示 展示了 K-Means 的两个交替步骤：先根据当前质心把样本分配到最近簇，再用每个簇内样本的平均值更新质心。这个过程会不断降低簇内平方误差，直到分配结果或质心位置基本不再变化。
+\paragraph{算法流程}
+
+K-Means 算法是一个迭代优化过程：初始化 $K$ 个簇中心 $\boldsymbol{\mu}_k$；在分配阶段（E-step 思想）固定 $\boldsymbol{\mu}_k$，将每个数据点分配给最近的簇中心；在更新阶段（M-step 思想）固定 $r_{nk}$，重新计算各簇中心；重复直到收敛。
+
+在更新阶段，对 $\boldsymbol{\mu}_k$ 求偏导并令其为 0，得到：
+\begin{equation}
+    \boldsymbol{\mu}_k = \frac{\sum_{n=1}^N r_{nk} \mathbf{x}_n}{\sum_{n=1}^N r_{nk}}.
+\end{equation}
+这证明了在平方误差准则下，簇内所有点的算术平均值确实是使误差最小的最优质心。K-Means 只能保证收敛到局部较优解，因此实际使用中常会多次初始化并选择 Inertia 最小的一组结果。
+
+相关图示 展示了 K-Means 的两个交替步骤：先根据当前质心把样本分配到最近簇，再用每个簇内样本的平均值更新质心，不断降低簇内平方误差直到收敛。
 
 % 【图示占位】源稿图示待按本书风格重绘。
 
-相关图示 可以按“初始化—分配—更新—收敛”的顺序阅读。初始质心的位置通常是随机给定的，因此不同初始化可能得到不同结果；分配步骤把每个样本归到最近的质心，形成临时簇；更新步骤再把质心移动到簇内样本的平均位置。这个循环会让簇内平方和不断下降，但它只能保证收敛到局部较优解，因此实际使用中常会多次初始化并选择 Inertia 最小的一组结果。
+\paragraph{K 值的选择：手肘法}
 
-\subparagraph{K值的选择：手肘法 (Elbow Method)}
-在无监督学习中，没有直接的误差指标（如准确率）。通常使用 Inertia（簇内平方和）来评估聚类效果。
-手肘法通过绘制 Inertia 随 $K$ 变化的曲线来确定最佳簇数。最佳点通常位于曲线的“肘部”，即 Inertia 下降速度显著变缓的点。
-
-相关图示 的阅读重点不是寻找最低点，因为 $K$ 越大 Inertia 通常越小；真正需要观察的是下降幅度从“明显变好”转为“收益有限”的位置。该位置对应的 $K$ 往往能在模型复杂度与聚类解释性之间取得较好平衡。
+在无监督学习中，没有直接的误差指标来评估聚类效果。手肘法通过绘制 Inertia 随 $K$ 变化的曲线来确定最佳簇数：最佳点通常位于曲线的"肘部"，即 Inertia 下降速度显著变缓的点。阅读相关图示时，重点不是寻找最低点（因为 $K$ 越大 Inertia 通常越小），而是观察下降幅度从"明显变好"转为"收益有限"的位置。该位置对应的 $K$ 往往能在模型复杂度与聚类解释性之间取得较好平衡。
 
 % 【图示占位】源稿图示待按本书风格重绘。
-
-相关图示 的红色标记不是数学上唯一正确的答案，而是一种解释性选择：继续增加 $K$ 虽然还能降低簇内平方和，但收益开始变小，模型也会更复杂。
 
 \paragraph{实现占位}
 \begin{quote}
 \textbf{【实现占位】} 本段原有代码不直接迁入；后续案例将以 AI 协作过程、关键决策和验证结果为主。
 \end{quote}
 
-K-均值聚类算法简单、高效，适用于大数据集。但它需要预先指定簇的数量 $K$，且对初始簇中心的选择敏感（虽然 \texttt{k-means++} 有所改善），并且对噪声和异常值比较敏感。此外，它假设簇是球形的，且大小相似，对于非球形或密度差异大的簇效果不佳。
+K-均值聚类算法简单、高效，适用于大数据集。但它需要预先指定簇的数量 $K$，对初始簇中心的选择敏感，并且对噪声和异常值比较敏感。此外，它假设簇是球形的且大小相似，对于非球形或密度差异大的簇效果不佳。
 
-\subsection{Gaussian Mixture Model（高斯混合模型）}
+\subsection{高斯混合模型}
 
 \paragraph{概率论回顾：贝叶斯定理}
-在介绍 GMM 之前，我们需要回顾贝叶斯定理，它是概率聚类的基础。
-贝叶斯法则描述了先验概率（Prior）和后验概率（Posterior）之间的关系：
+
+在介绍高斯混合模型（GMM）之前，先回顾贝叶斯定理，它是概率聚类的基础。贝叶斯法则描述了先验概率（Prior）和后验概率（Posterior）之间的关系：
 \begin{equation}
-    P(A|B) = \frac{P(B|A)P(A)}{P(B)}
-\end{equation}
-在分类或聚类问题中，这可以理解为：
-\begin{equation}
-    \text{后验概率} = \frac{\text{似然} \times \text{先验}}{\text{证据}}
+    P(A|B) = \frac{P(B|A)P(A)}{P(B)}.
 \end{equation}
 
-\subparagraph{贝叶斯推理实例：医疗诊断}
-为了直观理解贝叶斯定理，考虑一个具体的例子：
-假设人群中某种疾病的患病率（先验概率）为 $P(A) = 0.001$。现有某种检测方法，其敏感性（真阳性率）为 95\%，特异性（真阴性率）为 98\%。
-如果一个人的检测结果呈阳性（事件 $B$），他真正患病的概率 $P(A|B)$ 是多少？
-
-根据贝叶斯定理：
+\textbf{应用实例：医疗诊断。}假设人群中某种疾病的患病率（先验概率）为 $P(A) = 0.001$，某检测方法的敏感性（真阳性率）为 95\%，特异性（真阴性率）为 98\%。若检测结果呈阳性，真正患病的概率 $P(A|B)$ 是多少？根据贝叶斯定理：
 \begin{align}
-    P(A|B) &= \frac{P(B|A)P(A)}{P(B)} \\
-           &= \frac{P(B|A)P(A)}{P(B|A)P(A) + P(B|A^c)P(A^c)} \\
-           &= \frac{0.95 \times 0.001}{0.95 \times 0.001 + 0.02 \times 0.999} \\
-           &\approx 0.045
+    P(A|B) = \frac{0.95 \times 0.001}{0.95 \times 0.001 + 0.02 \times 0.999} \approx 0.045.
 \end{align}
-结果显示，即使检测呈阳性，由于先验患病率极低，患者真正患病的概率仅为 4.5\%。这说明了在概率聚类中，先验概率（混合系数 $\pi_k$）对最终归类的巨大影响。
+即使检测呈阳性，由于先验患病率极低，患者真正患病的概率仅为 4.5\%。这说明了先验概率（即 GMM 中的混合系数 $\pi_k$）对最终归类的巨大影响。
 
-\paragraph{理论基础}
-K-Means 是一种硬聚类（Hard Clustering），每个点只能属于一个簇。而高斯混合模型（GMM）是 K-Means 的概率扩展，属于软聚类（Soft Clustering），它给出了数据点属于某个簇的概率。
-
-GMM 假设数据是由 $K$ 个高斯分布混合生成的。其概率密度函数为：
+K-均值聚类是一种硬聚类（Hard Clustering），每个点只能属于一个簇。而高斯混合模型是 K-Means 的概率扩展，属于软聚类（Soft Clustering），给出了数据点属于某个簇的概率。GMM 假设数据是由 $K$ 个高斯分布混合生成的，概率密度函数为：
 \begin{equation}
-    p(\mathbf{x}) = \sum_{k=1}^K \pi_k \mathcal{N}(\mathbf{x} | \boldsymbol{\mu}_k, \boldsymbol{\Sigma}_k)
+    p(\mathbf{x}) = \sum_{k=1}^K \pi_k \mathcal{N}(\mathbf{x} | \boldsymbol{\mu}_k, \boldsymbol{\Sigma}_k),
 \end{equation}
 其中 $\pi_k$ 是混合系数（先验概率），满足 $\sum \pi_k = 1$；$\mathcal{N}(\mathbf{x} | \boldsymbol{\mu}_k, \boldsymbol{\Sigma}_k)$ 是第 $k$ 个高斯分量的密度函数。
-
-相关图示 可以帮助区分 GMM 与 K-Means：K-Means 给出硬划分，而 GMM 会为每个样本计算属于不同高斯分量的后验概率。因此，在簇边界附近或分布重叠明显时，GMM 能表达“不确定归属”。
 
 % 【图示占位】源稿图示待按本书风格重绘。
 
 \paragraph{EM 算法 (Expectation-Maximization)}
-GMM 的参数 $\{\pi_k, \boldsymbol{\mu}_k, \boldsymbol{\Sigma}_k\}$ 无法直接通过最大似然估计求解，通常使用 EM 算法迭代求解：
 
+GMM 的参数 $\{\pi_k, \boldsymbol{\mu}_k, \boldsymbol{\Sigma}_k\}$ 无法直接通过最大似然估计求解，通常使用 EM 算法迭代求解：
 \begin{enumerate}
-    \item \textbf{E 步 (Expectation)}：计算后验概率（Responsibility）$\gamma(z_{nk})$，即给定当前参数下，数据点 $n$ 由第 $k$ 个高斯分量生成的概率。
+    \item \textbf{E 步（Expectation）}：计算后验概率（Responsibility）$\gamma(z_{nk})$，即给定当前参数下，数据点 $n$ 由第 $k$ 个高斯分量生成的概率：
     \begin{equation}
-        \gamma(z_{nk}) = \frac{\pi_k \mathcal{N}(\mathbf{x}_n | \boldsymbol{\mu}_k, \boldsymbol{\Sigma}_k)}{\sum_{j=1}^K \pi_j \mathcal{N}(\mathbf{x}_n | \boldsymbol{\mu}_j, \boldsymbol{\Sigma}_j)}
+        \gamma(z_{nk}) = \frac{\pi_k \mathcal{N}(\mathbf{x}_n | \boldsymbol{\mu}_k, \boldsymbol{\Sigma}_k)}{\sum_{j=1}^K \pi_j \mathcal{N}(\mathbf{x}_n | \boldsymbol{\mu}_j, \boldsymbol{\Sigma}_j)}.
     \end{equation}
-    \item \textbf{M 步 (Maximization)}：利用 E 步得到的 $\gamma(z_{nk})$ 更新参数。
+    \item \textbf{M 步（Maximization）}：利用 E 步得到的 $\gamma(z_{nk})$ 更新参数（令 $N_k = \sum_{n=1}^N \gamma(z_{nk})$）：
     \begin{align*}
-        \boldsymbol{\mu}_k^{new} &= \frac{1}{N_k} \sum_{n=1}^N \gamma(z_{nk}) \mathbf{x}_n \\
-        \boldsymbol{\Sigma}_k^{new} &= \frac{1}{N_k} \sum_{n=1}^N \gamma(z_{nk}) (\mathbf{x}_n - \boldsymbol{\mu}_k^{new})(\mathbf{x}_n - \boldsymbol{\mu}_k^{new})^T \\
-        \pi_k^{new} &= \frac{N_k}{N}
+        \boldsymbol{\mu}_k^{new} &= \frac{1}{N_k} \sum_{n=1}^N \gamma(z_{nk}) \mathbf{x}_n, \qquad
+        \boldsymbol{\Sigma}_k^{new} = \frac{1}{N_k} \sum_{n=1}^N \gamma(z_{nk}) (\mathbf{x}_n - \boldsymbol{\mu}_k^{new})(\mathbf{x}_n - \boldsymbol{\mu}_k^{new})^T, \qquad
+        \pi_k^{new} = \frac{N_k}{N}.
     \end{align*}
-    其中 $N_k = \sum_{n=1}^N \gamma(z_{nk})$。
 \end{enumerate}
 
-\paragraph{模型选择：如何确定 GMM 的簇数？}
-与 K-Means 使用 Inertia 不同，GMM 使用基于似然函数的统计量来选择最佳的簇数 $K$。常用的指标包括 赤池信息量准则 (AIC) 和 贝叶斯信息量准则 (BIC)。它们在模型拟合度（似然函数 $L$）和模型复杂度（参数数量 $p$）之间进行权衡：
+\paragraph{模型选择：如何确定 GMM 的簇数}
+
+与 K-Means 使用 Inertia 不同，GMM 使用基于似然函数的统计量来选择最佳的簇数 $K$。常用指标包括赤池信息量准则（AIC）和贝叶斯信息量准则（BIC）：
 \begin{align}
-    \text{AIC} &= 2p - 2\ln(L) \\
-    \text{BIC} &= p\ln(N) - 2\ln(L)
+    \text{AIC} = 2p - 2\ln(L), \qquad \text{BIC} = p\ln(N) - 2\ln(L),
 \end{align}
-其中 $N$ 是样本数量。
-\begin{itemize}
-    \item 较小的 AIC 或 BIC 值表示模型更好。
-    \item BIC 对模型复杂度的惩罚比 AIC 更重，因此倾向于选择更简单的模型（更少的簇）。
-\end{itemize}
+其中 $N$ 是样本数量，$p$ 是参数数量，$L$ 是似然函数值。较小的 AIC 或 BIC 值表示模型更好；BIC 对模型复杂度的惩罚比 AIC 更重，倾向于选择更简单的模型。
 
 \paragraph{工程应用案例：基于 GMM 的交通速度分布建模}
-GMM 在土木工程中常用于处理异质性数据。例如，Park 等人 (2010) 使用贝叶斯混合模型来捕捉车辆速度数据的异质性。
 
-\begin{itemize}
-    \item \textbf{背景}：在美国得克萨斯州 IH-35 高速公路上收集了 24 小时的交通数据。
-    \item \textbf{问题}：交通流在不同时间段表现出不同的模式（如自由流、拥堵流），单一的高斯分布无法拟合整体速度分布。
-    \item \textbf{方法}：使用有限高斯混合模型来描述速度数据。
-    \item \textbf{结果}：如下图所示，通过 $K=4$ 的混合模型，可以清晰地识别出不同交通状态下的速度分布模式（如夜间高速模式、早高峰低速模式等），这比单一分布提供了更丰富的信息。研究者通过计算 AIC/BIC 确定了 $K=4$ 是最优选择。
-\end{itemize}
+GMM 在土木工程中常用于处理异质性数据。例如，Park 等人（2010）使用贝叶斯混合模型来捕捉车辆速度数据的异质性。在美国得克萨斯州 IH-35 高速公路上收集的 24 小时交通数据中，交通流在不同时间段表现出不同模式（如自由流、拥堵流），单一的高斯分布无法拟合整体速度分布。通过 $K=4$ 的混合模型，可以清晰地识别出不同交通状态下的速度分布模式（如夜间高速模式、早高峰低速模式等），这比单一分布提供了更丰富的信息，研究者通过计算 AIC/BIC 确定了 $K=4$ 是最优选择。
 
 % 【图示占位】源稿图示待按本书风格重绘。
 
-相关图示 中，每一条红色虚线可以理解为一种典型交通状态下的速度分布，蓝色实线则是这些状态按权重叠加后的总体分布。相比用单个高斯分布描述全部速度数据，混合模型更能解释交通系统在自由流、过渡流和拥堵流之间切换的异质性。
+相关图示 中，每一条红色虚线可以理解为一种典型交通状态下的速度分布，蓝色实线则是这些状态按权重叠加后的总体分布。混合模型比用单个高斯分布更能解释交通系统在自由流、过渡流和拥堵流之间切换的异质性。
 
 \paragraph{实现占位}
 \begin{quote}
 \textbf{【实现占位】} 本段原有代码不直接迁入；后续案例将以 AI 协作过程、关键决策和验证结果为主。
 \end{quote}
 
-GMM 比 K-均值更加灵活和强大，能够更好地处理非球形簇和不同密度的簇，并提供每个数据点属于每个簇的概率。缺点是计算成本更高，对初始值也相对敏感（EM算法容易陷入局部最优），且需要选择合适的协方差类型和分量数量。
+GMM 比 K-均值更灵活，能够更好地处理非球形簇和不同密度的簇，并提供每个数据点属于每个簇的概率。缺点是计算成本更高，对初始值也相对敏感（EM 算法容易陷入局部最优），且需要选择合适的协方差类型和分量数量。
 
-\subsection{Dimension Reduction（降维）}
+\subsection{降维：特征选择与主成分分析}
 
-\paragraph{Feature Selection（特征选择）}
-\paragraph{理论基础}
-在高维数据中，特征数量往往会影响学习算法的时间和空间复杂度。降维（Dimensionality Reduction）主要有两种方式：
-\begin{itemize}
-    \item \textbf{特征选择 (Feature Selection)}：直接从原始特征中选择 $k < d$ 个重要特征，丢弃其余特征。
-    \item \textbf{特征提取 (Feature Extraction)}：如 PCA，将原始 $d$ 维空间投影到新的 $k$ 维空间。
-\end{itemize}
+在高维数据中，特征数量往往影响学习算法的时间和空间复杂度，甚至导致过拟合或统计性质变差（维度诅咒）。降维主要有两种方式：\textbf{特征选择（Feature Selection）}直接从原始特征中选择 $k < d$ 个重要特征，丢弃其余特征，保留特征的物理意义；\textbf{特征提取（Feature Extraction）}如 PCA，将原始 $d$ 维空间投影到新的 $k$ 维空间，新特征是原始特征的线性组合。
 
-特征选择的目标是找到一个最佳特征子集，使得特定任务（如分类或回归）的准确率最高。由于遍历所有 $2^d - 1$ 个非空子集通常是不可能的（NP-hard），我们通常使用启发式算法。
+\paragraph{特征选择}
 
-\subparagraph{前向搜索 (Forward Search)}
-从空集开始，逐步添加特征。
-\begin{enumerate}
-    \item 初始化特征集 $F = \emptyset$。
-    \item 在每一轮迭代中：
-    \begin{itemize}
-        \item 对于每个可用特征 $x_i$，训练模型并计算在验证集上的误差 $E(F \cup x_i)$。
-        \item 找到能使误差最小化的特征 $x_j$。
-        \item 如果 $E(F \cup x_j) < E(F)$，则将 $x_j$ 加入 $F$ 并继续；否则停止。
-    \end{itemize}
-\end{enumerate}
+特征选择的目标是找到一个最佳特征子集，使特定任务的准确率最高。由于遍历所有 $2^d - 1$ 个非空子集通常是不可行的（NP-hard），常使用启发式算法。
 
-\subparagraph{后向搜索 (Backward Search)}
-从包含所有特征的集合开始，逐步移除特征。
-\begin{enumerate}
-    \item 初始化特征集 $F$ 包含所有特征。
-    \item 在每一轮迭代中：
-    \begin{itemize}
-        \item 对于当前 $F$ 中的每个特征 $x_i$，尝试将其移除，计算移除后的误差 $E(F \setminus x_i)$。
-        \item 找到移除后能使误差最小化（即对模型贡献最小）的特征 $x_j$。
-        \item 如果 $E(F \setminus x_j) < E(F)$（或误差增加不显著），则从 $F$ 中移除 $x_j$ 并继续。
-    \end{itemize}
-\end{enumerate}
+\textbf{前向搜索（Forward Search）}从空集 $F = \emptyset$ 开始：每轮迭代对每个可用特征 $x_i$ 训练模型并计算验证集误差 $E(F \cup x_i)$，选择使误差最小的特征 $x_j$ 加入 $F$，直到没有显著改进为止。
 
-\paragraph{Principal Component Analysis（主成分分析）}
-\paragraph{理论基础}
-\textbf{主成分分析 (PCA)} 是一种常用的特征提取技术。它通过正交变换，将可能相关的变量转换为线性不相关的主成分。
-\begin{itemize}
-    \item 第一个主成分拥有最大的方差（即包含最多的信息）。
-    \item 主成分是协方差矩阵 $\boldsymbol{\Sigma}$ 的特征向量。
-    \item \textbf{碎石图 (Scree Graph)}：用于确定保留多少个主成分。通常选择累计方差贡献率（PoV）大于 0.9 的点。
-\end{itemize}
+\textbf{后向搜索（Backward Search）}从包含所有特征的集合开始：每轮迭代尝试移除对模型贡献最小的特征，直到移除会导致模型显著退化为止。
 
-\subparagraph{PCA 的数学推导 (Optimization Problem)}
-PCA 的目标是找到一个投影方向 $\mathbf{w}_1$，使得投影后的数据方差 $\text{Var}(z_1)$ 最大，且满足单位长度约束 $||\mathbf{w}_1|| = 1$。
+\paragraph{主成分分析（PCA）}
 
-方差可以表示为：
+主成分分析是一种常用的特征提取技术。它通过正交变换，将可能相关的变量转换为线性不相关的主成分，第一个主成分拥有最大的方差（包含最多的信息），主成分是协方差矩阵 $\boldsymbol{\Sigma}$ 的特征向量。
+
+\textbf{PCA 的数学推导。}PCA 的目标是找到投影方向 $\mathbf{w}_1$，使投影后数据方差 $\text{Var}(z_1) = \mathbf{w}_1^T \boldsymbol{\Sigma} \mathbf{w}_1$ 最大，且满足 $||\mathbf{w}_1|| = 1$。构造拉格朗日函数 $L = \mathbf{w}_1^T \boldsymbol{\Sigma} \mathbf{w}_1 - \alpha (\mathbf{w}_1^T \mathbf{w}_1 - 1)$，对 $\mathbf{w}_1$ 求导并令其为 0，得到特征值方程：
 \begin{equation}
-    \text{Var}(z_1) = \mathbf{w}_1^T \boldsymbol{\Sigma} \mathbf{w}_1
+    \boldsymbol{\Sigma} \mathbf{w}_1 = \alpha \mathbf{w}_1.
 \end{equation}
-其中 $\boldsymbol{\Sigma}$ 是协方差矩阵。
+这意味着 $\mathbf{w}_1$ 必须是协方差矩阵 $\boldsymbol{\Sigma}$ 的特征向量，$\alpha$ 是对应的特征值。为了最大化方差，需要选择最大特征值对应的特征向量作为第一主成分。
 
-为了求解该约束优化问题，我们构造拉格朗日函数：
+\textbf{方差解释比例（PoV）。}为了量化降维保留了多少信息，计算前 $k$ 个主成分解释的方差比例：
 \begin{equation}
-    L = \mathbf{w}_1^T \boldsymbol{\Sigma} \mathbf{w}_1 - \alpha (\mathbf{w}_1^T \mathbf{w}_1 - 1)
+    PoV = \frac{\sum_{i=1}^k \lambda_i}{\sum_{j=1}^d \lambda_j},
 \end{equation}
-对 $\mathbf{w}_1$ 求导并令其为 0，得到特征值方程：
-\begin{equation}
-    \boldsymbol{\Sigma} \mathbf{w}_1 = \alpha \mathbf{w}_1
-\end{equation}
-这意味着 $\mathbf{w}_1$ 必须是协方差矩阵 $\boldsymbol{\Sigma}$ 的特征向量，而 $\alpha$ 是对应的特征值。为了最大化方差，我们需要选择最大特征值对应的特征向量作为第一主成分。
+其中 $\lambda_i$ 是协方差矩阵的特征值（按降序排列）。通常选择截断点 $k$，使得 $PoV > 0.9$（即保留 90\% 的原始信息）。碎石图（Scree Graph）用于直观确定保留多少个主成分：若前几个主成分已经解释了大部分方差，就可以用较低维表示替代原始高维特征。
 
-同理，第二主成分 $\mathbf{w}_2$ 需要在正交于 $\mathbf{w}_1$ 的约束下最大化方差，对应于第二大特征值的特征向量。
-
-\subparagraph{方差解释比例 (Proportion of Variance, PoV)}
-为了量化降维保留了多少信息，我们计算前 $k$ 个主成分解释的方差比例：
-\begin{equation}
-    PoV = \frac{\sum_{i=1}^k \lambda_i}{\sum_{j=1}^d \lambda_j}
-\end{equation}
-其中 $\lambda_i$ 是协方差矩阵的特征值（按降序排列）。
-\begin{itemize}
-    \item $\lambda_i$ 直接代表了第 $i$ 个主成分方向上的数据方差。
-    \item 通常我们选择截断点 $k$，使得 $PoV > 0.9$（即保留 90\% 的原始信息）。
-\end{itemize}
-
-图中的第一幅图强调“主成分方向”来自数据方差最大的方向，第二幅碎石图则用于决定保留多少个主成分。若前几个主成分已经解释了大部分方差，就可以用较低维表示替代原始高维特征，从而降低后续模型的计算复杂度。
+相关图示 的关键是"换坐标系"：PCA 不是随便丢掉几个原始变量，而是先寻找数据变化最明显的方向，把它定义为第一主成分，再在正交方向中寻找第二主成分。样本投影到主成分方向后，原本由多个相关特征共同表达的信息，可以被更少的新坐标概括。
 
 % 【图示占位】源稿图示待按本书风格重绘。
-
-相关图示 的关键是“换坐标系”。PCA 并不是随便丢掉几个原始变量，而是先寻找数据变化最明显的方向，把这个方向定义为第一主成分；再在与它正交的方向中寻找第二主成分。样本投影到主成分方向后，原本由多个相关特征共同表达的信息，可以被更少的新坐标概括。因此，PCA 的降维本质上是保留主要方差信息，而不是简单删列。
-
-% 【图示占位】源稿图示待按本书风格重绘。
-
-阅读相关图示 时，应同时看单个主成分贡献和累计解释方差。若前几个主成分已经解释了大部分方差，后续主成分贡献很小，就可以在保留主要信息的同时显著降低维度。
 
 \paragraph{实现占位}
 \begin{quote}
 \textbf{【实现占位】} 本段原有代码不直接迁入；后续案例将以 AI 协作过程、关键决策和验证结果为主。
 \end{quote}
 
-降维技术在处理高维数据时至关重要。特征选择通过保留物理意义明确的特征来简化模型，而 PCA 通过正交变换提取主要信息。PCA 是一种强大的线性降维技术，但它是无监督的，可能会丢失对分类重要的信息，且无法处理复杂的非线性流形结构。
+特征选择通过保留物理意义明确的特征来简化模型，而 PCA 通过正交变换提取主要信息。PCA 是一种强大的线性降维技术，但它是无监督的，可能会丢失对分类重要的信息，且无法处理复杂的非线性流形结构。
 
 \section{案例占位}
 

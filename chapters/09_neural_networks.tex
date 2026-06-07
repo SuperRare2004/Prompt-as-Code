@@ -604,8 +604,7 @@ GoogLeNet 提出了 Inception 模块，旨在解决单一尺寸卷积核无法�
 
 SE 模块分为三个步骤：
 
-\paragraph{1. Squeeze（压缩）}
-对每个通道进行全局平均池化，将空间信息压缩成一个标量：
+\textbf{第一步：压缩（Squeeze）。}对每个通道进行全局平均池化，将空间信息压缩成一个标量：
 \begin{equation}
 z_c = \frac{1}{H\times W}\sum_{i=1}^{H}\sum_{j=1}^{W} u_c(i,j),
 \qquad c=1,2,\dots,C
@@ -615,8 +614,7 @@ z_c = \frac{1}{H\times W}\sum_{i=1}^{H}\sum_{j=1}^{W} u_c(i,j),
 \mathbf{z} \in \mathbb{R}^{C}
 \]
 
-\paragraph{2. Excitation（激发）}
-将 $\mathbf{z}$ 输入两层全连接网络，学习每个通道的重要性：
+\textbf{第二步：激发（Excitation）。}将 $\mathbf{z}$ 输入两层全连接网络，学习每个通道的重要性：
 \begin{equation}
 \mathbf{s} = \sigma\left(\mathbf{W}_2\,\delta(\mathbf{W}_1 \mathbf{z})\right)
 \end{equation}
@@ -629,8 +627,7 @@ z_c = \frac{1}{H\times W}\sum_{i=1}^{H}\sum_{j=1}^{W} u_c(i,j),
     \item $r$ 为 reduction ratio，用于降维以减少参数量。
 \end{itemize}
 
-\paragraph{3. Scale（重标定）}
-将通道权重乘回原始特征图：
+\textbf{第三步：重标定（Scale）。}将通道权重乘回原始特征图：
 \begin{equation}
 \tilde{\mathbf{u}}_c = s_c \cdot \mathbf{u}_c
 \end{equation}
@@ -662,8 +659,7 @@ CBAM 的处理流程为：
 \mathbf{F}''
 \]
 
-\paragraph{1. 通道注意力}
-CBAM 的通道注意力同时使用全局平均池化和全局最大池化：
+\textbf{通道注意力。}CBAM 的通道注意力同时使用全局平均池化和全局最大池化：
 \begin{equation}
 \mathbf{M}_c(\mathbf{F})
 =
@@ -678,8 +674,7 @@ CBAM 的通道注意力同时使用全局平均池化和全局最大池化：
 \mathbf{F}' = \mathbf{M}_c(\mathbf{F}) \odot \mathbf{F}
 \end{equation}
 
-\paragraph{2. 空间注意力}
-对 $\mathbf{F}'$ 沿通道维度分别做平均池化和最大池化，得到两个 $H\times W$ 的二维图：
+\textbf{空间注意力。}对 $\mathbf{F}'$ 沿通道维度分别做平均池化和最大池化，得到两个 $H\times W$ 的二维图：
 \[
 \text{AvgPool}_c(\mathbf{F}'),\qquad \text{MaxPool}_c(\mathbf{F}')
 \]
@@ -840,7 +835,7 @@ Precision 反映“模型预测为目标的结果中有多少是真的”，Reca
 
 图卷积网络（Graph Convolutional Network, GCN）是图神经网络中最具代表性的方法之一。它将卷积思想从规则网格推广到一般图结构，通过在图上进行邻域信息聚合，使得每个节点在更新自身表示时不仅考虑自身特征，还能综合其邻居节点的信息，从而学习到兼顾节点属性与图结构的深层表示。
 
-\paragraph{图结构数据及其典型形式}
+\subsection{图结构数据及其典型形式}
 
 图结构数据广泛存在于现实世界中。与图像中的像素点、文本中的词序列不同，图数据由节点（node）以及节点之间的边（edge）构成，更强调对象之间的关系。
 
@@ -1105,7 +1100,7 @@ GAN 的设计灵感来源于博弈论中的\textbf{零和博弈 (Zero-Sum Game)}
 
 
 
-[Image of GAN Architecture]
+% 【图示占位】源稿图示待按本书风格重绘。
 
 
 
@@ -1172,7 +1167,7 @@ GAN 的设计灵感来源于博弈论中的\textbf{零和博弈 (Zero-Sum Game)}
         \begin{itemize}
             \item 移除了判别器最后一层的 Sigmoid 激活。
             \item 损失函数不再取对数，而是直接基于 $D(\mathbf{x}) - D(G(\mathbf{z}))$。
-            \item 引入了 **Lipschitz 连续性约束**（通常通过权重剪裁或梯度惩罚实现）。
+            \item 引入了 \textbf{Lipschitz 连续性约束}（通常通过权重剪裁或梯度惩罚实现）。
         \end{itemize}
     \item \textbf{优势}：即使两个分布不重叠，Wasserstein 距离也能提供平滑的梯度，指导生成器拉近分布。这使得 WGAN 的训练更加稳定，适合连续数值和复杂场景生成。
 \end{itemize}
