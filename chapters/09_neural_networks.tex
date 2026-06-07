@@ -1,1 +1,1191 @@
-\chapter{神经网络模型}
+﻿\chapter{神经网络模型}
+
+神经网络具有强大的表示学习能力，也容易因为结构复杂和训练成本较高而被不加判断地使用。本章关注不同网络结构背后的数据假设，以及与 AI 协作选择、训练和验证神经网络时必须保留的人类判断。
+
+\section{前馈神经网络 (Feedforward Neural Networks)}
+\label{sec:fnn}
+
+在本书讨论的 AI 协作建模体系中，前馈神经网络（Feedforward Neural Network, FNN），或称为多层感知机（Multilayer Perceptron, MLP），扮演着至关重要的角色。它不仅是深度学习领域最基础的模型结构，更是现代决策系统中连接“数据”与“决策”的通用桥梁。
+
+与传统的线性回归或逻辑回归不同，FNN 具备强大的非线性映射能力。根据\textbf{通用近似定理（Universal Approximation Theorem）}，一个包含足够多隐藏神经元的 FNN 理论上可以以任意精度逼近任何连续函数。这一特性使得它能够处理复杂的分类、回归、预测与表征学习任务。
+
+本节从神经元结构出发，逐步构建多层网络，解释反向传播的数学机制，并讨论如何判断 AI 所设计的网络是否与数据结构和任务目标相匹配。
+
+\subsection{神经元模型：网络的基石}
+\label{subsec:neuron_model}
+
+人工神经网络的设计灵感直接源于生物神经系统。如相关图示 所示，在生物大脑中，神经元是处理、存储和传输信息的基本单元。
+\begin{itemize}
+    \item \textbf{树突 (Dendrites)}：负责接收来自其他神经元的输入信号。
+    \item \textbf{细胞体 (Soma)}：整合接收到的信号。
+    \item \textbf{轴突 (Axon)}：当累积电位超过阈值时，通过轴突向外发射脉冲。
+\end{itemize}
+
+人工神经元（Artificial Neuron）正是对这一过程的数学抽象。
+
+% 【图示占位】源稿图示待按本书风格重绘。
+
+\paragraph{数学表达}
+一个标准的人工神经元接收一组输入信号 $\mathbf{x} = [x_1, x_2, \dots, x_D]^T$。每个输入信号 $x_j$ 都有一个对应的权重 $w_j$，代表该特征对最终输出的重要性。
+
+神经元的计算过程分为两步：
+\begin{enumerate}
+    \item \textbf{线性加权求和}：计算输入的加权和，并加上一个偏置项（Bias）$w_0$（或记为 $b$）。
+    \begin{equation}
+        z = \sum_{j=1}^D w_j x_j + w_0 = \mathbf{w}^T \mathbf{x}
+    \end{equation}
+    其中为了向量化表示，通常令 $x_0=1$。
+
+    \item \textbf{非线性激活}：为了赋予网络处理复杂非线性关系的能力，我们需要将 $z$ 输入到一个非线性函数 $\sigma(\cdot)$ 中，称为\textbf{激活函数}。常见的 Sigmoid 函数定义为：
+    \begin{equation}
+        \sigma(z) = \frac{1}{1 + \exp(-z)}
+    \end{equation}
+    其输出范围为 $(0, 1)$，常被解释为神经元被激活的概率。
+\end{enumerate}
+
+\paragraph{感知机的局限性：XOR 问题}
+单个神经元（即感知机）本质上是一个线性分类器。如相关图示 所示，它可以完美解决逻辑“与”（AND）或“或”（OR）问题，因为这些问题是\textbf{线性可分}的。
+
+然而，对于\textbf{异或（XOR）}问题（当且仅当两个输入不同时输出为 1），单层感知机无法解决。
+
+% 【图示占位】源稿图示待按本书风格重绘。
+
+\textbf{数学证明}：
+假设存在一组权重 $w_0, w_1, w_2$ 能够解决 XOR 问题，则必须满足以下四个不等式：
+\begin{align}
+    \text{输入 } (0,0) \to 0: & \quad w_0 \leq 0 \label{eq:xor1} \\
+    \text{输入 } (0,1) \to 1: & \quad w_0 + w_2 > 0 \label{eq:xor2} \\
+    \text{输入 } (1,0) \to 1: & \quad w_0 + w_1 > 0 \label{eq:xor3} \\
+    \text{输入 } (1,1) \to 0: & \quad w_0 + w_1 + w_2 \leq 0 \label{eq:xor4}
+\end{align}
+将式 (\ref{eq:xor2}) 和 (\ref{eq:xor3}) 相加，得 $2w_0 + w_1 + w_2 > 0$。
+将式 (\ref{eq:xor1}) 和 (\ref{eq:xor4}) 相加，得 $2w_0 + w_1 + w_2 \leq 0$。
+两者矛盾！因此，单层网络无法解决 XOR 问题。这一局限性直接推动了多层网络的发展。
+
+\subsection{多层网络的结构与前向传播}
+
+为了解决线性不可分问题，我们在输入层和输出层之间引入了\textbf{隐藏层 (Hidden Layers)}，构建了多层感知机（MLP）。隐藏层的作用是将输入空间进行非线性变换，使其在高维空间中变得线性可分。
+
+% 【图示占位】源稿图示待按本书风格重绘。
+
+\paragraph{前向传播 (Forward Propagation)}
+考虑一个典型的三层网络（输入层-隐藏层-输出层），假设输入维度为 $D$，隐藏层单元数为 $H$，输出维度为 $K$。
+
+\begin{enumerate}
+    \item \textbf{输入层到隐藏层}：
+    隐藏层第 $h$ 个神经元的输入 $z_h$ 和激活输出 $a_h$ 为：
+    \begin{equation}
+        z_h = \sum_{j=1}^D w_{hj} x_j + w_{h0}, \quad a_h = \sigma(z_h)
+    \end{equation}
+    其中 $w_{hj}$ 是连接权重。
+
+    \item \textbf{隐藏层到输出层}：
+    输出层第 $i$ 个神经元的输出 $y_i$ 为：
+    \begin{equation}
+        y_i = \sum_{h=1}^H v_{ih} a_h + v_{i0}
+    \end{equation}
+    如果是分类任务，通常会在最后加上 Softmax 函数；如果是回归任务，则通常保持线性输出。
+\end{enumerate}
+
+\textbf{注意}：隐藏层的激活函数必须是\textbf{非线性}的。如果使用线性激活函数，多层网络的叠加 $\mathbf{V}(\mathbf{W}\mathbf{x}) = (\mathbf{VW})\mathbf{x}$ 仍然等价于单层线性网络，失去了多层结构的意义。
+
+\subsection{网络训练：损失函数与优化}
+
+构建好网络结构后，核心任务是确定参数 $\theta = \{\mathbf{W}, \mathbf{V}\}$ 的值。这通过最小化\textbf{损失函数 (Loss Function)} 来实现。
+
+\paragraph{损失函数}
+对于给定的训练集 $\mathcal{X} = \{(\mathbf{x}^{(n)}, y^{(n)})\}_{n=1}^N$：
+\begin{itemize}
+    \item \textbf{回归问题}：常用均方误差 (MSE)：
+    \begin{equation}
+        J(\theta) = \frac{1}{2N} \sum_{n=1}^N \| \hat{y}^{(n)} - y^{(n)} \|^2
+    \end{equation}
+    \item \textbf{分类问题}：常用交叉熵损失 (Cross-Entropy)：
+    \begin{equation}
+        J(\theta) = - \sum_{n=1}^N \sum_{k=1}^K y_k^{(n)} \log \hat{y}_k^{(n)}
+    \end{equation}
+\end{itemize}
+
+\paragraph{梯度下降与 Epoch/Step}
+为了最小化损失，我们采用梯度下降法（Gradient Descent）。在实际训练中，厘清以下概念至关重要：
+\begin{itemize}
+    \item \textbf{Epoch（代）}：指算法遍历了\textbf{整个}训练数据集一次。
+    \item \textbf{Step（步/迭代）}：指发生了一次参数更新。通常使用 Mini-batch SGD，将数据分成小批量。例如 1000 个样本，Batch Size=10，则 1 Epoch = 100 Steps。
+\end{itemize}
+
+\subsection{反向传播算法 (Backpropagation)}
+\label{subsec:backprop}
+
+如何计算损失函数对深层权重的梯度？Rumelhart 等人提出的\textbf{反向传播算法 (BP)} 利用链式法则，将误差信号从输出层向输入层反向传递。
+
+\paragraph{BP 算法推导}
+以单输出回归网络为例，损失函数 $E = \frac{1}{2}(y - \hat{y})^2$。
+
+\textbf{1. 输出层权重梯度 ($\mathbf{V}$)}：
+直接求导即可：
+\begin{equation}
+    \frac{\partial E}{\partial v_h} = \frac{\partial E}{\partial \hat{y}} \cdot \frac{\partial \hat{y}}{\partial v_h} = -(y - \hat{y}) \cdot a_h
+\end{equation}
+更新规则：$v_h \leftarrow v_h + \eta (y - \hat{y}) a_h$。
+
+\textbf{2. 隐藏层权重梯度 ($\mathbf{W}$)}：
+这是 BP 的核心。我们需要计算误差对隐藏层输入 $z_h$ 的敏感度。根据链式法则：
+\begin{equation}
+    \frac{\partial E}{\partial w_{hj}} = \underbrace{\frac{\partial E}{\partial \hat{y}} \cdot \frac{\partial \hat{y}}{\partial a_h}}_{\text{误差回传}} \cdot \underbrace{\frac{\partial a_h}{\partial z_h}}_{\text{激活导数}} \cdot \underbrace{\frac{\partial z_h}{\partial w_{hj}}}_{\text{输入特征}}
+\end{equation}
+
+代入具体项：
+\begin{itemize}
+    \item $\frac{\partial E}{\partial \hat{y}} = -(y - \hat{y})$
+    \item $\frac{\partial \hat{y}}{\partial a_h} = v_h$ （误差通过权重 $v_h$ 回传）
+    \item $\frac{\partial a_h}{\partial z_h} = \sigma'(z_h) = a_h(1-a_h)$ （Sigmoid 导数特性）
+    \item $\frac{\partial z_h}{\partial w_{hj}} = x_j$
+\end{itemize}
+
+最终得到隐藏层的梯度公式：
+\begin{equation}
+    \frac{\partial E}{\partial w_{hj}} = - \underbrace{(y - \hat{y}) v_h}_{\text{Backpropagated Error}} \cdot a_h(1-a_h) \cdot x_j
+\end{equation}
+
+\subsection{案例占位}
+\begin{quote}
+\textbf{【案例占位】} 本节案例及代码暂不迁入，后续将围绕 AI 协作建模与结果验证重新设计。
+\end{quote}
+
+\section{循环神经网络与长短期记忆网络 (RNN \& LSTM)}
+\label{sec:rnn_lstm}
+
+前馈神经网络（FNN）和卷积神经网络（CNN）在处理静态数据（如图像分类、房价预测）时表现出色，但它们都有一个共同的局限性：假设输入数据之间是相互独立的。然而，在交通流预测、供应链需求管理、路径规划等真实工程决策场景中，数据往往以序列的形式出现。
+
+例如，预测某路段在 $t$ 时刻的交通流量，不仅取决于当前的外部特征（如天气、是否为工作日），更深受 $t-1, t-2, \dots$ 时刻流量状态的影响。这种时间依赖性（Temporal Dependency）是 FNN 难以捕捉的。针对这一问题，循环神经网络（RNN）及其彻底解决长距离依赖瓶颈的长短期记忆网络（LSTM）应运而生。本节将从标准 RNN 的工作原理与数学缺陷出发，深入探讨 LSTM 的内部运作机制。
+
+\subsection{标准 RNN 模型：序列建模基础}
+
+\paragraph{循环结构的设计哲学}
+RNN 的核心理念是引入“记忆”。与 FNN 每一层处理完即“遗忘”不同，RNN 在处理序列中的每一个元素时，都会维护一个内部状态，称为\textbf{隐藏状态（Hidden State）}。这个状态就像是网络的“短期记忆”，随着时间步的推进不断更新，承载了过去的信息。
+
+\paragraph{数学表达与权值共享}
+从数学上看，一个标准 RNN 单元在 $t$ 时刻的计算过程可以表示为一个递归函数。对于输入序列 $\mathbf{x}_1, \mathbf{x}_2, \dots, \mathbf{x}_T$，在任意时间步 $t$，网络接收当前输入 $\mathbf{x}_t$ 和上一时刻的隐藏状态 $\mathbf{h}_{t-1}$，更新当前的隐藏状态 $\mathbf{h}_t$。
+
+具体公式如下：
+\begin{equation}
+    \mathbf{h}_t = \tanh(\mathbf{W}_{hh} \mathbf{h}_{t-1} + \mathbf{W}_{xh} \mathbf{x}_t + \mathbf{b}_h)
+\end{equation}
+\begin{equation}
+    \mathbf{y}_t = \mathbf{W}_{hy} \mathbf{h}_t + \mathbf{b}_y
+\end{equation}
+
+其中：
+\begin{itemize}
+    \item $\mathbf{x}_t$：当前时刻的输入向量。
+    \item $\mathbf{h}_t$：当前时刻的隐藏状态，它包含了截止到 $t$ 时刻的序列历史信息摘要。
+    \item $\tanh$：标准 RNN 通常选择 $\tanh$ 激活函数，将数值压缩到 $[-1, 1]$ 之间，以防止在多步循环中数值发散。
+\end{itemize}
+
+\textbf{权值共享（Weight Sharing）}是 RNN 最关键的特性。无论序列长度 $T$ 是多少，网络在所有时间步都共用同一组参数 ($\mathbf{W}_{hh}, \mathbf{W}_{xh}, \mathbf{W}_{hy}$)。这不仅大大减少了参数数量，还赋予了模型处理变长序列（Variable-length Sequence）的能力。
+
+% 【图示占位】源稿图示待按本书风格重绘。
+
+\paragraph{数据的三维张量形状}
+在编程实现（如 PyTorch）中，理解数据的维度至关重要。与 FNN 的二维输入 \texttt{(Batch Size, Features)} 不同，RNN 需要三维输入：
+\begin{equation}
+    \texttt{[Batch Size, Time Steps, Input Features]}
+\end{equation}
+例如，若 Batch Size=64，我们回顾过去 12 小时的数据（Time Steps=12），且每小时有流量、速度、占有率三个特征读数（Features=3），则输入张量的形状应为 \texttt{(64, 12, 3)}。
+
+\subsection{训练算法与致命缺陷：BPTT 与梯度消失}
+\label{subsec:bptt}
+
+RNN 的前向传播只需按时间顺序迭代公式。但如何更新权重？由于参数在时间步之间共享，我们需要使用\textbf{随时间反向传播 (Backpropagation Through Time, BPTT)}。其本质是将 RNN 在时间维度上“展开”，看作一个层数等于序列长度 $T$ 的深层前馈网络，然后应用链式法则。
+
+\paragraph{雅可比矩阵连乘与梯度消失}
+在 BPTT 过程中，误差信号需要从当前时刻 $T$ 一路反向传播回初始时刻 $0$。根据链式法则，这涉及到一系列雅可比矩阵的连乘：
+\begin{equation}
+    \frac{\partial \mathbf{h}_t}{\partial \mathbf{h}_k} = \prod_{j=k+1}^{t} \frac{\partial \mathbf{h}_j}{\partial \mathbf{h}_{j-1}} = \prod_{j=k+1}^{t} \left( \mathbf{W}_{hh}^T \cdot \text{diag}(\tanh'(\dots)) \right)
+\end{equation}
+由于标准 RNN 使用 $\tanh$ 激活函数且权值矩阵反复相乘，这极易导致两个严重的数学问题：
+\begin{enumerate}
+    \item \textbf{梯度消失 (Gradient Vanishing)}：连乘项（尤其当矩阵特征值小于1时）趋近于 0，导致长距离的历史信息无法被学习到。误差信号在回传了 10 到 20 个时间步后就消失殆尽，网络“看”不到长距离依赖。
+    \item \textbf{梯度爆炸 (Gradient Exploding)}：连乘项（特征值大于1时）趋近于无穷大，导致参数更新步长过大，训练直接崩溃（出现 NaN）。
+\end{enumerate}
+
+% 【图示占位】源稿图示待按本书风格重绘。
+
+\subsection{突破长期记忆瓶颈：长短期记忆网络 (LSTM)}
+
+在数据驱动的真实工程决策中，长期记忆往往是决策的关键。例如某商品的周销量呈现季度性波动，当前决策需参考 3 个月前的数据；设备的故障可能源于数天前的一次温度微小异常。为了彻底解决 RNN 的梯度消失难题，Sepp Hochreiter 和 Jürgen Schmidhuber 于 1997 年提出了\textbf{长短期记忆网络 (LSTM)}。
+
+\paragraph{核心设计哲学：细胞状态与门控}
+LSTM 的设计灵感来源于计算机的存储器架构：读取、写入和重置。它将网络的“记忆存储”与“计算逻辑”进行了分离。
+
+\textbf{1. 细胞状态 (Cell State)：信息的高速公路} \\
+LSTM 的核心是一个贯穿所有时间步的顶层水平线，称为\textbf{细胞状态 $\mathbf{C}_t$}。它就像是一条传送带 (Conveyor Belt)，直接贯穿整个链条，只有极少数的线性交互。这使得信息可以非常容易地以不变的形式流过整个序列，从数学上保证了梯度可以维持而不消失。
+
+\textbf{2. 门控机制 (Gating Mechanism)：信息的过滤器} \\
+为了精确控制细胞状态，LSTM 引入了“门”。门由一个 \textbf{Sigmoid 神经网络层}和一个\textbf{逐点乘法 (Pointwise Multiplication, $\odot$)} 操作组成。Sigmoid 输出 0 到 1 之间的数值：
+\begin{itemize}
+    \item \textbf{0} 代表“完全关闭阀门”，让任何信息都无法通过。
+    \item \textbf{1} 代表“完全开启阀门”，让所有信息通过。
+\end{itemize}
+
+\paragraph{LSTM 内部运作的四个微观步骤详解}
+让我们深入 LSTM 单元，逐步剖析 $t$ 时刻的计算流程。假设输入为当前数据 $\mathbf{x}_t$，上一时刻隐状态 $\mathbf{h}_{t-1}$，上一时刻细胞状态 $\mathbf{C}_{t-1}$。
+
+\textbf{第一步：遗忘门 (Forget Gate) —— “我们要丢弃哪些旧信息？”} \\
+LSTM 的第一步是决定我们要从细胞状态中扔掉什么信息。这个决定由遗忘门做出。它读取 $\mathbf{h}_{t-1}$ 和 $\mathbf{x}_t$，并为 $\mathbf{C}_{t-1}$ 中的每个数字输出一个 0 到 1 之间的值。
+\begin{equation}
+    \mathbf{f}_t = \sigma(\mathbf{W}_f \cdot [\mathbf{h}_{t-1}, \mathbf{x}_t] + \mathbf{b}_f)
+\end{equation}
+
+\textbf{第二步：输入门 (Input Gate) —— “我们要存储哪些新信息？”} \\
+这分为两部分：
+\begin{enumerate}
+    \item Sigmoid 层（输入门）决定我们将更新哪些值 ($\mathbf{i}_t$)。
+    \item Tanh 层创建一个新的候选值向量 $\tilde{\mathbf{C}}_t$，这些值可能会被添加到状态中。
+\end{enumerate}
+\begin{align}
+    \mathbf{i}_t &= \sigma(\mathbf{W}_i \cdot [\mathbf{h}_{t-1}, \mathbf{x}_t] + \mathbf{b}_i) \\
+    \tilde{\mathbf{C}}_t &= \tanh(\mathbf{W}_C \cdot [\mathbf{h}_{t-1}, \mathbf{x}_t] + \mathbf{b}_C)
+\end{align}
+
+\textbf{第三步：细胞状态更新 (Update Cell State) —— “执行记忆更新。”} \\
+现在将旧状态 $\mathbf{C}_{t-1}$ 更新为 $\mathbf{C}_t$。我们将旧状态乘以 $\mathbf{f}_t$（遗忘），然后加上 $\mathbf{i}_t \odot \tilde{\mathbf{C}}_t$。这构成了新的候选值，实现了旧记忆衰减与新记忆写入的线性叠加。
+\begin{equation}
+    \mathbf{C}_t = \mathbf{f}_t \odot \mathbf{C}_{t-1} + \mathbf{i}_t \odot \tilde{\mathbf{C}}_t
+\end{equation}
+
+\textbf{第四步：输出门 (Output Gate) —— “我们要对外输出什么？”} \\
+最终输出基于过滤后的细胞状态。首先运行 Sigmoid 层（输出门）决定输出哪一部分。然后将细胞状态通过 $\tanh$（推到 -1 和 1 之间），并与输出门相乘，得到当前时刻的隐藏状态 $\mathbf{h}_t$。
+\begin{align}
+    \mathbf{o}_t &= \sigma(\mathbf{W}_o \cdot [\mathbf{h}_{t-1}, \mathbf{x}_t] + \mathbf{b}_o) \\
+    \mathbf{h}_t &= \mathbf{o}_t \odot \tanh(\mathbf{C}_t)
+\end{align}
+
+\subsection{LSTM 的流行变体：GRU}
+虽然 LSTM 功能强大，但其结构复杂。2014 年 Cho 等人提出了\textbf{门控循环单元 (Gated Recurrent Unit, GRU)}。它将遗忘门和输入门合并为单一的\textbf{更新门 ($z_t$)}，去除了独立的细胞状态，并引入了\textbf{重置门 ($r_t$)}。
+GRU 的数学表达如下：
+\begin{align}
+    z_t &= \sigma(\mathbf{W}_z \cdot [\mathbf{h}_{t-1}, \mathbf{x}_t]) \\
+    r_t &= \sigma(\mathbf{W}_r \cdot [\mathbf{h}_{t-1}, \mathbf{x}_t]) \\
+    \tilde{\mathbf{h}}_t &= \tanh(\mathbf{W} \cdot [r_t \odot \mathbf{h}_{t-1}, \mathbf{x}_t]) \\
+    \mathbf{h}_t &= (1 - z_t) \odot \mathbf{h}_{t-1} + z_t \odot \tilde{\mathbf{h}}_t
+\end{align}
+GRU 参数更少、计算更轻量，但在许多时序预测任务中能达到与 LSTM 媲美的性能。
+
+\subsection{案例占位}
+\begin{quote}
+\textbf{【案例占位】} 本节案例及代码暂不迁入，后续将围绕 AI 协作建模与结果验证重新设计。
+\end{quote}
+
+\section{计算机视觉与卷积神经网络}
+\label{sec:cv_cnn}
+
+本章将深入探讨计算机视觉的基础概念、卷积神经网络（CNN）的核心原理及其经典架构，并介绍其在自动驾驶、目标检测与工程智能感知等领域的实际应用。
+
+\subsection{计算机视觉基础}
+
+计算机视觉（Computer Vision, CV）旨在让计算机像人类一样“看懂”图像。其核心任务包括图像分类、目标检测、语义分割、实例分割、姿态估计等。与自然语言处理面对离散符号不同，计算机视觉面对的是高维、连续、具有强空间结构的数据，因此模型必须能够充分利用像素之间的局部关联和空间邻接关系。
+
+\paragraph{图像的数字化表示}
+在计算机眼中，图像本质上是一个数字矩阵（或张量）。
+\begin{itemize}
+    \item \textbf{灰度图像 (Grayscale)}：单通道矩阵，每个像素点代表亮度（0 为黑，255 为白）。
+    \item \textbf{RGB 图像}：三通道矩阵（红、绿、蓝）。对于深度学习模型，输入数据的张量形状通常为 \texttt{[Batch, Channel, Height, Width]}。
+    \item \textbf{二值图像 (Binary Image)}：像素通常只有 0 和 1 两种取值，常用于轮廓提取、文档识别和形状分析。
+\end{itemize}
+
+% 【图示占位】源稿图示待按本书风格重绘。
+
+在深度学习中，像素值通常还需要进行预处理，例如归一化（Normalization）或标准化（Standardization）：
+\begin{itemize}
+    \item \textbf{归一化}：将像素值从 $[0,255]$ 缩放到 $[0,1]$；
+    \item \textbf{标准化}：进一步减去均值、除以标准差，使输入更适合梯度下降优化。
+\end{itemize}
+这样做的主要目的是提升训练稳定性，加速模型收敛，并减轻不同维度尺度不一致带来的优化困难。
+
+\paragraph{传统特征提取 vs 深度学习}
+在深度学习出现之前，特征提取（Feature Extraction）主要依赖人工设计的算子（如 SIFT、HOG），旨在从原始像素中提取边缘、角点或纹理。这类方法往往依赖经验设计，具有较强任务特异性，且在复杂场景下鲁棒性有限。
+
+而 CNN 的出现实现了\textbf{端到端（End-to-End）}的特征学习，即网络自动学习从低级边缘到高级语义的特征表示。与“手工提特征，再训练分类器”的传统流水线不同，CNN 将特征提取与任务目标统一到一个可训练框架之中。
+
+\subsection{卷积神经网络 (CNN) 详解}
+
+全连接网络（FNN）在处理图像时面临\textbf{参数爆炸}和\textbf{空间结构丢失}两大难题。CNN 通过\textbf{局部感受野}、\textbf{权值共享}和\textbf{下采样}机制完美解决了这些问题。
+
+\paragraph{卷积层 (Convolutional Layer)}
+卷积层是 CNN 的核心。
+\begin{itemize}
+    \item \textbf{滤波器/卷积核 (Filter/Kernel)}：一组可学习的权重矩阵。
+    \item \textbf{滑动窗口 (Sliding Window)}：卷积核在输入特征图上从左到右、从上到下滑动，执行元素级的乘加运算（互相关运算）。
+\end{itemize}
+
+% 【图示占位】源稿图示待按本书风格重绘。
+
+在最简单的二维单通道情形下，卷积层可写为：
+\begin{equation}
+Y(i,j)=\sum_{m=0}^{F-1}\sum_{n=0}^{F-1}X(i+m,j+n)\,K(m,n)+b
+\end{equation}
+其中：
+\begin{itemize}
+    \item $\mathbf{X}$ 表示输入图像；
+    \item $\mathbf{K}$ 表示卷积核；
+    \item $F$ 表示卷积核尺寸；
+    \item $b$ 为偏置项。
+\end{itemize}
+
+需要指出的是，深度学习框架中的“卷积”在严格数学意义上更接近\textbf{互相关（Cross-Correlation）}，因为卷积核并未进行翻转操作。但在工程应用中，通常仍习惯统称为卷积运算。
+
+\paragraph{卷积运算的数学形式与多通道机制}
+
+实际 CNN 中，输入往往是多通道张量。例如，RGB 图像具有 3 个通道，卷积层的输入可表示为
+\[
+\mathbf{X} \in \mathbb{R}^{C_{\text{in}} \times H \times W},
+\]
+其中 $C_{\text{in}}$ 为输入通道数，$H,W$ 分别为高度和宽度。
+
+若卷积层包含 $C_{\text{out}}$ 个卷积核，每个卷积核大小为 $K\times K$，则其权重张量为：
+\[
+\mathbf{W} \in \mathbb{R}^{C_{\text{out}} \times C_{\text{in}} \times K \times K}.
+\]
+
+输出特征图可写为：
+\[
+\mathbf{Y} \in \mathbb{R}^{C_{\text{out}} \times H' \times W'}.
+\]
+
+其中，第 $o$ 个输出通道在位置 $(i,j)$ 处的值为：
+\begin{equation}
+Y_{o,i,j}
+=
+b_o
++
+\sum_{c=1}^{C_{\text{in}}}
+\sum_{u=0}^{K-1}
+\sum_{v=0}^{K-1}
+W_{o,c,u,v}\,
+X_{c,\,iS+u-P,\,jS+v-P},
+\end{equation}
+其中 $S$ 为步长（Stride），$P$ 为填充（Padding）。
+
+\paragraph{多通道卷积的直观理解}
+对于 RGB 图像，一个 $3\times3$ 的卷积核并不只是一个二维矩阵，而是一个 $3\times3\times3$ 的三维张量：分别作用于 R、G、B 三个通道后求和，最终得到一个输出值。若该层有多个卷积核，就会得到多个输出通道，也即多张特征图。
+
+\paragraph{卷积层的参数量}
+卷积层的参数量计算公式为：
+\begin{equation}
+\text{Param} = (K \times K \times C_{\text{in}} + 1)\times C_{\text{out}}
+\end{equation}
+其中“$+1$”表示每个卷积核对应一个偏置项。
+
+例如，若输入通道数为 32，输出通道数为 64，卷积核大小为 $3\times3$，则参数量为：
+\[
+(3\times3\times32+1)\times64 = 18{,}496.
+\]
+
+\paragraph{卷积层提取特征的含义}
+从表征学习角度看，卷积核本质上是一种“特征探测器”：
+\begin{itemize}
+    \item 浅层卷积核常学习到边缘、角点、方向纹理；
+    \item 中层卷积核往往学习到局部部件，如车轮、窗户、眼睛；
+    \item 深层卷积核则逐步形成对完整目标或语义结构的响应。
+\end{itemize}
+因此，CNN 的强大之处在于：它不是手工定义“什么是重要特征”，而是通过数据驱动自动学习特征层次结构。
+
+\paragraph{重要超参数：步长与填充}
+\begin{enumerate}
+    \item \textbf{步长 (Stride, $S$)}：卷积核每次滑动的像素数。
+    \begin{itemize}
+        \item $S=1$：逐像素滑动，保留空间分辨率。
+        \item $S>1$：跳跃滑动，起到下采样（降维）的作用。
+    \end{itemize}
+
+    \item \textbf{零填充 (Zero Padding, $P$)}：在输入图像周围填充 0。
+    \begin{itemize}
+        \item 目的：保持输出特征图的尺寸不变（Same Padding），并让边缘像素也能处于卷积核的中心被充分提取特征。
+    \end{itemize}
+\end{enumerate}
+
+\textbf{输出尺寸计算公式}：
+设输入尺寸为 $W_1 \times H_1$，卷积核大小为 $F$，步长为 $S$，填充为 $P$，则输出尺寸 $W_2 \times H_2$ 为：
+\begin{equation}
+    W_2 = \left\lfloor \frac{W_1 - F + 2P}{S} \right\rfloor + 1,
+    \quad
+    H_2 = \left\lfloor \frac{H_1 - F + 2P}{S} \right\rfloor + 1
+\end{equation}
+其中 $\lfloor \cdot \rfloor$ 表示向下取整。当卷积核不能刚好整齐覆盖输入时，最后不能完整覆盖的部分通常会被舍弃。
+
+\paragraph{非线性激活函数的作用}
+
+如果卷积层后面不接非线性激活函数，那么多个卷积层的叠加本质上仍然只是一个线性变换，网络表达能力会受到严重限制。因此，CNN 通常会在卷积层后加入激活函数（Activation Function）。
+
+最常见的是 ReLU（Rectified Linear Unit）：
+\begin{equation}
+\text{ReLU}(x) = \max(0, x)
+\end{equation}
+
+其优点包括：
+\begin{itemize}
+    \item 形式简单，计算开销小；
+    \item 在正区间梯度恒为 1，能缓解梯度消失；
+    \item 使网络具有分段线性拟合能力。
+\end{itemize}
+
+除 ReLU 外，还有 Leaky ReLU、ELU、GELU 等变体，它们主要用于缓解“神经元死亡”或进一步提升训练稳定性。
+
+\paragraph{批归一化 (Batch Normalization)}
+
+在较深的 CNN 中，常常会在卷积层与激活函数之间加入批归一化（Batch Normalization, BN），其目的是缓解训练过程中各层输入分布不断变化的问题，从而加快收敛并提升稳定性。
+
+对于一个 mini-batch 中的特征，BN 的计算过程为：
+\begin{equation}
+\mu_B = \frac{1}{m}\sum_{i=1}^{m} x_i,
+\qquad
+\sigma_B^2 = \frac{1}{m}\sum_{i=1}^{m}(x_i-\mu_B)^2
+\end{equation}
+\begin{equation}
+\hat{x}_i = \frac{x_i-\mu_B}{\sqrt{\sigma_B^2+\varepsilon}},
+\qquad
+y_i = \gamma \hat{x}_i + \beta
+\end{equation}
+其中：
+\begin{itemize}
+    \item $\mu_B,\sigma_B^2$ 分别为批均值和批方差；
+    \item $\varepsilon$ 为防止分母为 0 的极小常数；
+    \item $\gamma,\beta$ 是可学习参数，用于恢复特征表达能力。
+\end{itemize}
+
+在工程实践中，卷积块经常写作：
+\[
+\text{Conv} \rightarrow \text{BN} \rightarrow \text{ReLU}
+\]
+
+\paragraph{案例分析：AlexNet 的参数量计算}
+为了直观展示 CNN 节省参数的能力，我们以经典网络 AlexNet 为例：
+\begin{itemize}
+    \item \textbf{输入}：$227 \times 227 \times 3$ 的图像。
+    \item \textbf{卷积层配置}：96 个卷积核 ($K=96$)，大小 $11 \times 11$ ($F=11$)，步长 $S=4$，无填充 ($P=0$)。
+    \item \textbf{输出尺寸}：$(227 - 11)/4 + 1 = 55$，即输出 $55 \times 55 \times 96$ 的特征图。
+    \item \textbf{参数量对比}：
+    \begin{itemize}
+        \item \textbf{CNN 参数量}：$(11 \times 11 \times 3 + 1) \times 96 = \mathbf{34,944}$。
+        \item \textbf{全连接层参数量}：若使用全连接层映射，参数量将是 $(227 \times 227 \times 3) \times (55 \times 55 \times 96) \approx 450$ 亿。
+    \end{itemize}
+\end{itemize}
+\textbf{结论}：CNN 通过权值共享，将参数量减少了 6 个数量级！
+
+\paragraph{感受野 (Receptive Field)}
+
+感受野（Receptive Field）是理解 CNN 的一个关键概念。它表示特征图中某个神经元在原始输入图像上“能看到”的区域大小。随着网络加深，一个高层神经元往往对应原始图像中更大的区域，因此能够聚合更多上下文信息。
+
+记：
+\begin{itemize}
+    \item $r_l$：第 $l$ 层的感受野大小；
+    \item $k_l$：第 $l$ 层卷积核大小；
+    \item $s_l$：第 $l$ 层步长；
+    \item $j_l$：第 $l$ 层特征图上相邻两个神经元在输入图像上的间隔（jump）。
+\end{itemize}
+
+则有递推关系：
+\begin{equation}
+j_l = j_{l-1}\cdot s_l
+\end{equation}
+\begin{equation}
+r_l = r_{l-1} + (k_l - 1)\cdot j_{l-1}
+\end{equation}
+其中初始条件为：
+\[
+r_0 = 1,\qquad j_0 = 1
+\]
+
+例如，连续堆叠若干个步长为 1 的 $3\times3$ 卷积层，其感受野会依次增长为 $3,5,7,9,\dots$。这也是 VGG 网络中“用多个小卷积核替代大卷积核”的理论基础之一。
+
+% 【图示占位】源稿图示待按本书风格重绘。
+
+\subsection{池化层 (Pooling Layer)}
+
+池化层用于压缩特征图的空间维度，从而减少计算量并控制过拟合。与卷积层不同，池化层通常不包含可学习参数，而是通过局部统计操作完成信息压缩。
+
+\begin{itemize}
+    \item \textbf{最大池化 (Max Pooling)}：取窗口内的最大值，提取最显著的特征（如纹理中最强的点）。
+    \item \textbf{平均池化 (Average Pooling)}：取窗口内的平均值，保留背景信息。
+\end{itemize}
+
+池化的主要作用包括：
+\begin{enumerate}
+    \item 降低特征图分辨率，减少后续计算量；
+    \item 提高模型对小范围平移和局部扰动的鲁棒性；
+    \item 扩大后续神经元的感受野。
+\end{enumerate}
+
+% 【图示占位】源稿图示待按本书风格重绘。
+
+\subsection{经典 CNN 架构演进}
+
+CNN 的发展史本质上是一个不断解决“表达能力、计算成本与训练稳定性”三者平衡问题的过程。下面介绍几类里程碑式架构。
+
+\paragraph{VGG-16 (2014)}
+VGG 的核心贡献在于探索了网络深度的影响。它将 AlexNet 中的大卷积核（$11\times11, 7\times7$）全部替换为堆叠的 $3\times3$ 小卷积核。
+\begin{itemize}
+    \item \textbf{原理}：2 个 $3\times3$ 卷积层的感受野等于 1 个 $5\times5$，3 个 $3\times3$ 等于 $7\times7$。
+    \item \textbf{优势}：参数更少（$3 \times 3^2 = 27 < 7^2 = 49$），且多了两次 ReLU 非线性变换，增强了网络的表达能力。
+    \item \textbf{意义}：VGG 证明了“适度加深网络层数”能够显著提升视觉表征能力，成为后续深层 CNN 设计的重要起点。
+\end{itemize}
+
+% 【图示占位】源稿图示待按本书风格重绘。
+
+\paragraph{GoogLeNet (Inception)}
+GoogLeNet 提出了 Inception 模块，旨在解决单一尺寸卷积核无法同时捕捉多尺度特征的问题。
+\begin{itemize}
+    \item \textbf{Inception 模块}：在同一层并行使用 $1\times1$、$3\times3$、$5\times5$ 卷积核以及 $3\times3$ 池化，然后将结果沿通道维度拼接（Concat）。
+    \item \textbf{$1\times1$ 卷积的作用}：用于降维（减少通道数），从而显著降低计算成本。
+    \item \textbf{多尺度思想}：不同尺寸卷积核对局部模式、区域纹理和较大结构的响应不同，并行结构使网络能够在同一层面捕获多粒度信息。
+\end{itemize}
+
+% 【图示占位】源稿图示待按本书风格重绘。
+
+\paragraph{ResNet (残差网络)}
+随着网络层数加深（如超过 20 层），会出现\textbf{退化问题}（训练误差反而上升）。ResNet 通过\textbf{跳跃连接（Skip Connection）}解决了这一问题。
+\begin{itemize}
+    \item \textbf{残差学习}：若目标映射为 $H(x)$，网络不再直接学习 $H(x)$，而是学习残差 $F(x) = H(x) - x$。
+    \item \textbf{公式}：输出 $y = F(x, \{W_i\}) + x$。
+    \item \textbf{意义}：即便 $F(x)$ 学习为 0，网络也能退化为恒等映射，保证了深层网络至少不会比浅层网络差。同时，梯度可以通过 $x$ 路径无损回传。
+\end{itemize}
+
+进一步地，若损失函数为 $\mathcal{L}$，则根据链式法则，
+\begin{equation}
+\frac{\partial \mathcal{L}}{\partial x}
+=
+\frac{\partial \mathcal{L}}{\partial y}
+\left(
+\frac{\partial F(x)}{\partial x}+1
+\right)
+\end{equation}
+上式中的“$+1$”意味着即使残差分支的梯度较小，恒等映射分支依然能够提供稳定的梯度通路，这也是 ResNet 能够训练数十层乃至上百层网络的重要原因。
+
+% 【图示占位】源稿图示待按本书风格重绘。
+
+\subsection{视觉注意力机制 (Visual Attention)}
+
+在上述经典 CNN 中，网络对图像的所有区域和所有特征通道通常是“一视同仁”的。然而，人类视觉系统并不会平均处理全部视觉信息，而是会自动聚焦于最重要、最显著的区域。将这一思想引入神经网络，便形成了\textbf{注意力机制（Attention Mechanism）}。
+
+从本质上说，注意力机制就是让网络自动学习一组权重，对重要特征赋予更高响应，对无关背景或噪声进行抑制。
+
+\paragraph{注意力机制的基本思想}
+
+设某层卷积输出的特征图为
+\[
+\mathbf{F} \in \mathbb{R}^{C \times H \times W},
+\]
+则注意力模块会根据输入特征生成一个权重掩码（Mask）：
+\begin{equation}
+\mathbf{F}' = \mathbf{M}(\mathbf{F}) \odot \mathbf{F}
+\end{equation}
+其中：
+\begin{itemize}
+    \item $\mathbf{M}(\mathbf{F})$ 表示由特征图学习得到的注意力权重；
+    \item $\odot$ 表示逐元素相乘。
+\end{itemize}
+
+若某位置或某通道的权重较大，说明该部分特征更重要；反之则说明该特征应被削弱。
+在 CNN 中，常见注意力机制主要包括：
+\begin{enumerate}
+    \item \textbf{通道注意力（Channel Attention）}：回答“看什么特征”；
+    \item \textbf{空间注意力（Spatial Attention）}：回答“看哪里”；
+    \item \textbf{混合注意力}：同时考虑通道和空间两个维度。
+\end{enumerate}
+
+\paragraph{通道注意力：SE-Net (Squeeze-and-Excitation)}
+卷积层输出的特征图中，每个通道通常代表一种特定特征（如某方向边缘、某种纹理、某种局部结构）。SE-Net 认为不同通道的重要性不同，因此应为每个通道学习一个自适应权重。
+
+设卷积层输出为
+\[
+\mathbf{U} = [\mathbf{u}_1,\mathbf{u}_2,\dots,\mathbf{u}_C] \in \mathbb{R}^{C \times H \times W}.
+\]
+
+SE 模块分为三个步骤：
+
+\paragraph{1. Squeeze（压缩）}
+对每个通道进行全局平均池化，将空间信息压缩成一个标量：
+\begin{equation}
+z_c = \frac{1}{H\times W}\sum_{i=1}^{H}\sum_{j=1}^{W} u_c(i,j),
+\qquad c=1,2,\dots,C
+\end{equation}
+从而得到通道描述向量：
+\[
+\mathbf{z} \in \mathbb{R}^{C}
+\]
+
+\paragraph{2. Excitation（激发）}
+将 $\mathbf{z}$ 输入两层全连接网络，学习每个通道的重要性：
+\begin{equation}
+\mathbf{s} = \sigma\left(\mathbf{W}_2\,\delta(\mathbf{W}_1 \mathbf{z})\right)
+\end{equation}
+其中：
+\begin{itemize}
+    \item $\delta(\cdot)$ 表示 ReLU 激活函数；
+    \item $\sigma(\cdot)$ 表示 Sigmoid 激活函数；
+    \item $\mathbf{W}_1 \in \mathbb{R}^{\frac{C}{r}\times C}$；
+    \item $\mathbf{W}_2 \in \mathbb{R}^{C\times \frac{C}{r}}$；
+    \item $r$ 为 reduction ratio，用于降维以减少参数量。
+\end{itemize}
+
+\paragraph{3. Scale（重标定）}
+将通道权重乘回原始特征图：
+\begin{equation}
+\tilde{\mathbf{u}}_c = s_c \cdot \mathbf{u}_c
+\end{equation}
+
+这样，重要通道会被放大，不重要通道会被抑制。
+
+% 【图示占位】源稿图示待按本书风格重绘。
+
+\paragraph{SE-Net 的优点}
+\begin{itemize}
+    \item 结构简单，易于插入现有 CNN 主干网络；
+    \item 额外参数量较小；
+    \item 在图像分类、检测与分割任务中通常都能获得稳定收益。
+\end{itemize}
+
+\paragraph{混合注意力：CBAM (Convolutional Block Attention Module)}
+SE-Net 只解决了“看什么”（通道），而 CBAM 则进一步加入了\textbf{空间注意力（Spatial Attention）}，解决“看哪里”的问题。
+
+CBAM 的处理流程为：
+\[
+\mathbf{F}
+\rightarrow
+\text{Channel Attention}
+\rightarrow
+\mathbf{F}'
+\rightarrow
+\text{Spatial Attention}
+\rightarrow
+\mathbf{F}''
+\]
+
+\paragraph{1. 通道注意力}
+CBAM 的通道注意力同时使用全局平均池化和全局最大池化：
+\begin{equation}
+\mathbf{M}_c(\mathbf{F})
+=
+\sigma\left(
+\text{MLP}(\text{AvgPool}(\mathbf{F}))
++
+\text{MLP}(\text{MaxPool}(\mathbf{F}))
+\right)
+\end{equation}
+然后对输入特征图进行通道加权：
+\begin{equation}
+\mathbf{F}' = \mathbf{M}_c(\mathbf{F}) \odot \mathbf{F}
+\end{equation}
+
+\paragraph{2. 空间注意力}
+对 $\mathbf{F}'$ 沿通道维度分别做平均池化和最大池化，得到两个 $H\times W$ 的二维图：
+\[
+\text{AvgPool}_c(\mathbf{F}'),\qquad \text{MaxPool}_c(\mathbf{F}')
+\]
+将二者拼接后，通过一个卷积层生成空间注意力图：
+\begin{equation}
+\mathbf{M}_s(\mathbf{F}')
+=
+\sigma\left(
+f^{7\times7}
+\left[
+\text{AvgPool}_c(\mathbf{F}');
+\text{MaxPool}_c(\mathbf{F}')
+\right]
+\right)
+\end{equation}
+最终输出为：
+\begin{equation}
+\mathbf{F}'' = \mathbf{M}_s(\mathbf{F}') \odot \mathbf{F}'
+\end{equation}
+
+% 【图示占位】源稿图示待按本书风格重绘。
+
+\paragraph{CBAM 的意义}
+CBAM 同时兼顾了：
+\begin{itemize}
+    \item \textbf{通道维度}：哪些特征最有用；
+    \item \textbf{空间维度}：目标最可能出现在哪里。
+\end{itemize}
+因此，在目标检测、缺陷检测、医学图像分析、遥感识别等任务中，CBAM 常常比单独的通道注意力机制更有效。
+
+\subsection{目标检测与 YOLO}
+
+除了图像分类，CNN 在目标检测（Object Detection）中也扮演关键角色。
+
+\paragraph{目标检测的任务}
+不仅要识别图像中有什么物体（Classification），还要标出它们的位置（Localization，通常用 Bounding Box 表示）。因此，目标检测本质上是分类与回归的联合任务。
+
+\paragraph{边界框回归与 IoU 指标}
+
+在目标检测中，一个边界框通常有两种表示方式：
+\begin{enumerate}
+    \item 左上角与右下角坐标：
+    \[
+    (x_{\min}, y_{\min}, x_{\max}, y_{\max})
+    \]
+    \item 中心点与宽高：
+    \[
+    (x, y, w, h)
+    \]
+\end{enumerate}
+
+其中 $(x,y)$ 表示边界框中心点坐标，$w,h$ 分别表示宽和高。
+
+为了衡量预测框与真实框的重叠程度，目标检测中常用\textbf{交并比（Intersection over Union, IoU）}：
+\begin{equation}
+\text{IoU} = \frac{\text{Area}(B_p \cap B_{gt})}{\text{Area}(B_p \cup B_{gt})}
+\end{equation}
+其中：
+\begin{itemize}
+    \item $B_p$ 表示预测框；
+    \item $B_{gt}$ 表示真实框；
+    \item $B_p \cap B_{gt}$ 表示交集面积；
+    \item $B_p \cup B_{gt}$ 表示并集面积。
+\end{itemize}
+
+IoU 的取值范围为 $[0,1]$，越接近 1 表明预测框与真实框越吻合。
+
+% 【图示占位】源稿图示待按本书风格重绘。
+
+\paragraph{YOLO (You Only Look Once)}
+YOLO 是实时目标检测的里程碑算法。
+\begin{itemize}
+    \item \textbf{核心思想}：将目标检测看作一个单一的回归问题。它将输入图像划分为 $S \times S$ 的网格，每个网格负责预测中心点落在该网格内的物体。
+    \item \textbf{置信度}：早期 YOLO 中，一个预测框通常会输出位置参数与置信度，置信度可理解为
+    \[
+    \text{Confidence} = P(\text{Object}) \times \text{IoU}
+    \]
+    \item \textbf{优势}：单阶段检测速度快，适合实时场景，如自动驾驶、视频监控、工业检测等。
+    \item \textbf{局限}：早期版本对小目标密集场景的检测能力较弱，后续 YOLOv3/v5/v8 等版本通过特征金字塔、多尺度预测和更强主干网络进行了改进。
+\end{itemize}
+
+% 【图示占位】源稿图示待按本书风格重绘。
+
+\paragraph{非极大值抑制 (NMS)}
+由于同一个目标可能被多个候选框同时预测，因此需要使用\textbf{非极大值抑制（Non-Maximum Suppression, NMS）}去除冗余框。其基本流程如下：
+\begin{enumerate}
+    \item 按照置信度从高到低对预测框排序；
+    \item 选择当前置信度最高的预测框作为保留框；
+    \item 删除与其 IoU 超过设定阈值的其他预测框；
+    \item 重复上述步骤直到遍历完成。
+\end{enumerate}
+
+NMS 的作用是只保留最可信的检测结果，避免一个目标被重复标注多个框。
+
+\paragraph{目标检测常用评估指标}
+在检测任务中，除了 IoU 外，还常使用 Precision、Recall 与 mAP 等指标。
+\begin{equation}
+\text{Precision} = \frac{TP}{TP+FP}
+\end{equation}
+\begin{equation}
+\text{Recall} = \frac{TP}{TP+FN}
+\end{equation}
+其中：
+\begin{itemize}
+    \item $TP$：真正例；
+    \item $FP$：假正例；
+    \item $FN$：假负例。
+\end{itemize}
+
+Precision 反映“模型预测为目标的结果中有多少是真的”，Recall 反映“真实目标中有多少被模型找到了”。
+在实践中，常通过 Precision-Recall 曲线下面积定义 AP（Average Precision），再对多个类别取平均得到 mAP（mean Average Precision）。mAP 是目标检测领域最常见的综合评价指标之一。
+
+\subsection{案例占位}
+\begin{quote}
+\textbf{【案例占位】} 本节案例及代码暂不迁入，后续将围绕 AI 协作建模与结果验证重新设计。
+\end{quote}
+
+\subsection{CNN 在工程场景中的应用延伸}
+虽然 MNIST 案例使用的是图像数据，但 CNN 的思想在土木工程与真实工程决策中有着广泛应用：
+
+\begin{enumerate}
+    \item \textbf{网格化交通流预测 (Grid-based Traffic Prediction)}：
+    如果我们将城市地图划分为 $H \times W$ 的网格，每个网格内的交通流量、速度、事故数可以看作是图像的“通道”。利用 CNN，我们可以提取交通流在空间上的相关性（例如，市中心的拥堵会向周边扩散），结合 RNN 处理时间维度，形成 ConvLSTM 模型。
+
+    \item \textbf{基础设施裂缝检测 (Infrastructure Inspection)}：
+    利用无人机拍摄桥梁或路面的照片，通过 CNN 进行二分类（有无裂缝）或语义分割（标记裂缝位置），实现自动化的基础设施健康监测。
+
+    \item \textbf{端到端学习 (End-to-End Learning)}：
+    在复杂感知任务中，可以将原始图像或多通道数据直接输入 CNN，并由模型输出类别、位置或连续预测值，从而减少人工设计中间特征的工作。
+
+    \item \textbf{引入注意力的关键区域识别}：
+    在裂缝检测、交通异常识别、病害区域定位等任务中，引入注意力机制（如 SE、CBAM）可以帮助模型在复杂背景中自动聚焦于关键区域，从而提高识别精度与模型可解释性。
+\end{enumerate}
+
+\paragraph{注意力机制在工程场景中的实际价值}
+
+在工程场景中，引入注意力机制往往比在通用图像分类任务中更有意义。原因在于工程图像常具有以下特点：
+\begin{itemize}
+    \item 背景复杂，但真正关键的目标区域很小；
+    \item 有效特征稀疏，例如微小裂缝、局部剥落、异常热斑；
+    \item 干扰噪声较强，例如光照变化、阴影遮挡、拍摄角度偏差。
+\end{itemize}
+
+因此，注意力机制可以在以下方面发挥作用：
+\begin{enumerate}
+    \item \textbf{裂缝识别}：让模型聚焦于细长、低对比度的裂缝区域；
+    \item \textbf{桥梁病害检测}：在大幅背景中突出剥落、锈蚀、渗水等小尺度缺陷；
+    \item \textbf{交通拥堵分析}：在城市路网热力图中突出关键瓶颈区域；
+    \item \textbf{遥感与航拍图像分析}：在复杂地表背景中识别道路、工地、边坡或灾害点。
+\end{enumerate}
+
+从这个角度看，注意力机制不仅仅是“提升几个百分点精度”的技巧，更是一种使模型更贴近实际任务需求的重要建模思想。
+
+\section{图结构数据与图卷积网络}
+\label{subsec:gcn}
+
+在前文中，卷积神经网络（Convolutional Neural Networks, CNN）已经展示了其在图像、语音等规则结构数据上的强大建模能力。其成功的重要原因在于输入数据通常具有规则的欧式结构：例如图像可以看作由像素组成的二维网格，卷积核可以在固定大小的局部窗口上滑动，从而提取局部空间特征。然而，在大量实际问题中，数据并不具有规则网格结构，而是以节点与边组成的复杂关系网络形式存在，如交通网络、社交网络、电力网络、知识图谱以及传感器网络等。对于此类非欧式（non-Euclidean）数据，传统 CNN 难以直接刻画其拓扑依赖关系，因此图神经网络（Graph Neural Networks, GNN）逐渐成为处理这类问题的重要工具。
+
+图卷积网络（Graph Convolutional Network, GCN）是图神经网络中最具代表性的方法之一。它将卷积思想从规则网格推广到一般图结构，通过在图上进行邻域信息聚合，使得每个节点在更新自身表示时不仅考虑自身特征，还能综合其邻居节点的信息，从而学习到兼顾节点属性与图结构的深层表示。
+
+\paragraph{图结构数据及其典型形式}
+
+图结构数据广泛存在于现实世界中。与图像中的像素点、文本中的词序列不同，图数据由节点（node）以及节点之间的边（edge）构成，更强调对象之间的关系。
+
+% 【图示占位】源稿图示待按本书风格重绘。
+
+例如，在交通网络中，可以将道路传感器、路口或路段看作节点，将道路连接关系或空间邻近关系看作边；在结构健康监测中，可以将布设在结构不同部位的传感器视为节点，将构件连接关系、空间距离或相关性视为边。与规则网格不同，图中的节点数量可以变化、节点的邻居数也不固定，因此图数据具有更高的表达灵活性，同时也给建模带来了更大挑战。
+
+除了关系结构外，图中的每个节点通常还携带自身属性特征。例如，在交通预测问题中，节点特征可以是车速、流量、密度、占有率等；在社交网络中，节点特征可以是用户属性、兴趣标签和历史行为等。因此，图学习任务不仅需要建模“节点是什么”，还需要建模“节点之间如何关联”。
+
+\subsection{图的数学定义与数据表示}
+
+从数学角度看，一个图通常定义为
+\begin{equation}
+    G = (V, E),
+\end{equation}
+其中，$V$ 表示节点集合，$E$ 表示边集合。若图中共有 $M$ 个节点，则其拓扑结构可由邻接矩阵 $\mathbf{A} \in \mathbb{R}^{M \times M}$ 描述，其中元素 $A_{ij}$ 表示节点 $i$ 与节点 $j$ 之间的连接关系或连接强度。
+
+此外，若每个节点具有 $D$ 维特征，则整张图的节点特征可表示为特征矩阵
+\begin{equation}
+    \mathbf{X} \in \mathbb{R}^{M \times D},
+\end{equation}
+其中第 $i$ 行对应第 $i$ 个节点的特征向量。
+
+% 【图示占位】源稿图示待按本书风格重绘。
+
+由此可见，图学习的输入通常由两部分构成：一部分是节点特征矩阵 $\mathbf{X}$，另一部分是表示图结构的邻接矩阵 $\mathbf{A}$。这与普通前馈神经网络或 CNN 只处理单一输入张量不同，图学习模型需要同时利用“属性信息”和“结构信息”。
+
+\subsection{为什么传统 CNN 难以直接处理图数据}
+
+CNN 在图像上的卷积操作依赖一个关键前提：输入数据位于规则的二维网格中，每个像素都具有一致的局部邻域结构。例如，一个 $3\times 3$ 的卷积核可以在整幅图像上滑动，并以共享参数的方式提取局部模式。然而，对于一般图结构数据，这一机制不再天然成立，主要体现在以下几个方面：
+
+\begin{itemize}
+    \item 图的节点没有固定的空间排序，无法像图像像素那样定义统一的扫描顺序；
+    \item 不同节点的邻居数量通常不同，难以直接使用固定大小的卷积窗口；
+    \item 图的拓扑可能非常复杂，节点间关系并不一定由空间距离决定；
+    \item 图的规模通常可变，节点数和边数在不同样本间并不一致。
+\end{itemize}
+
+% 【图示占位】源稿图示待按本书风格重绘。
+
+因此，CNN 中“固定卷积核 + 固定局部窗口”的基本设定无法直接套用到图结构数据上。我们需要一种新的机制，使得模型能够依据图中边的连接关系，自适应地聚合相关节点的信息，这正是 GCN 的核心出发点。
+
+\subsection{图卷积网络的基本思想}
+
+图卷积网络的核心思想是：\textbf{每个节点通过聚合其邻居节点的信息来更新自身表示}。经过多层传播后，节点表示会逐渐融合更大范围邻域中的信息，从而获得兼具结构关系和语义特征的表示。
+
+从一般形式上看，第 $l$ 层图卷积可表示为
+\begin{equation}
+    \mathbf{H}^{(l+1)} = f\!\left(\mathbf{H}^{(l)}, \mathbf{A}\right),
+\end{equation}
+其中，$\mathbf{H}^{(l)} \in \mathbb{R}^{M \times D_l}$ 表示第 $l$ 层所有节点的特征表示，$\mathbf{H}^{(0)} = \mathbf{X}$，$f(\cdot)$ 表示依赖于图结构的特征传播与变换操作。
+
+从节点层面理解，一个更直观的更新过程可以写为
+\begin{equation}
+    \mathbf{h}_i^{(l+1)}=
+    \sigma\!\left(
+    \mathbf{W}_{self}^{(l)} \mathbf{h}_i^{(l)}
+    +
+    \sum_{j\in\mathcal{N}(i)}
+    \alpha_{ij}\,
+    \mathbf{W}_{nbr}^{(l)} \mathbf{h}_j^{(l)}
+    \right),
+\end{equation}
+其中：
+\begin{itemize}
+    \item $\mathbf{h}_i^{(l)}$ 表示节点 $i$ 在第 $l$ 层的表示；
+    \item $\mathcal{N}(i)$ 表示节点 $i$ 的邻居集合；
+    \item $\alpha_{ij}$ 表示节点 $j$ 对节点 $i$ 的信息贡献权重；
+    \item $\sigma(\cdot)$ 表示非线性激活函数。
+\end{itemize}
+
+这一过程常被称为\textbf{消息传递（message passing）}：邻居节点先将自身特征“传递”给目标节点，目标节点再对接收到的信息进行聚合与变换。
+
+% 【图示占位】源稿图示待按本书风格重绘。
+
+进一步地，GCN 的每一层输入和输出仍然是“图上的节点表示”，只是经过传播后，每个节点的特征发生了更新。因此，GCN 层并不是改变图的节点集合，而是在原图拓扑约束下不断重构节点特征空间。
+
+\subsection{GCN 的层间传播机制}
+
+GCN 可以理解为图上的局部聚合器。一层 GCN 主要聚合一跳邻居信息，两层 GCN 则可以让一个节点接收到二跳邻域的信息，层数继续增加时，感受野也会逐步扩大。
+
+% 【图示占位】源稿图示待按本书风格重绘。
+
+这说明 GCN 与 CNN 在思想上是一致的：都试图通过局部聚合逐层构建高层特征。但二者的“局部”定义不同。CNN 的局部由规则几何窗口确定，而 GCN 的局部由图结构中的邻接关系确定。
+
+\subsection{标准 GCN 层及其归一化形式}
+
+若直接用邻接矩阵对特征进行传播，一个最简单的 GCN 层可以表示为
+\begin{equation}
+    \mathbf{H}^{(l+1)}
+    =
+    \sigma\!\left(
+    \mathbf{A}\mathbf{H}^{(l)}\mathbf{W}^{(l)}
+    \right),
+\end{equation}
+其中 $\mathbf{W}^{(l)}$ 为第 $l$ 层的可学习权重矩阵。
+
+这一表达式能够体现图卷积的核心思想：先根据邻接关系聚合邻居节点特征，再通过线性变换和非线性激活得到新的节点表示。然而，这种写法存在两个问题：
+
+\begin{enumerate}
+    \item 原始邻接矩阵 $\mathbf{A}$ 通常不包含节点自身信息，因此节点在更新时可能丢失自身特征；
+    \item 节点度数不同，直接使用 $\mathbf{A}$ 进行传播会造成不同节点特征尺度不一致，高度节点可能对结果产生过大影响。
+\end{enumerate}
+
+为此，Kipf 和 Welling 提出了经典的归一化 GCN 传播规则。首先在图中加入自环（self-loop）：
+\begin{equation}
+    \mathbf{\tilde{A}} = \mathbf{A} + \mathbf{I},
+\end{equation}
+再定义度矩阵
+\begin{equation}
+    \mathbf{\tilde{D}}_{ii} = \sum_j \mathbf{\tilde{A}}_{ij}.
+\end{equation}
+于是，标准 GCN 层可以写为
+\begin{equation}
+    \mathbf{H}^{(l+1)}
+    =
+    \sigma\!\left(
+    \mathbf{\tilde{D}}^{-\frac{1}{2}}
+    \mathbf{\tilde{A}}
+    \mathbf{\tilde{D}}^{-\frac{1}{2}}
+    \mathbf{H}^{(l)}
+    \mathbf{W}^{(l)}
+    \right).
+\end{equation}
+
+该公式中：
+\begin{itemize}
+    \item $\mathbf{\tilde{A}}=\mathbf{A}+\mathbf{I}$ 用于保留节点自身信息；
+    \item $\mathbf{\tilde{D}}^{-\frac{1}{2}}\mathbf{\tilde{A}}\mathbf{\tilde{D}}^{-\frac{1}{2}}$ 是对邻接矩阵的对称归一化，可以稳定特征传播过程；
+    \item $\mathbf{W}^{(l)}$ 用于学习从第 $l$ 层到第 $l+1$ 层的特征映射关系。
+\end{itemize}
+
+从这个角度看，GCN 的本质就是一种“结构引导下的特征变换”：它不再像全连接网络那样忽略样本之间的关系，也不再像 CNN 那样依赖固定网格，而是直接通过图结构来决定信息应该如何流动。
+
+% 【图示占位】源稿图示待按本书风格重绘。
+
+\subsection{GCN 与 CNN 的区别与联系}
+
+虽然 GCN 常被称为“图上的卷积网络”，但它与 CNN 在数据结构、邻域定义及适用任务上都存在显著差异。
+
+% 【图示占位】源稿图示待按本书风格重绘。
+
+\begin{table}[htbp]
+    \centering
+    \caption{CNN 与 GCN 的比较}
+    \label{tab:cnn_gcn_compare}
+    \begin{tabular}{lll}
+        \toprule
+        比较维度 & CNN & GCN \\
+        \midrule
+        数据结构 & 规则网格数据 & 不规则图结构数据 \\
+        邻域定义 & 固定大小局部窗口 & 由边连接定义邻域 \\
+        参数共享 & 在空间位置上共享卷积核 & 在节点更新规则上共享参数 \\
+        感受野扩展 & 通过加深网络扩大卷积范围 & 通过多层聚合扩大邻域跳数 \\
+        典型应用 & 图像分类、检测、分割 & 节点分类、链路预测、图分类 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+需要强调的是，GCN 并不是对 CNN 的简单替代，而是在处理对象之间关系极其重要时，对 CNN 思想的一种自然推广。对于图像这类规则结构数据，CNN 仍然是最直接和高效的方法；但对于交通网络、社交网络、分子结构等图数据，GCN 更能体现结构建模的优势。
+
+\subsection{GCN 的典型学习任务}
+
+GCN 既可以用于节点级任务，也可以用于整图级任务，常见任务主要包括以下几类：
+
+\begin{itemize}
+    \item \textbf{节点分类（Node Classification）}：根据节点特征及其邻居信息，预测节点所属类别。例如社交网络中的用户分类、交通网络中的节点状态识别等。
+    \item \textbf{图分类（Graph Classification）}：对整张图进行分类，例如分子图分类、化学性质预测、文档图分类等。
+    \item \textbf{链路预测（Link Prediction）}：预测两个节点之间是否存在潜在连接。例如好友推荐、缺失边补全、异常连接检测等。
+\end{itemize}
+
+在节点分类中，模型输出通常仍为节点级表示；在图分类中，还需要引入读出（readout）操作，将节点表示汇聚为图级表示。例如，设最终一层节点表示为 $\mathbf{H}^{(L)}$，则图级表示可写为
+\begin{equation}
+    \mathbf{z}_G = \mathrm{READOUT}\big(\mathbf{H}^{(L)}\big),
+\end{equation}
+其中 $\mathrm{READOUT}(\cdot)$ 可以是求和、平均、最大池化，或更复杂的注意力读出机制。
+
+\subsection{GCN 在交通与土木工程中的应用}
+
+在土木工程与交通工程场景中，许多系统都天然具有图结构。例如，道路网络、桥梁结构体系、供水网络、电网系统、城市基础设施系统等都可以表示为图。因此，GCN 在这些领域具有很强的应用潜力。
+
+以交通预测为例，可以将交通网络抽象为一个时空图（spatio-temporal graph）：
+\begin{itemize}
+    \item 节点：道路传感器、路段、路口；
+    \item 边：道路连接关系、几何距离、功能相似性或历史相关性；
+    \item 节点特征：速度、流量、密度、占有率等；
+    \item 预测目标：未来时刻的交通状态。
+\end{itemize}
+
+若用 $\mathbf{X}_t \in \mathbb{R}^{M\times D}$ 表示时刻 $t$ 的节点特征，则交通预测问题常可表述为：给定过去 $T$ 个时刻的特征序列
+\begin{equation}
+    \{\mathbf{X}_{t-T+1}, \mathbf{X}_{t-T+2}, \dots, \mathbf{X}_t\},
+\end{equation}
+以及图结构 $\mathbf{A}$，预测未来若干时刻的交通状态。此时，GCN 负责建模空间依赖，时序模型（如 RNN、TCN、Transformer）负责建模时间依赖，二者结合可形成强大的时空预测框架。
+
+在这一类问题中，GCN 的优势主要体现在：它不仅能建模相邻道路之间的影响，还能捕捉那些虽然物理距离较远、但在交通运行上具有强耦合关系的路段依赖。例如，一条主干路发生拥堵，可能对若干个相连或功能相似的远端路段造成显著影响，这类关系很难用普通二维卷积充分表达。
+
+除了交通领域，GCN 在土木工程中的应用还包括：
+\begin{itemize}
+    \item \textbf{结构健康监测}：将传感器视为节点，学习不同测点之间的动态耦合关系；
+    \item \textbf{基础设施网络鲁棒性分析}：建模桥梁、道路、管网或电网中的拓扑依赖；
+    \item \textbf{城市系统建模}：刻画区域之间的功能联系、出行联系或风险传播路径；
+    \item \textbf{施工与运维状态建模}：利用图结构表征设备、工序和资源之间的关联关系。
+\end{itemize}
+
+\paragraph{GCN 的优势与局限性}
+
+总体而言，GCN 相较于传统神经网络在处理图结构数据时具有以下优势：
+\begin{itemize}
+    \item 能够显式利用节点之间的关系结构；
+    \item 能同时融合节点属性信息与拓扑信息；
+    \item 能处理不规则、可变规模的数据；
+    \item 能通过多层传播建模多跳依赖关系；
+    \item 在节点分类、图分类和链路预测等任务中具有良好表现。
+\end{itemize}
+
+不过，GCN 也存在一定局限性。例如，当网络层数过深时，不同节点的表示可能逐渐趋于相似，即出现\textbf{过平滑（oversmoothing）}现象；同时，GCN 的性能往往依赖于图结构的构造质量，若邻接矩阵设计不合理，则模型表达能力会受到限制。此外，标准 GCN 默认邻居的重要性相同或仅由归一化决定，而在实际问题中，不同邻居对目标节点的贡献可能并不一致。针对这些问题，后续研究发展出了图注意力网络（Graph Attention Network, GAT）等改进模型，通过引入注意力机制为不同邻居分配不同权重，从而提升模型的表达能力。
+
+
+卷积神经网络擅长处理规则网格结构数据，而图卷积网络则将卷积思想推广到了更一般的图结构数据上。GCN 通过邻域信息聚合机制，使节点能够在图结构约束下不断更新表示，从而同时利用节点特征与节点之间的关系信息。对于交通网络、传感器网络和基础设施系统等具有天然图结构的工程问题，GCN 提供了一种高效而统一的建模思路，也为后续引入图注意力机制、时空图建模方法奠定了基础。
+
+\section{生成对抗网络 (Generative Adversarial Networks)}
+\label{sec:gan}
+
+在前几节中，我们讨论的 FNN、CNN 和 LSTM 都属于\textbf{判别式模型 (Discriminative Models)}。它们的任务是学习条件概率分布 $P(y|x)$，即给定输入 $x$（如历史交通流），预测标签 $y$（如未来流量）。
+
+然而，在真实的数据建模任务中，我们经常面临另一类挑战：
+\begin{enumerate}
+    \item \textbf{小样本与数据匮乏}：某些关键场景（如极端天气下的路网崩溃、罕见的电力故障）历史数据极少，难以训练鲁棒的预测与识别模型。
+    \item \textbf{复杂分布的模拟与数据增强}：真实数据往往具有多峰、长尾和类别不平衡等特征。简单的高斯采样或基础数据增强难以复现这些结构，因而需要能够学习真实数据分布的生成模型。
+\end{enumerate}
+
+为了解决这些问题，我们需要一种能够“创造”数据的模型——\textbf{生成式模型 (Generative Models)}。\textbf{生成对抗网络 (GANs)}，由 Ian Goodfellow 于 2014 年提出，是近年来深度学习领域最突破性的进展之一。它不显式地估计概率密度函数，而是通过博弈的方式隐式地学习数据分布 $P_{data}(x)$。
+
+
+
+
+
+
+
+\subsection{核心思想：零和博弈}
+
+GAN 的设计灵感来源于博弈论中的\textbf{零和博弈 (Zero-Sum Game)}。系统由两个相互竞争的神经网络组成，类似于伪造者与鉴别专家的关系：
+
+\begin{enumerate}
+    \item \textbf{生成器 (Generator, $G$)}：扮演“伪造者”的角色。
+    \begin{itemize}
+        \item \textbf{输入}：一个低维的随机噪声向量 $\mathbf{z}$（通常服从标准正态分布 $\mathcal{N}(0, I)$ 或均匀分布）。这个 $\mathbf{z}$ 可以看作是潜在空间（Latent Space）的坐标。
+        \item \textbf{输出}：生成的样本 $\mathbf{x}_{fake} = G(\mathbf{z})$，其维度与真实数据一致。
+        \item \textbf{目标}：生成的样本尽可能逼真，以欺骗判别器，使其认为这是真实数据。
+    \end{itemize}
+
+    \item \textbf{判别器 (Discriminator, $D$)}：扮演“鉴别者”或“警察”的角色。
+    \begin{itemize}
+        \item \textbf{输入}：一个样本 $\mathbf{x}$（可能是来自数据集的真实样本，也可能是 $G$ 生成的伪造样本）。
+        \item \textbf{输出}：一个标量概率值 $D(\mathbf{x}) \in [0, 1]$，表示该样本属于“真实数据”的概率。
+        \item \textbf{目标}：尽可能准确地分辨出真假数据（对真数据输出 1，对假数据输出 0）。
+    \end{itemize}
+\end{enumerate}
+
+在训练过程中，两者交替优化：$G$ 努力让生成的分布 $P_g$ 靠近真实分布 $P_{data}$，而 $D$ 努力划清两者的界限。最终的目标是达到\textbf{纳什均衡 (Nash Equilibrium)}，此时 $P_g = P_{data}$，且判别器对于任何输入都输出 $D(\mathbf{x}) = 0.5$（无法分辨真伪）。
+
+
+
+[Image of GAN Architecture]
+
+
+
+
+
+
+
+\subsection{数学原理：极小极大博弈与 JS 散度}
+
+为了形式化这一对抗过程，我们定义价值函数 $V(D, G)$。GAN 的优化目标是一个标准的\textbf{极小极大 (Minimax)} 问题：
+\begin{equation}
+    \min_G \max_D V(D, G) = \mathbb{E}_{\mathbf{x} \sim P_{data}(\mathbf{x})} [\log D(\mathbf{x})] + \mathbb{E}_{\mathbf{z} \sim P_{z}(\mathbf{z})} [\log(1 - D(G(\mathbf{z})))]
+\end{equation}
+
+这一公式的物理含义是：
+\begin{itemize}
+    \item $D$ 试图最大化 $V$，即最大化真样本的对数概率 $\log D(x)$ 和假样本的被识别为假的对数概率 $\log(1-D(G(z)))$。
+    \item $G$ 试图最小化 $V$，即最小化 $\log(1-D(G(z)))$，也就是让 $D(G(z))$ 趋近于 1。
+\end{itemize}
+
+\paragraph{理论推导：最优判别器是什么？}
+为了理解 GAN 到底在优化什么，我们可以固定生成器 $G$，来寻找最优的判别器 $D^*$。我们将期望写成积分形式：
+\begin{equation}
+    V(D, G) = \int_{\mathbf{x}} \left( P_{data}(\mathbf{x}) \log D(\mathbf{x}) + P_g(\mathbf{x}) \log(1 - D(\mathbf{x})) \right) d\mathbf{x}
+\end{equation}
+对于任意 $\mathbf{x}$，要使积分最大，被积函数必须最大。令 $y = D(\mathbf{x})$，被积函数形式为 $f(y) = a \log y + b \log(1-y)$，其中 $a=P_{data}(\mathbf{x}), b=P_g(\mathbf{x})$。
+通过求导并令导数为 0：
+\begin{equation}
+    \frac{df}{dy} = \frac{a}{y} - \frac{b}{1-y} = 0 \implies a(1-y) = by \implies y = \frac{a}{a+b}
+\end{equation}
+因此，最优判别器为：
+\begin{equation}
+    D^*(\mathbf{x}) = \frac{P_{data}(\mathbf{x})}{P_{data}(\mathbf{x}) + P_g(\mathbf{x})}
+\end{equation}
+这一结论非常直观：如果某处真实数据的概率密度 $P_{data}(x)$ 远大于生成数据的密度 $P_g(x)$，判别器应输出接近 1；若两者相等，则输出 0.5。
+
+\paragraph{生成器的目标与 JS 散度}
+当判别器达到最优 $D^*$ 时，我们将 $D^*$ 代回价值函数，生成器的最小化目标就等价于最小化真实分布与生成分布之间的 \textbf{Jensen-Shannon (JS) 散度}：
+\begin{equation}
+    C(G) = \max_D V(D, G) = -\log 4 + 2 \cdot JSD(P_{data} \| P_g)
+\end{equation}
+这意味着，GAN 的本质是在最小化两个分布之间的距离。当 $P_g = P_{data}$ 时，$JSD=0$，生成器达到最优。
+
+\subsection{训练挑战与进阶变体}
+
+尽管理论完美，原始 GAN 的训练在工程上非常困难，被称为“最难训练的深度模型之一”。
+
+\paragraph{主要挑战}
+\begin{enumerate}
+    \item \textbf{梯度消失 (Vanishing Gradient)}：根据 JS 散度的性质，如果两个分布 $P_{data}$ 和 $P_g$ 完全不重叠（在初期很常见），JS 散度是常数 $\log 2$。这意味着梯度为 0，生成器无法得到更新信号。表现为：判别器训练得越好，生成器反而越学不到东西。
+    \item \textbf{模式崩溃 (Mode Collapse)}：生成器发现生成某一种特定的样本（例如交通流只生成早高峰形态）就能轻易骗过判别器，于是它放弃了数据的多样性，只重复生成这一种模式。这会削弱生成数据的代表性，也可能使模型忽略少数模式与极端事件。
+\end{enumerate}
+
+
+
+
+
+
+
+\paragraph{WGAN: 基于 Wasserstein 距离的改进}
+为了解决梯度消失，Arjovsky 等人提出了 \textbf{WGAN (Wasserstein GAN)}。它用 \textbf{Earth Mover's Distance (EM 距离，又称 Wasserstein 距离)} 替代了 JS 散度。
+\begin{itemize}
+    \item \textbf{核心改动}：
+        \begin{itemize}
+            \item 移除了判别器最后一层的 Sigmoid 激活。
+            \item 损失函数不再取对数，而是直接基于 $D(\mathbf{x}) - D(G(\mathbf{z}))$。
+            \item 引入了 **Lipschitz 连续性约束**（通常通过权重剪裁或梯度惩罚实现）。
+        \end{itemize}
+    \item \textbf{优势}：即使两个分布不重叠，Wasserstein 距离也能提供平滑的梯度，指导生成器拉近分布。这使得 WGAN 的训练更加稳定，适合连续数值和复杂场景生成。
+\end{itemize}
+
+\paragraph{cGAN: 条件生成}
+在可控生成任务中，我们往往需要生成特定条件下的数据（例如：“生成雨天的交通流”或“生成节假日的电力负荷”）。\textbf{条件 GAN (Conditional GAN, cGAN)} 将条件信息 $\mathbf{y}$（如类别标签、天气指数）同时拼接输入给 $G$ 和 $D$，从而实现可控生成。
+
+\section{案例占位}
+
+\begin{quote}
+\textbf{【案例占位】}
+
+后续将在此加入一个围绕。案例不以逐行教学代码为主，而将展示问题定义、向 AI 提供的上下文与约束、模型选择依据、关键中间产物、验证过程以及人需要承担的判断。
+
+\textbf{【待确定内容】} 数据来源、任务背景、AI 协作流程、模型比较、错误诊断与现实解释。
+\end{quote}
