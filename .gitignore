@@ -43,3 +43,6 @@ Desktop.ini
 
 # Inkscape SVG files
 /svg-inkscape/
+
+# Claude Code Memories
+/memory/
