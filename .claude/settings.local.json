@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python *)",
+      "Bash(pdftotext \"E:/5-PhD/3-Books/Prompt as Code/design/Contents.pdf\" \"E:/5-PhD/3-Books/Prompt as Code/design/contents_out.txt\")",
+      "Bash(echo \"exit: $?\")",
+      "Bash(pdftotext \"E:/5-PhD/3-Books/Prompt as Code/design/Overview.pdf\" \"E:/5-PhD/3-Books/Prompt as Code/design/overview_out.txt\")"
+    ]
+  }
+}
