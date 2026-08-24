@@ -1,29 +1,44 @@
 {
   "latex-workshop.latex.outDir": "%DIR%/out",
+
+  "latex-workshop.latex.autoBuild.run": "never",
+
+  "latex-workshop.latex.autoBuild.cleanAndRetry.enabled": false,
+
+  "latex-workshop.latex.clean.command": "/Library/TeX/texbin/latexmk",
+
   "latex-workshop.latex.tools": [
-    {
-      "name": "latexmk-xelatex",
-      "command": "latexmk",
-      "args": [
-        "-xelatex",
-        "-shell-escape",
-        "-synctex=1",
-        "-interaction=nonstopmode",
-        "-file-line-error",
-        "-jobname=prompt_as_code",
-        "-outdir=%OUTDIR%",
-        "-auxdir=%OUTDIR%",
-        "%DOC%"
-      ]
-    }
+      {
+          "name": "latexmk-xelatex",
+
+          "command": "/Library/TeX/texbin/latexmk",
+
+          "args": [
+              "-xelatex",
+              "-shell-escape",
+              "-synctex=1",
+              "-interaction=nonstopmode",
+              "-file-line-error",
+              "-jobname=prompt_as_code",
+              "-outdir=%OUTDIR%",
+              "-auxdir=%OUTDIR%",
+              "%DOC%"
+          ],
+
+          "env": {
+              "PATH": "/Library/TeX/texbin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+          }
+      }
   ],
+
   "latex-workshop.latex.recipes": [
-    {
-      "name": "latexmk (XeLaTeX)",
-      "tools": [
-        "latexmk-xelatex"
-      ]
-    }
+      {
+          "name": "latexmk (XeLaTeX)",
+          "tools": [
+              "latexmk-xelatex"
+          ]
+      }
   ],
+
   "latex-workshop.latex.recipe.default": "first"
 }

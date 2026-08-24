@@ -15,25 +15,17 @@ xelatex --version
 latexmk --version
 ```
 
-## VS Code 快捷键（macOS）
+## Cursor 快捷键
 
-安装扩展 **LaTeX Workshop** 后：
-
-- 编译项目：`⌘ Command` + `⌥ Option` + `B`（项目已配置为默认使用 XeLaTeX）
-- 查看 PDF：`⌘ Command` + `⌥ Option` + `V`
-- 从 `.tex` 跳转到 PDF 对应位置：在源码中按 `⌘ Command` + `⌥ Option` + `J`
-- 从 PDF 跳回源码：在 VS Code 内置 PDF 预览中按住 `⌘ Command` 并单击
+| 操作 | 快捷键 |
+| --- | --- |
+| 保存 | `⌘S` |
+| 手动编译 | `⌘⌥B` |
+| 打开或跳到编译后的 PDF | `⌘⌥V` |
+| 从当前源码位置跳到 PDF 对应位置 | `⌘⌥J` |
+| 从 PDF 跳到对应的源码位置 | `⌘` + 点击 PDF |
 
 生成的 PDF 位于 `out/prompt_as_code.pdf`。
-
-若 VS Code 仍显示旧的 `pdflatex` recipe，请运行命令面板中的
-`Developer: Reload Window`（打开命令面板：`⇧ Shift` + `⌘ Command` + `P`），然后重新编译。
-
-如果快捷键与 macOS 或其他扩展冲突，可以从命令面板直接运行：
-
-- `LaTeX Workshop: Build LaTeX project`
-- `LaTeX Workshop: View LaTeX PDF file`
-- `LaTeX Workshop: SyncTeX from cursor`
 
 ## 命令行编译
 
