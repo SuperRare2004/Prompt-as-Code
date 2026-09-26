@@ -1,0 +1,51 @@
+train: 2012-03-01 00:00:00 -> 2012-05-14 23:55:00, rows=4,471,200
+valid: 2012-05-15 00:00:00 -> 2012-05-31 23:55:00, rows=1,013,472
+test: 2012-06-01 00:00:00 -> 2012-06-27 23:55:00, rows=1,609,632
+
+[验证集] 基准模型（mph）
+ method  MAE  RMSE  AM_peak  PM_peak  other  onset
+persist 3.38  6.19     4.18     4.87   3.04  33.01
+   hist 4.55  8.26     5.77     8.56   3.74  22.44
+    mix 3.49  5.95     4.40     5.88   2.99  27.60
+
+[岭回归] alpha 选择（验证集 MAE）
+alpha=0.01   train MAE=3.200  valid MAE=3.264
+alpha=0.1    train MAE=3.200  valid MAE=3.264
+alpha=1      train MAE=3.200  valid MAE=3.264
+alpha=10     train MAE=3.200  valid MAE=3.264
+alpha=100    train MAE=3.200  valid MAE=3.264
+标准化系数：
+ speed      7.753
+lag1       2.019
+lag2       0.809
+lag3       0.432
+lag5       0.311
+tod_cos    0.300
+lag4       0.266
+weekend    0.188
+tod_sin   -0.079
+
+[验证集] 基准 vs 岭回归
+ method  MAE  RMSE  AM_peak  PM_peak  other  onset
+persist 3.37  6.18     4.18     4.86   3.03  32.97
+   hist 4.54  8.23     5.74     8.54   3.73  22.39
+    mix 3.49  5.94     4.38     5.87   2.99  27.56
+  ridge 3.26  5.86     4.39     4.90   2.86  32.14
+
+[回归树] 深度 vs 训练/验证 MAE
+depth=2   train=4.207  valid=4.303
+depth=4   train=3.373  valid=3.448
+depth=6   train=3.181  valid=3.255
+depth=8   train=3.096  valid=3.193
+depth=10  train=3.014  valid=3.181
+depth=12  train=2.882  valid=3.224
+depth=15  train=2.538  valid=3.391
+depth=20  train=1.614  valid=3.869
+depth=25  train=0.719  valid=4.266
+
+[测试集] 最终模型 alpha=100
+ method  MAE  RMSE  AM_peak  PM_peak  other  onset
+persist 3.39  6.19     3.78     5.04   3.06  32.80
+   hist 4.40  8.05     5.02     7.93   3.74  22.33
+    mix 3.42  5.88     3.86     5.63   3.00  27.43
+  ridge 3.27  5.86     3.99     5.07   2.89  32.03

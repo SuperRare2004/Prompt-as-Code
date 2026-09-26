@@ -1,0 +1,27 @@
+先 dropna 再按行切窗口：301,018/6,516,104 个窗口（4.6%）实际跨越了缺失时段
+ method  MAE  RMSE  AM_peak  PM_peak  other  onset
+persist 3.39  6.19     3.78     5.04   3.06  32.80
+  ridge 3.27  5.86     3.99     5.07   2.89  32.03
+ mlp_s0 3.11  5.60     3.81     4.98   2.72  31.27
+ mlp_s1 3.13  5.62     3.81     5.02   2.74  31.38
+ mlp_s2 3.08  5.60     3.73     4.94   2.69  31.56
+epoch 0: valid MAE=3.052 mph
+epoch 1: valid MAE=3.016 mph
+epoch 2: valid MAE=2.990 mph
+epoch 3: valid MAE=2.963 mph
+epoch 4: valid MAE=2.954 mph
+epoch 5: valid MAE=2.948 mph
+epoch 6: valid MAE=2.935 mph
+epoch 7: valid MAE=2.931 mph
+epoch 8: valid MAE=2.928 mph
+epoch 9: valid MAE=2.922 mph
+epoch 10: valid MAE=2.915 mph
+epoch 11: valid MAE=2.912 mph
+epoch 12: valid MAE=2.916 mph
+epoch 13: valid MAE=2.907 mph
+epoch 14: valid MAE=2.908 mph
+ method  MAE  RMSE  AM_peak  PM_peak  other  onset
+persist 3.39  6.19     3.78     5.04   3.06  32.80
+  ridge 3.27  5.86     3.99     5.07   2.89  32.03
+ mlp_s0 3.11  5.60     3.81     4.98   2.72  31.27
+   lstm 2.93  5.74     3.55     4.64   2.57  33.38

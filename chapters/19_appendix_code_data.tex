@@ -1,0 +1,76 @@
+\chapter{配套代码与数据说明}
+\label{app:code}
+
+本书各案例的完整代码收录在配套代码目录 \texttt{code/} 中。这些代码是按照书中给出的 Prompt 与约束，由 AI 生成、经过人工审查并在真实数据上实际运行的版本；书中报告的数值均来自这些脚本的运行结果，运行日志保存在 \texttt{code/outputs/} 中。本附录说明数据来源、运行方法和代码与章节的对应关系。
+
+\section{数据来源}
+
+表~\ref{tab:app_data} 列出了本书使用的全部公开数据。所有数据均可免费获取；使用时请遵守各发布方的使用条款，并在研究成果中注明来源。
+
+\begin{table}[H]
+\centering
+\caption{本书使用的公开数据}
+\label{tab:app_data}
+\small
+\begin{tabular}{p{2.2cm}p{5.6cm}p{5.2cm}}
+\toprule
+用途 & 数据与范围 & 来源 \\
+\midrule
+案例 A & METR-LA：洛杉矶县高速公路 207 个线圈检测器，2012-03-01 至 2012-06-27，5 分钟平均车速（mph），0 表示缺失；检测器坐标及路网行驶距离 & \citet{li2018dcrnn} 发布，可从 Zenodo 与 DCRNN 代码仓库获取 \\
+案例 B & STATS19 道路交通伤亡事故数据，2021—2025 年事故表、车辆表与伤亡人员表 & 英国交通部\cite{dft2026stats19} \\
+案例 C & MTA 地铁分小时进站量（9 座车站，按车站 $\times$ 小时 $\times$ 支付方式聚合，2022-02 至 2024-12） & 纽约州开放数据平台\cite{mta2025hourly} \\
+案例 C & MLB 扬基队、大都会队主场比赛时间（2022—2024 赛季） & MLB 官方赛程接口 \\
+案例 C & 纽约中央公园附近逐日降水与最高气温：实测（再分析）与历史预报 & Open-Meteo 历史天气与历史预报接口 \\
+第 8 章 & diabetes 与 breast\_cancer 数据集 & scikit-learn 自带 \\
+第 9 章 & RDD2022 多国路面病害图像 & \citet{arya2022rdd} \\
+第 10 章 & CartPole-v1 环境 & gymnasium \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+公开数据会更新。例如 STATS19 的“最近五年”文件会随年度发布滚动，重新下载后个别数值可能与书中略有差异；书中数值对应 2026 年 9 月下载的数据版本。
+
+\section{运行方法}
+
+在安装 Python 3.10 或以上版本后，于 \texttt{code/} 目录下依次执行：
+
+\begin{lstlisting}[language=bash,numbers=none,caption={复现全书结果}]
+pip install -r requirements.txt
+bash data/download_data.sh     # 下载公开数据到 data/raw/
+bash run_all.sh                # 运行全部案例，输出写入 outputs/
+\end{lstlisting}
+
+在普通笔记本电脑（CPU）上，全部脚本约需 20—30 分钟，其中 LSTM 训练最慢。第 9 章路面病害案例需要单独下载 RDD2022 数据并建议使用 GPU；第 11 章文本分类案例需要读者自备金标准数据和大语言模型服务的访问凭据。
+
+\section{代码与章节对应}
+
+\begin{table}[H]
+\centering
+\caption{配套代码与章节的对应关系}
+\label{tab:app_code}
+\small
+\begin{tabular}{p{5.6cm}p{1.8cm}p{5.6cm}}
+\toprule
+文件 & 章节 & 内容 \\
+\midrule
+\texttt{case\_A\_freeway/preface\_leakage.py} & 前言 & 随机划分、居中窗口与 0 值处理的影响 \\
+\texttt{case\_A\_freeway/ch07\_baselines\_ridge.py} & 第 7 章 & 基准、岭回归、回归树复杂度诊断 \\
+\texttt{case\_A\_freeway/ch09\_mlp\_lstm.py} & 第 9 章 & MLP、LSTM、窗口构造错误的规模 \\
+\texttt{case\_A\_freeway/ch09\_graph\_neighbors.py} & 第 9 章 & 直线距离邻居与路网下游邻居 \\
+\texttt{case\_A\_freeway/ch10\_signal\_rl.py} & 第 10 章 & 交叉口信号控制的简化仿真与 Q-learning \\
+\texttt{case\_B\_crash/ch01\_ch17\_default\_vs\_audit.py} & 第 1、17 章 & 默认做法与字段审查后的对比 \\
+\texttt{case\_B\_crash/ch08\_logit\_forest.py} & 第 8 章 & 逻辑回归、随机森林、分组与覆盖率 \\
+\texttt{case\_B\_crash/ch17\_error\_audit.py} & 第 17 章 & 各类错误的逐项复现 \\
+\texttt{case\_C\_metro/step1\_clean.py} 至 \texttt{step4\_validate.py} & 第 15、16 章 & 描述与清洗、特征、模型、验证 \\
+\texttt{ch08\_traditional\_ml/demos.py} & 第 8 章 & 各模型小节的演示 \\
+\texttt{ch10\_rl/demos.py} & 第 10 章 & 价值迭代、Q-learning、SARSA、DQN、REINFORCE \\
+\texttt{figures/make\_figures.py} & 第 7、8、9、16、17 章 & 根据运行结果绘制书中插图 \\
+\texttt{misc/ch09\_road\_damage\_eval.py} & 第 9 章 & RDD2022 留一国家评估框架 \\
+\texttt{misc/ch11\_llm\_text\_classification.py} & 第 11 章 & LLM 文本分类、基线与核查 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{关于“AI 生成的代码”}
+
+配套代码展示的是：在书中那样明确的 Prompt 与约束下，AI 会生成什么样的代码，以及人在哪些地方进行了审查和修改。它们不是唯一正确的写法，也不应被当作可以直接用于生产环境的系统。读者在复用时，应当像书中各案例那样，先说明自己的数据与任务，再检查每一个与信息可得性、数据划分、缺失值和评价指标相关的实现细节。

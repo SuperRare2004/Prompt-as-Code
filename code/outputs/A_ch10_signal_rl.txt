@@ -1,0 +1,18 @@
+
+== test demand x1.0
+fixed_time                                       avg_delay_s=   28.3  spill_min=    0.0  max_wait_s=  110.4  left_in_queue=   17.1  min_green_violations=    0.0
+actuated                                         avg_delay_s=   23.7  spill_min=    0.0  max_wait_s=   86.5  left_in_queue=   14.2  min_green_violations=    0.0
+RL_default(ramp-only reward, no constraints)     avg_delay_s=    8.7  spill_min=    4.7  max_wait_s= 3443.3  left_in_queue=  966.6  min_green_violations=    8.6
+RL_human(total queue + penalties, constrained)   avg_delay_s=   33.2  spill_min=    0.0  max_wait_s=  151.6  left_in_queue=   22.4  min_green_violations=    0.0
+
+== test demand x1.3
+fixed_time                                       avg_delay_s=  130.7  spill_min=   45.1  max_wait_s=  539.3  left_in_queue=  180.2  min_green_violations=    0.0
+actuated                                         avg_delay_s=  106.1  spill_min=   45.0  max_wait_s=  439.3  left_in_queue=  131.8  min_green_violations=    0.0
+RL_default(ramp-only reward, no constraints)     avg_delay_s=    5.2  spill_min=    0.0  max_wait_s= 3523.7  left_in_queue= 1296.1  min_green_violations=    7.4
+RL_human(total queue + penalties, constrained)   avg_delay_s=  150.7  spill_min=   46.3  max_wait_s=  589.4  left_in_queue=  197.6  min_green_violations=    0.0
+
+== x1.0 + 10% detector dropout
+fixed_time                                       avg_delay_s=   28.3  spill_min=    0.0  max_wait_s=  110.4  left_in_queue=   17.1  min_green_violations=    0.0
+actuated                                         avg_delay_s=   25.1  spill_min=    0.0  max_wait_s=   91.5  left_in_queue=   16.9  min_green_violations=    0.0
+RL_default(ramp-only reward, no constraints)     avg_delay_s=    6.9  spill_min=    0.0  max_wait_s= 3491.8  left_in_queue=  983.0  min_green_violations=    7.3
+RL_human(total queue + penalties, constrained)   avg_delay_s=   33.0  spill_min=    0.0  max_wait_s=  160.2  left_in_queue=   17.6  min_green_violations=    0.0

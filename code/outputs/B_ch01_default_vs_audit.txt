@@ -1,0 +1,19 @@
+记录数： 513801 年份： 2021 - 2025
+KSI 占比（全体）： 0.2421
+KSI 占比按年份： {2021: 0.2251, 2022: 0.2352, 2023: 0.2394, 2024: 0.2484, 2025: 0.2624}
+KSI 占比按报告系统（collision_injury_based: 1=基于伤情的系统如 CRASH/COPA, 0=警员自行判断）： {0: 0.193, 1: 0.2745} {1: 309049, 0: 204752}
+按警员是否到场： {1: 0.296, 2: 0.157, 3: 0.097}
+
+[默认做法] 特征数 30  Accuracy=1.000 ROC-AUC=1.000 PR-AUC=1.000 Recall@0.5=1.000
+全部预测为非 KSI 的 Accuracy=0.758
+默认模型置换重要性 Top8：
+ collision_adjusted_severity_slight     0.7335
+police_force                           0.0000
+number_of_casualties                   0.0000
+day_of_week                            0.0000
+collision_adjusted_severity_serious    0.0000
+collision_injury_based                 0.0000
+enhanced_severity_collision            0.0000
+trunk_road_flag                        0.0000
+
+[审查后] 训练 2021-2023，测试 2025：ROC-AUC=0.653 PR-AUC=0.412（随机猜测 PR-AUC≈0.262）

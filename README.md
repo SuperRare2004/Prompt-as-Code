@@ -43,3 +43,14 @@ xelatex -shell-escape -jobname=prompt_as_code prompt_as_code.tex
 ```
 
 在 Overleaf 中将 Compiler 设置为 **XeLaTeX**，并将 Main document 设置为 `prompt_as_code.tex`。
+
+## 配套代码
+
+书中所有案例的代码、数据下载脚本和运行日志位于 `code/`，说明见 `code/README.md`。复现全书数字：
+
+```bash
+cd code
+pip install -r requirements.txt
+bash data/download_data.sh
+bash run_all.sh
+```

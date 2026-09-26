@@ -1,0 +1,53 @@
+[线性回归, BMI] 斜率=1016.9 截距=153.2 测试 R2=0.158 MAE=53.3
+[多项式回归, BMI] 阶数=1 训练 R2=0.391 测试 R2=0.158
+[多项式回归, BMI] 阶数=2 训练 R2=0.391 测试 R2=0.158
+[多项式回归, BMI] 阶数=3 训练 R2=0.394 测试 R2=0.150
+[多项式回归, BMI] 阶数=8 训练 R2=0.403 测试 R2=0.135
+[OLS                       ] 测试 R2=0.359 非零系数=10/10
+[Ridge(a=1)                ] 测试 R2=0.358 非零系数=10/10
+[Lasso(a=0.5)              ] 测试 R2=0.355 非零系数=9/10
+[ElasticNet(a=0.01,l1=0.5) ] 测试 R2=0.357 非零系数=10/10
+[向前逐步回归] 加入 bmi  交叉验证 R2=0.382
+[向前逐步回归] 加入 s5   交叉验证 R2=0.492
+[向前逐步回归] 加入 bp   交叉验证 R2=0.504
+[向前逐步回归] 加入 s3   交叉验证 R2=0.515
+[向前逐步回归] 加入 sex  交叉验证 R2=0.524
+[向前逐步回归] 最终特征=['bmi', 's5', 'bp', 's3', 'sex'] 测试 R2=0.362
+[逻辑回归] 测试 Accuracy=0.958 ROC-AUC=0.995
+[SVM kernel=linear 标准化=False] 测试 Accuracy=0.944 支持向量数=41
+[SVM kernel=linear 标准化=True ] 测试 Accuracy=0.965 支持向量数=29
+[SVM kernel=rbf    标准化=False] 测试 Accuracy=0.916 支持向量数=113
+[SVM kernel=rbf    标准化=True ] 测试 Accuracy=0.958 支持向量数=104
+[决策树 max_depth=2] 叶节点=4 训练 Acc=0.932 测试 Acc=0.888
+[决策树 max_depth=4] 叶节点=13 训练 Acc=0.986 测试 Acc=0.909
+[决策树 max_depth=None] 叶节点=18 训练 Acc=1.000 测试 Acc=0.902
+|--- worst perimeter <= 106.10
+|   |--- worst concave points <= 0.13
+|   |   |--- class: 1
+|   |--- worst concave points >  0.13
+|   |   |--- class: 0
+|--- worst perimeter >  106.10
+|   |--- worst concave points <= 0.14
+|   |   |--- class: 0
+|   |--- worst concave points >  0.14
+|   |   |--- class: 0
+
+[随机森林] 测试 Accuracy=0.944 ROC-AUC=0.977
+[随机森林] 不纯度重要性 Top5： {'worst perimeter': 0.145, 'worst radius': 0.134, 'worst concave points': 0.121, 'worst area': 0.101, 'mean concave points': 0.1}
+[K-means k=2] SSE=1,017,722 轮廓系数=0.364
+[K-means k=3] SSE=683,770 轮廓系数=0.379
+[K-means k=4] SSE=507,933 轮廓系数=0.404
+[K-means k=5] SSE=426,259 轮廓系数=0.381
+[K-means k=6] SSE=375,956 轮廓系数=0.360
+[K-means k=7] SSE=336,625 轮廓系数=0.353
+[K-means k=3] 簇0: 检测器数=51 早8点均速=29.6 晚17点均速=39.2 全天最低=28.2 mph
+[K-means k=3] 簇1: 检测器数=90 早8点均速=55.6 晚17点均速=61.8 全天最低=55.0 mph
+[K-means k=3] 簇2: 检测器数=66 早8点均速=58.9 晚17点均速=34.9 全天最低=31.4 mph
+[GMM k=1] BIC=9729.1
+[GMM k=2] BIC=9379.0
+[GMM k=3] BIC=9247.8
+[GMM k=4] BIC=9234.6
+[GMM k=5] BIC=9211.2
+[GMM k=3] 最大后验概率 < 0.8 的检测器（归属不确定）：8/207
+[PCA] 曲线维度=56；前 1/2/3 个主成分累计解释方差=0.589/0.878/0.927
+[PCA] 第一主成分载荷绝对值最大的时段： ['16:15:00', '16:30:00', '16:45:00', '16:00:00']

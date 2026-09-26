@@ -1,0 +1,14 @@
+numpy>=1.26
+pandas>=2.2
+scikit-learn>=1.5
+scipy>=1.11
+statsmodels>=0.14
+torch>=2.2
+requests>=2.31
+pyarrow>=15
+# 第 11 章（可选）：大语言模型调用
+anthropic
+pydantic>=2
+# 第 9 章路面病害案例（可选）
+ultralytics
+gymnasium>=0.29

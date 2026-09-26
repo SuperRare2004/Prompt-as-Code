@@ -1,0 +1,10 @@
+random split + centered window   R2=0.954  MAE=1.72 mph
+random split + past window       R2=0.819  MAE=3.03 mph
+time split + centered window     R2=0.955  MAE=1.75 mph
+time split + past window         R2=0.826  MAE=3.09 mph
+persistence baseline (time split) R2=0.786  MAE=3.41 mph
+test period: 2012-06-03 00:15:00 -> 2012-06-27 23:40:00
+zero readings: 8.1% of all records; timestamps where ALL sensors read 0: 2148
+zeros kept as speed (all rows)   R2=0.820  MAE=4.38 mph
+  same model, valid rows only    MAE=3.29 mph
+AI initial: zeros kept + random + centered R2=0.964  MAE=1.86 mph

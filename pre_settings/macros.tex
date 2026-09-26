@@ -53,3 +53,36 @@
 \definecolor{mypurple6}{RGB}{192,132,242}
 \definecolor{mypurple7}{RGB}{204,204,255}
 
+
+% 图占位：\figholder{图题}{标签}{图的内容说明}
+\newcommand{\figholder}[3]{%
+  \begin{figure}[H]
+    \centering
+    \fbox{\parbox{0.86\textwidth}{\centering\small\linespread{1.3}\selectfont
+      \vspace{1.2em}\textbf{【图占位】}\par\vspace{0.4em}#3\par\vspace{1.2em}}}
+    \caption{#1}
+    \label{#2}
+  \end{figure}}
+
+% AI 输出节选：与 Prompt 的 quote 样式区分
+\mdfdefinestyle{aioutputstyle}{%
+  skipabove=\medskipamount, skipbelow=\medskipamount,
+  leftline=true, rightline=false, topline=false, bottomline=false,
+  linewidth=3pt, linecolor=blue!35, backgroundcolor=blue!3,
+  innertopmargin=8pt, innerbottommargin=8pt,
+  innerleftmargin=12pt, innerrightmargin=6pt,
+}
+\newenvironment{aioutput}{%
+  \begin{mdframed}[style=aioutputstyle]%
+  \small\linespread{1.3}\selectfont\textbf{AI 输出（节选）}\par\smallskip
+}{%
+  \end{mdframed}%
+}
+
+\renewcommand{\lstlistingname}{代码清单}
+\lstset{extendedchars=false,texcl=false,columns=fullflexible,keepspaces=true}
+
+% 允许长代码路径在下划线处断行，避免溢出版心
+\setlength{\emergencystretch}{3em}
+\let\origunderscore\_
+\renewcommand{\_}{\origunderscore\allowbreak}

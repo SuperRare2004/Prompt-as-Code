@@ -1,0 +1,31 @@
+预测 > 1.5 x 历史最大： 0  预测 < 0： 14
+
+球场车站比赛日：按距开赛小时数的平均误差（预测-实际）与实际均值
+                     n  actual    bias  bias_B2
+hours_from_start                               
+-3.0              79.0   507.0   -20.0    207.0
+-2.0              79.0   531.0   -17.0     41.0
+-1.0              79.0   434.0   -26.0     22.0
+ 0.0              79.0   409.0   -38.0     68.0
+ 1.0              79.0   748.0  -107.0   -303.0
+ 2.0              79.0  3968.0 -1597.0  -2820.0
+ 3.0              79.0  4559.0  -863.0  -3352.0
+ 4.0              79.0  1082.0  -227.0   -654.0
+ 5.0              34.0   611.0   -13.0     96.0
+
+实测与预报降水相差 >10mm 的日期数：6；这些日期上 MAE：实测天气模型 249.2，预报天气模型 241.2
+
+按车站：
+                           mean_entries     MAE  MAE_B2  rel_MAE
+station                                                        
+Mets-Willets Point              315.89  168.27  275.59     0.53
+161 St-Yankee Stadium           955.68  254.22  485.67     0.27
+Atlantic Av-Barclays Ctr       1454.16  180.03  230.36     0.12
+86 St (4,5,6)                  1640.55  128.66  142.01     0.08
+Fulton St                      2787.80  210.46  240.95     0.08
+Grand Central-42 St            4882.95  350.93  353.88     0.07
+Jackson Hts-Roosevelt Av       2169.38  142.43  151.13     0.07
+Flushing-Main St               2147.68  125.79  143.88     0.06
+Times Sq-42 St                 6518.00  382.60  414.93     0.06
+
+80% 区间覆盖率按车站： {'161 St-Yankee Stadium': 0.727, '86 St (4,5,6)': 0.756, 'Atlantic Av-Barclays Ctr': 0.777, 'Flushing-Main St': 0.759, 'Fulton St': 0.706, 'Grand Central-42 St': 0.743, 'Jackson Hts-Roosevelt Av': 0.73, 'Mets-Willets Point': 0.743, 'Times Sq-42 St': 0.747}
