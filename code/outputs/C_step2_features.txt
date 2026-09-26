@@ -1,0 +1,11 @@
+(182115, 20)
+game
+0     635.0
+1    1256.0
+Name: entries, dtype: float64
+lag_7d        0.007
+lag_14d       0.013
+lag_21d       0.020
+lag_28d       0.027
+mean_4w       0.013
+trend_7_28    0.021
