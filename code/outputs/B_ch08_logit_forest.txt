@@ -1,0 +1,75 @@
+训练集 311,349（KSI 0.233），测试集 101,525（KSI 0.262）
+logit (unweighted)     Acc=0.738 Prec=0.521 Rec=0.033 ROC-AUC=0.643 PR-AUC=0.388 mean_p=0.237
+logit (balanced)       Acc=0.569 Prec=0.337 Rec=0.664 ROC-AUC=0.643 PR-AUC=0.387 mean_p=0.484
+
+优势比（参照：白天/晴/城市/单幅路/非交叉口）
+                           OR    lo    hi
+light_dark_lit          1.13  1.10  1.16
+light_dark_no_lighting  1.25  1.20  1.30
+light_dark_unlit        1.26  1.14  1.38
+light_light_unknown     0.81  0.76  0.87
+weather_fog             0.95  0.84  1.08
+weather_rain            0.97  0.95  1.00
+weather_snow            0.83  0.73  0.95
+weather_weather_other   0.74  0.71  0.77
+area_area_unknown       1.71  0.94  3.14
+area_rural              1.35  1.32  1.39
+road_dual_cw            0.73  0.71  0.75
+road_one_way            0.61  0.57  0.66
+road_road_other         0.32  0.30  0.35
+road_roundabout         0.59  0.56  0.61
+road_slip_road          0.57  0.53  0.61
+junction_junction       0.92  0.90  0.94
+speed_per10             1.21  1.19  1.22
+inv_pedestrian          2.86  2.79  2.93
+inv_motorcycle          2.69  2.63  2.76
+inv_pedal_cycle         2.12  2.07  2.18
+inv_hgv                 1.39  1.32  1.47
+night                   1.36  1.32  1.40
+
+雨天与晴天的 KSI 占比： {'fine': 0.247, 'rain': 0.242}
+weather        fine   rain
+area                      
+area_unknown  0.283  0.375
+rural         0.300  0.273
+urban         0.222  0.225
+雨天事故中城市道路占比 vs 晴天： 0.642 0.671
+random forest          Acc=0.606 Prec=0.354 Rec=0.605 ROC-AUC=0.650 PR-AUC=0.404 mean_p=0.486
+
+随机森林置换重要性 Top10：
+ inv_motorcycle       0.0767
+inv_pedestrian       0.0438
+speed_per10          0.0266
+area_rural           0.0220
+inv_pedal_cycle      0.0166
+night                0.0046
+road_roundabout      0.0042
+road_dual_cw         0.0039
+junction_junction    0.0033
+light_dark_lit       0.0028
+
+限速 x 光照 KSI 占比：
+ light  dark_no_lighting  daylight
+speed                            
+20.0              0.267     0.191
+30.0              0.291     0.214
+40.0              0.345     0.243
+50.0              0.373     0.276
+60.0              0.370     0.342
+70.0              0.328     0.229
+
+模型前 20% 覆盖 KSI：0.326
+规则“农村+夜间”选中 0.058 的事故，覆盖 KSI：0.080
+模型选中同样比例（0.058）时覆盖 KSI：0.122
+
+按天气的涉事方构成：
+          inv_pedestrian  inv_motorcycle  inv_pedal_cycle  inv_hgv
+weather                                                          
+fine              0.175           0.168            0.161    0.025
+rain              0.172           0.134            0.112    0.025
+
+农村道路：按天气 x 是否涉及摩托车 的 KSI 占比：
+ weather          fine   rain
+inv_motorcycle              
+0               0.256  0.257
+1               0.534  0.440

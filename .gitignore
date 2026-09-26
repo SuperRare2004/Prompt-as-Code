@@ -46,3 +46,7 @@ Desktop.ini
 
 # Claude Code Memories
 /memory/
+# 配套代码的原始数据（体积大，运行 code/data/download_data.sh 获取）
+code/data/raw/
+code/data/*.parquet
+__pycache__/
