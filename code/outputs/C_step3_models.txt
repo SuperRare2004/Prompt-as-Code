@@ -1,0 +1,21 @@
+train 2022-03-01~2023-12-31 n=114,703; valid n=15,561; test 2024-04-01~2024-06-30 n=15,561
+
+[valid] 加权 MAE（人次/小时）
+各组样本数： {'regular_weekday': 10070, 'weekend': 4066, 'holiday±1': 1368, 'game_day': 57}
+                    wMAE  regular_weekday  weekend  holiday±1  game_day
+B1_last_week       316.6            304.1    251.8      596.4     346.6
+B2_mean_4w         302.8            315.7    231.3      419.2     341.7
+GBDT_obs_weather   248.5            258.2    207.8      296.2     214.0
+GBDT_fcst_weather  244.5            253.6    204.5      295.6     211.4
+GBDT_fcst_q0.67    243.4            249.2    212.7      292.7     205.4
+
+[test] 加权 MAE（人次/小时）
+各组样本数： {'regular_weekday': 9348, 'weekend': 3781, 'game_day': 1501, 'holiday±1': 931}
+                    wMAE  regular_weekday  weekend  holiday±1  game_day
+B1_last_week       344.4            320.0    275.0      540.0     576.4
+B2_mean_4w         270.2            235.9    218.2      504.4     502.6
+GBDT_obs_weather   230.6            213.3    189.1      393.5     344.2
+GBDT_fcst_weather  227.7            210.5    190.9      370.5     340.6
+GBDT_fcst_q0.67    229.4            208.3    206.1      350.2     346.1
+
+80% 预测区间实际覆盖率：0.743；按日期类型： {'game_day': 0.714, 'holiday±1': 0.69, 'regular_weekday': 0.752, 'weekend': 0.745}

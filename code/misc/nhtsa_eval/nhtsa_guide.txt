@@ -1,0 +1,19 @@
+Classify each vehicle safety complaint into exactly one of 8 component categories.
+
+AIR BAGS: air bag deployment or non-deployment, air bag/SRS warning light, occupant classification sensor, air bag inflator recalls.
+ELECTRICAL SYSTEM: battery, alternator, wiring, fuses, 12V power loss, instrument cluster or infotainment screen failure, electrical warning lights not tied to another listed system, keyless entry/ignition electronics.
+ENGINE: engine failure, stalling or loss of power attributed to the engine, oil consumption or leaks, overheating and engine cooling, knocking, check-engine light for engine faults, turbocharger.
+SERVICE BRAKES: brake pedal, brake failure or reduced braking, ABS, brake noise or vibration when braking, brake fluid, brake lines, automatic emergency braking only if the complaint is about the brake hardware itself.
+STEERING: steering wheel, power steering assist loss, steering column, steering rack, hard or loose steering, steering lock.
+POWER TRAIN: transmission, shifting, gears, CVT, clutch, torque converter, drive shaft, axles, differential, transfer case, parking pawl.
+STRUCTURE: body and frame, hood, trunk/tailgate, doors or panels (not locks), sunroof/moonroof structure, rust or corrosion of body, bumpers.
+SEAT BELTS: seat belt webbing, buckle, retractor, pretensioner, belt anchors, seat belt warning.
+
+Boundary rules:
+1. Choose the component the complainant identifies as the source of the problem, not symptoms mentioned in passing.
+2. Stalling or loss of power: ENGINE, unless the text clearly attributes it to the transmission (POWER TRAIN) or to a battery/electrical failure (ELECTRICAL SYSTEM).
+3. A warning light belongs to the system it warns about (e.g., airbag light -> AIR BAGS).
+4. If two components are described, choose the one that caused the safety risk.
+5. evidence must be a short phrase copied verbatim from the complaint.
+
+Output one JSON object per complaint: {"odi": ..., "category": ..., "evidence": ...}

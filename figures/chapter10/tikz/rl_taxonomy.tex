@@ -1,0 +1,13 @@
+\begin{tikzpicture}[font=\scriptsize, >=Stealth, level distance=13mm,
+  every node/.style={draw, rounded corners, align=center, fill=gray!8, minimum height=7mm},
+  level 1/.style={sibling distance=78mm}, level 2/.style={sibling distance=33mm}]
+\node[fill=blue!15] {强化学习算法}
+  child {node[fill=green!15] {基于模型\\（已知或学习环境模型）}
+    child {node {动态规划\\价值迭代、策略迭代}}
+    child {node {学习模型并规划\\如 Dyna、MPC 类方法}}}
+  child {node[fill=orange!15] {无模型\\（直接从交互中学习）}
+    child {node {基于价值\\Q-Learning、SARSA、DQN}}
+    child {node {基于策略\\REINFORCE}}
+    child {node {Actor-Critic\\A2C、PPO、SAC}}};
+\node[draw=none, fill=none] at (0,-4.3) {另一个维度：同策略（SARSA、REINFORCE、PPO）与异策略（Q-Learning、DQN、SAC）};
+\end{tikzpicture}

@@ -1,0 +1,13 @@
+\begin{tikzpicture}[font=\small, >=Stealth, t/.style={draw, rounded corners, fill=yellow!20, minimum height=6mm}, tid/.style={draw, fill=blue!10, minimum width=9mm, minimum height=6mm}]
+\node[anchor=west] at (-0.3,0.9) {原始文本：“早高峰匝道排队回溢”};
+\foreach \tok/\i/\x in {早/1024/0, 高峰/5391/1.4, 匝道/20877/2.8, 排队/9142/4.2, 回溢/31006/5.6} {
+  \node[t] (t\i) at (\x,0) {\tok};
+  \node[tid] (d\i) at (\x,-1.1) {\scriptsize \i};
+  \draw[->] (t\i) -- (d\i);
+  \foreach \k in {0,...,3} \fill[green!\the\numexpr 15+15*\k\relax] (\x-0.35+0.175*\k,-2.4) rectangle ++(0.175,0.6);
+  \draw (\x-0.35,-2.4) rectangle ++(0.7,0.6);
+  \draw[->] (d\i) -- (\x,-1.8);
+}
+\node[anchor=east, font=\scriptsize] at (-0.6,0) {分词 (token)}; \node[anchor=east, font=\scriptsize] at (-0.6,-1.1) {token 编号}; \node[anchor=east, font=\scriptsize] at (-0.6,-2.1) {嵌入向量 $+$ 位置编码};
+\draw[decorate, decoration={brace, amplitude=5pt, mirror}] (-0.4,-2.6) -- node[below=6pt, font=\scriptsize] {输入矩阵 $X\in\mathbb{R}^{L\times d_{\text{model}}}$：$L$ 个 token，每个是 $d_{\text{model}}$ 维向量（编号仅为示意）} (6.0,-2.6);
+\end{tikzpicture}

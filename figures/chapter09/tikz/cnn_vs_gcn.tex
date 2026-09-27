@@ -1,0 +1,11 @@
+\begin{tikzpicture}[font=\scriptsize, >=Stealth, v/.style={circle, draw, fill=blue!15, minimum size=5mm, inner sep=0pt}]
+\foreach \r in {0,...,2} \foreach \c in {0,...,2} {\pgfmathtruncatemacro{\k}{3*\r+\c+1} \node[draw, minimum size=7mm, fill=orange!20] at (0.7*\c,-0.7*\r) {$w_{\k}$};}
+\node[align=center] at (0.7,-2.2) {CNN：每个相对位置有各自的权重\\邻域由规则网格决定};
+\begin{scope}[shift={(5.0,-0.7)}]
+\node[v, fill=red!40] (c) at (-0.6,0) {};
+\foreach \a/\n in {30/a,150/b,270/d,210/e} {\node[v] (\n) at ($(c)+(\a:1.1)$) {}; \draw[->] (\n) -- (c);}
+\node[font=\scriptsize, anchor=west] at (0.75,-0.25) {$\mathbf{h}_i'=\sigma\big(\sum_j \hat{A}_{ij}\mathbf{W}\mathbf{h}_j\big)$};
+\node[align=center] at (0,-1.5) {GCN：所有邻居共享同一 $\mathbf{W}$\\权重大小由归一化邻接 $\hat{A}_{ij}$ 决定};
+\end{scope}
+\node[align=center] at (3.2,1.0) {共同点：局部聚合 + 参数共享 + 逐层堆叠};
+\end{tikzpicture}

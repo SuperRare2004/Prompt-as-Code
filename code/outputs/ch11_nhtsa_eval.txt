@@ -1,0 +1,54 @@
+评价集 160 条；训练集 10,411 条
+
+== 大语言模型（少样本说明 + 边界规则，盲分类）
+准确率=0.925 宏平均F1=0.925
+                   precision    recall  f1-score   support
+
+         AIR BAGS      0.857     0.900     0.878        20
+ELECTRICAL SYSTEM      1.000     0.950     0.974        20
+           ENGINE      0.864     0.950     0.905        20
+      POWER TRAIN      0.889     0.800     0.842        20
+       SEAT BELTS      1.000     0.900     0.947        20
+   SERVICE BRAKES      0.900     0.900     0.900        20
+         STEERING      1.000     1.000     1.000        20
+        STRUCTURE      0.909     1.000     0.952        20
+
+         accuracy                          0.925       160
+        macro avg      0.927     0.925     0.925       160
+     weighted avg      0.927     0.925     0.925       160
+
+evidence 为原文子串的比例：1.000
+
+混淆矩阵（行=NHTSA 部件字段，列=LLM）：
+                    AIR BAGS  ELECTRICAL SYSTEM  ENGINE  POWER TRAIN  SEAT BELTS  SERVICE BRAKES  STEERING  STRUCTURE
+AIR BAGS                 18                  0       0            0           0               0         0          2
+ELECTRICAL SYSTEM         0                 19       0            0           0               1         0          0
+ENGINE                    0                  0      19            1           0               0         0          0
+POWER TRAIN               0                  0       3           16           0               1         0          0
+SEAT BELTS                2                  0       0            0          18               0         0          0
+SERVICE BRAKES            1                  0       0            1           0              18         0          0
+STEERING                  0                  0       0            0           0               0        20          0
+STRUCTURE                 0                  0       0            0           0               0         0         20
+
+不一致样本：
+  11418667 标签=AIR BAGS           LLM=STRUCTURE          | On May 24,2021 while in vehicle the headrest deployed for no reason at all striking me in the back of the head
+  11423965 标签=SERVICE BRAKES     LLM=AIR BAGS           | The contact owns a 2020 Chevrolet Equinox. The contact stated that while driving downhill at approximately 20-
+  11171922 标签=SERVICE BRAKES     LLM=POWER TRAIN        | THE VEHICLE WAS PARKED ON A GRADE. THE VEHICLE WAS ON WITH GEAR IN PARK POSITION, WITHOUT THE PARK BRAKE ENGAG
+  11329030 标签=POWER TRAIN        LLM=SERVICE BRAKES     | TL* THE CONTACT OWNS A 2020 RAM 1500. THE CONTACT STATED THAT UPON REVERSING THE VEHICLE AT VARIOUS OCCASIONS,
+  11580150 标签=AIR BAGS           LLM=STRUCTURE          | [XXX] at [XXX] We were sitting at a complete stop with our turn signal on, waiting for traffic to clear enough
+  11269125 标签=SEAT BELTS         LLM=AIR BAGS           | A TRUCK TURNED QUICKLY IN FRONT OF MY WIFE WHICH MADE HER HIT HIM IN THE SIDE OF HIS TRUCK WHILE SHE WAS TRAVE
+  11438247 标签=POWER TRAIN        LLM=ENGINE             | I slowed down to take a right turn into a drive through when the engine shut off out of nowhere. I had to stop
+  11220201 标签=ELECTRICAL SYSTEM  LLM=SERVICE BRAKES     | WHEN DRIVING THE AUTOMATIC BRAKING FEATURE WILL AUTOMATICALLY ENGAGE WITH NOTHING IN MY SOROUNDING  CAUSING MY
+  11507232 标签=ENGINE             LLM=POWER TRAIN        | The vehicle was purchased Nov 2023 with 60,000 mile on it. in december or early january the check engine light
+  11514784 标签=POWER TRAIN        LLM=ENGINE             | The contact owns a 2018 Nissan Rogue. The contact stated that while driving at an undisclosed speed, the vehic
+  11428539 标签=POWER TRAIN        LLM=ENGINE             | The contact owns a 2019 Chevrolet Equinox. While stopped, the vehicle would intermittently stall upon depressi
+  11587609 标签=SEAT BELTS         LLM=AIR BAGS           | I have had an Alert notification, and reading through online, it seems there might be a consistent issue.   Al
+
+== TF-IDF + 逻辑回归基线
+训练样本    500：准确率=0.750 宏平均F1=0.749
+训练样本  2,000：准确率=0.806 宏平均F1=0.806
+训练样本 10,411：准确率=0.875 宏平均F1=0.875
+
+== 参照标签的一致性（训练集）
+提到 stall/stalled 的投诉（472 条）： {'ENGINE': 0.68, 'POWER TRAIN': 0.184, 'ELECTRICAL SYSTEM': 0.117, 'SERVICE BRAKES': 0.008}
+提到自动紧急制动/幻影刹车的投诉（81 条）： {'SERVICE BRAKES': 0.877, 'ELECTRICAL SYSTEM': 0.062, 'POWER TRAIN': 0.049, 'ENGINE': 0.012}

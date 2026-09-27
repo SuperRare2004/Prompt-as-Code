@@ -1,0 +1,9 @@
+\begin{tikzpicture}[font=\scriptsize, >=Stealth, d/.style={draw, rounded corners, fill=gray!10, minimum width=24mm, minimum height=7mm}, e/.style={draw, rounded corners, fill=blue!12, minimum width=22mm, minimum height=7mm}]
+\foreach \n/\lab/\enc/\y in {img/巡检照片、监控视频/视觉编码器（CNN、ViT）/1.8, ts/传感器与交通流时序/时序编码器/0.6, g/路网与结构拓扑/图编码器（GCN）/-0.6, txt/维护记录、事件文本/文本编码器（Transformer）/-1.8} {
+  \node[d] (\n) at (0,\y) {\lab}; \node[e] (e\n) at (3.6,\y) {\enc}; \draw[->] (\n) -- (e\n);
+}
+\node[draw, rounded corners, fill=orange!20, minimum height=40mm, minimum width=18mm, align=center] (fuse) at (7.2,0) {共享表示\\空间与\\跨模态融合};
+\foreach \n in {img,ts,g,txt} \draw[->] (e\n) -- (fuse);
+\node[draw, rounded corners, fill=green!20, align=center] (out) at (10.0,0) {风险判断\\维护建议\\问答与报告};
+\draw[->] (fuse) -- (out);
+\end{tikzpicture}

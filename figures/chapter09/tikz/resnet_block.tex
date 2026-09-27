@@ -1,0 +1,12 @@
+\begin{tikzpicture}[font=\small, >=Stealth, b/.style={draw, rounded corners, fill=blue!12, minimum width=28mm, minimum height=7mm}]
+\node (x) at (0,0) {$\mathbf{x}$};
+\node[b] (w1) at (0,-1.2) {权重层（卷积）};
+\node[b, fill=orange!15] (r1) at (0,-2.2) {ReLU};
+\node[b] (w2) at (0,-3.2) {权重层（卷积）};
+\node[circle, draw, inner sep=1pt] (add) at (0,-4.4) {$+$};
+\node[b, fill=orange!15] (r2) at (0,-5.4) {ReLU};
+\node (y) at (0,-6.4) {$\mathbf{y}=\mathcal{F}(\mathbf{x})+\mathbf{x}$};
+\draw[->] (x) -- (w1); \draw[->] (w1) -- (r1); \draw[->] (r1) -- (w2); \draw[->] (w2) -- (add); \draw[->] (add) -- (r2); \draw[->] (r2) -- (y);
+\draw[->, thick, red!70] (x.east) -- ++(2.2,0) |- node[pos=0.25, right, align=left] {恒等映射\\（捷径连接）} (add.east);
+\draw[decorate, decoration={brace, amplitude=5pt, mirror}] (-1.6,-0.9) -- node[left=6pt] {残差 $\mathcal{F}(\mathbf{x})$} (-1.6,-3.5);
+\end{tikzpicture}

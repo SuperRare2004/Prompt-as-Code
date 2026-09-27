@@ -50,3 +50,4 @@ Desktop.ini
 code/data/raw/
 code/data/*.parquet
 __pycache__/
+code/data/*.npy

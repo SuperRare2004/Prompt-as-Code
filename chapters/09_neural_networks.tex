@@ -14,7 +14,7 @@
 \subsection{神经元模型：网络的基石}
 \label{subsec:neuron_model}
 
-人工神经网络的设计灵感直接源于生物神经系统。如相关图示 所示，在生物大脑中，神经元是处理、存储和传输信息的基本单元。
+人工神经网络的设计灵感直接源于生物神经系统。如图~\ref{fig:ch09_orig1} 所示，在生物大脑中，神经元是处理、存储和传输信息的基本单元。
 \begin{itemize}
     \item \textbf{树突 (Dendrites)}：负责接收来自其他神经元的输入信号。
     \item \textbf{细胞体 (Soma)}：整合接收到的信号。
@@ -23,7 +23,12 @@
 
 人工神经元（Artificial Neuron）正是对这一过程的数学抽象。
 
-\figholder{神经元模型：网络的基石示意图}{fig:ch09_orig1}{源稿中的示意图，待按本书风格重绘。内容应与“神经元模型：网络的基石”一节的讲解相对应。}
+\begin{figure}[H]
+  \centering
+  \input{figures/chapter09/tikz/neuron.tex}
+  \caption{人工神经元：输入加权求和并加上偏置，再经过激活函数输出}
+  \label{fig:ch09_orig1}
+\end{figure}
 
 \paragraph{数学表达}
 一个标准的人工神经元接收一组输入信号 $\mathbf{x} = [x_1, x_2, \dots, x_D]^T$。每个输入信号 $x_j$ 都有一个对应的权重 $w_j$，代表该特征对最终输出的重要性。
@@ -44,11 +49,16 @@
 \end{enumerate}
 
 \paragraph{感知机的局限性：XOR 问题}
-单个神经元（即感知机）本质上是一个线性分类器。如相关图示 所示，它可以完美解决逻辑“与”（AND）或“或”（OR）问题，因为这些问题是\textbf{线性可分}的。
+单个神经元（即感知机）本质上是一个线性分类器。如图~\ref{fig:ch09_orig2} 所示，它可以完美解决逻辑“与”（AND）或“或”（OR）问题，因为这些问题是\textbf{线性可分}的。
 
 然而，对于\textbf{异或（XOR）}问题（当且仅当两个输入不同时输出为 1），单层感知机无法解决。
 
-\figholder{感知机的局限性：XOR 问题示意图}{fig:ch09_orig2}{源稿中的示意图，待按本书风格重绘。内容应与“感知机的局限性：XOR 问题”一节的讲解相对应。}
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.85\textwidth]{figures/chapter09/xor.pdf}
+  \caption{单个感知机可以用一条直线分开 AND 与 OR，但无法分开 XOR}
+  \label{fig:ch09_orig2}
+\end{figure}
 
 \textbf{数学证明}：
 假设存在一组权重 $w_0, w_1, w_2$ 能够解决 XOR 问题，则必须满足以下四个不等式：
@@ -66,7 +76,12 @@
 
 为了解决线性不可分问题，我们在输入层和输出层之间引入了\textbf{隐藏层 (Hidden Layers)}，构建了多层感知机（MLP）。隐藏层的作用是将输入空间进行非线性变换，使其在高维空间中变得线性可分。
 
-\figholder{多层网络的结构与前向传播示意图}{fig:ch09_orig3}{源稿中的示意图，待按本书风格重绘。内容应与“多层网络的结构与前向传播”一节的讲解相对应。}
+\begin{figure}[H]
+  \centering
+  \input{figures/chapter09/tikz/mlp.tex}
+  \caption{多层感知机的结构与前向传播}
+  \label{fig:ch09_orig3}
+\end{figure}
 
 \paragraph{前向传播 (Forward Propagation)}
 考虑一个典型的三层网络（输入层-隐藏层-输出层），假设输入维度为 $D$，隐藏层单元数为 $H$，输出维度为 $K$。
@@ -210,7 +225,12 @@ RNN 的核心理念是引入“记忆”。与 FNN 每一层处理完即“遗�
 
 \textbf{权值共享（Weight Sharing）}是 RNN 最关键的特性。无论序列长度 $T$ 是多少，网络在所有时间步都共用同一组参数 ($\mathbf{W}_{hh}, \mathbf{W}_{xh}, \mathbf{W}_{hy}$)。这不仅大大减少了参数数量，还赋予了模型处理变长序列（Variable-length Sequence）的能力。
 
-\figholder{数学表达与权值共享示意图}{fig:ch09_orig4}{源稿中的示意图，待按本书风格重绘。内容应与“数学表达与权值共享”一节的讲解相对应。}
+\begin{figure}[H]
+  \centering
+  \resizebox{\textwidth}{!}{\input{figures/chapter09/tikz/rnn_unfold.tex}}
+  \caption{RNN 的循环结构及其沿时间展开的形式：各时间步共享参数}
+  \label{fig:ch09_orig4}
+\end{figure}
 
 \paragraph{数据的三维张量形状}
 在编程实现（如 PyTorch）中，理解数据的维度至关重要。与 FNN 的二维输入 \texttt{(Batch Size, Features)} 不同，RNN 需要三维输入：
@@ -235,7 +255,12 @@ RNN 的前向传播只需按时间顺序迭代公式。但如何更新权重？�
     \item \textbf{梯度爆炸 (Gradient Exploding)}：连乘项（特征值大于1时）趋近于无穷大，导致参数更新步长过大，训练直接崩溃（出现 NaN）。
 \end{enumerate}
 
-\figholder{雅可比矩阵连乘与梯度消失示意图}{fig:ch09_orig5}{源稿中的示意图，待按本书风格重绘。内容应与“雅可比矩阵连乘与梯度消失”一节的讲解相对应。}
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.62\textwidth]{figures/chapter09/gradient_vanishing.pdf}
+  \caption{梯度连乘与梯度消失、梯度爆炸：以标量 $\lambda^k$ 示意雅可比矩阵连乘的效果}
+  \label{fig:ch09_orig5}
+\end{figure}
 
 \subsection{突破长期记忆瓶颈：长短期记忆网络 (LSTM)}
 
@@ -379,7 +404,12 @@ LSTM & 2.93 & 5.74 & 3.55 & 4.64 & 2.57 & 33.38 \\
     \item \textbf{二值图像 (Binary Image)}：像素通常只有 0 和 1 两种取值，常用于轮廓提取、文档识别和形状分析。
 \end{itemize}
 
-\figholder{图像的数字化表示示意图}{fig:ch09_orig6}{源稿中的示意图，待按本书风格重绘。内容应与“图像的数字化表示”一节的讲解相对应。}
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.8\textwidth]{figures/chapter09/image_pixels.pdf}
+  \caption{图像的数字化表示：一幅 $8\times8$ 灰度图像（左）在计算机中是一个像素值矩阵（右）}
+  \label{fig:ch09_orig6}
+\end{figure}
 
 在深度学习中，像素值通常还需要进行预处理，例如归一化（Normalization）或标准化（Standardization）：
 \begin{itemize}
@@ -404,7 +434,12 @@ LSTM & 2.93 & 5.74 & 3.55 & 4.64 & 2.57 & 33.38 \\
     \item \textbf{滑动窗口 (Sliding Window)}：卷积核在输入特征图上从左到右、从上到下滑动，执行元素级的乘加运算（互相关运算）。
 \end{itemize}
 
-\figholder{卷积层示意图}{fig:ch09_orig7}{源稿中的示意图，待按本书风格重绘。内容应与“卷积层”一节的讲解相对应。}
+\begin{figure}[H]
+  \centering
+  \resizebox{0.95\textwidth}{!}{\input{figures/chapter09/tikz/conv.tex}}
+  \caption{二维卷积（互相关）运算示意}
+  \label{fig:ch09_orig7}
+\end{figure}
 
 在最简单的二维单通道情形下，卷积层可写为：
 \begin{equation}
@@ -584,7 +619,12 @@ r_0 = 1,\qquad j_0 = 1
 
 例如，连续堆叠若干个步长为 1 的 $3\times3$ 卷积层，其感受野会依次增长为 $3,5,7,9,\dots$。这也是 VGG 网络中“用多个小卷积核替代大卷积核”的理论基础之一。
 
-\figholder{感受野示意图}{fig:ch09_orig8}{源稿中的示意图，待按本书风格重绘。内容应与“感受野”一节的讲解相对应。}
+\begin{figure}[H]
+  \centering
+  \resizebox{\textwidth}{!}{\input{figures/chapter09/tikz/receptive_field.tex}}
+  \caption{感受野随卷积层数增加而扩大}
+  \label{fig:ch09_orig8}
+\end{figure}
 
 \subsection{池化层 (Pooling Layer)}
 
@@ -602,7 +642,12 @@ r_0 = 1,\qquad j_0 = 1
     \item 扩大后续神经元的感受野。
 \end{enumerate}
 
-\figholder{池化层示意图}{fig:ch09_orig9}{源稿中的示意图，待按本书风格重绘。内容应与“池化层”一节的讲解相对应。}
+\begin{figure}[H]
+  \centering
+  \input{figures/chapter09/tikz/pooling.tex}
+  \caption{$2\times2$ 最大池化：每个区域只保留最大值}
+  \label{fig:ch09_orig9}
+\end{figure}
 
 \subsection{经典 CNN 架构演进}
 
@@ -616,7 +661,12 @@ VGG 的核心贡献在于探索了网络深度的影响。它将 AlexNet 中的�
     \item \textbf{意义}：VGG 证明了“适度加深网络层数”能够显著提升视觉表征能力，成为后续深层 CNN 设计的重要起点。
 \end{itemize}
 
-\figholder{VGG-16示意图}{fig:ch09_orig10}{源稿中的示意图，待按本书风格重绘。内容应与“VGG-16”一节的讲解相对应。}
+\begin{figure}[H]
+  \centering
+  \resizebox{0.9\textwidth}{!}{\input{figures/chapter09/tikz/vgg16.tex}}
+  \caption{VGG-16 的结构：五组 $3\times3$ 卷积与池化，最后接三个全连接层（柱高示意特征图尺寸变化）}
+  \label{fig:ch09_orig10}
+\end{figure}
 
 \paragraph{GoogLeNet (Inception)}
 GoogLeNet 提出了 Inception 模块，旨在解决单一尺寸卷积核无法同时捕捉多尺度特征的问题。
@@ -626,7 +676,12 @@ GoogLeNet 提出了 Inception 模块，旨在解决单一尺寸卷积核无法�
     \item \textbf{多尺度思想}：不同尺寸卷积核对局部模式、区域纹理和较大结构的响应不同，并行结构使网络能够在同一层面捕获多粒度信息。
 \end{itemize}
 
-\figholder{GoogLeNet示意图}{fig:ch09_orig11}{源稿中的示意图，待按本书风格重绘。内容应与“GoogLeNet”一节的讲解相对应。}
+\begin{figure}[H]
+  \centering
+  \resizebox{0.9\textwidth}{!}{\input{figures/chapter09/tikz/inception.tex}}
+  \caption{GoogLeNet 的 Inception 模块：多尺度并行卷积后在通道维度拼接}
+  \label{fig:ch09_orig11}
+\end{figure}
 
 \paragraph{ResNet (残差网络)}
 随着网络层数加深（如超过 20 层），会出现\textbf{退化问题}（训练误差反而上升）。ResNet 通过\textbf{跳跃连接（Skip Connection）}解决了这一问题。
@@ -647,7 +702,12 @@ GoogLeNet 提出了 Inception 模块，旨在解决单一尺寸卷积核无法�
 \end{equation}
 上式中的“$+1$”意味着即使残差分支的梯度较小，恒等映射分支依然能够提供稳定的梯度通路，这也是 ResNet 能够训练数十层乃至上百层网络的重要原因。
 
-\figholder{ResNet示意图}{fig:ch09_orig12}{源稿中的示意图，待按本书风格重绘。内容应与“ResNet”一节的讲解相对应。}
+\begin{figure}[H]
+  \centering
+  \input{figures/chapter09/tikz/resnet_block.tex}
+  \caption{ResNet 的残差块：捷径连接使网络学习残差 $\mathcal{F}(\mathbf{x})$}
+  \label{fig:ch09_orig12}
+\end{figure}
 
 \subsection{视觉注意力机制 (Visual Attention)}
 
@@ -719,7 +779,12 @@ z_c = \frac{1}{H\times W}\sum_{i=1}^{H}\sum_{j=1}^{W} u_c(i,j),
 
 这样，重要通道会被放大，不重要通道会被抑制。
 
-\figholder{通道注意力：SE-Net示意图}{fig:ch09_orig13}{源稿中的示意图，待按本书风格重绘。内容应与“通道注意力：SE-Net”一节的讲解相对应。}
+\begin{figure}[H]
+  \centering
+  \input{figures/chapter09/tikz/se_block.tex}
+  \caption{SE 模块：先压缩（Squeeze）得到通道描述，再激励（Excitation）得到通道权重}
+  \label{fig:ch09_orig13}
+\end{figure}
 
 \paragraph{SE-Net 的优点}
 \begin{itemize}
@@ -780,7 +845,12 @@ f^{7\times7}
 \mathbf{F}'' = \mathbf{M}_s(\mathbf{F}') \odot \mathbf{F}'
 \end{equation}
 
-\figholder{混合注意力：CBAM示意图}{fig:ch09_orig14}{源稿中的示意图，待按本书风格重绘。内容应与“混合注意力：CBAM”一节的讲解相对应。}
+\begin{figure}[H]
+  \centering
+  \resizebox{\textwidth}{!}{\input{figures/chapter09/tikz/cbam.tex}}
+  \caption{CBAM：依次施加通道注意力与空间注意力}
+  \label{fig:ch09_orig14}
+\end{figure}
 
 \paragraph{CBAM 的意义}
 CBAM 同时兼顾了：
@@ -827,7 +897,12 @@ CBAM 同时兼顾了：
 
 IoU 的取值范围为 $[0,1]$，越接近 1 表明预测框与真实框越吻合。
 
-\figholder{边界框回归与 IoU 指标示意图}{fig:ch09_orig15}{源稿中的示意图，待按本书风格重绘。内容应与“边界框回归与 IoU 指标”一节的讲解相对应。}
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.5\textwidth]{figures/chapter09/iou.pdf}
+  \caption{交并比（IoU）：预测框与真实框的交集面积除以并集面积}
+  \label{fig:ch09_orig15}
+\end{figure}
 
 \paragraph{YOLO (You Only Look Once)}
 YOLO 是实时目标检测的里程碑算法。
@@ -841,7 +916,12 @@ YOLO 是实时目标检测的里程碑算法。
     \item \textbf{局限}：早期版本对小目标密集场景的检测能力较弱，后续 YOLOv3/v5/v8 等版本通过特征金字塔、多尺度预测和更强主干网络进行了改进。
 \end{itemize}
 
-\figholder{YOLO示意图}{fig:ch09_orig16}{源稿中的示意图，待按本书风格重绘。内容应与“YOLO”一节的讲解相对应。}
+\begin{figure}[H]
+  \centering
+  \input{figures/chapter09/tikz/yolo.tex}
+  \caption{YOLO 的基本思想：网格划分与一次前向传播完成检测}
+  \label{fig:ch09_orig16}
+\end{figure}
 
 \paragraph{非极大值抑制 (NMS)}
 由于同一个目标可能被多个候选框同时预测，因此需要使用\textbf{非极大值抑制（Non-Maximum Suppression, NMS）}去除冗余框。其基本流程如下：
@@ -890,7 +970,28 @@ Precision 反映“模型预测为目标的结果中有多少是真的”，Reca
 
 \paragraph{检查五：错误成本} 与养护工程师确认：漏检坑槽（D40）可能直接威胁行车安全，其代价远高于把一条细小裂缝误报为龟裂。因此评价指标应分病害类型报告，并单独关注坑槽的召回率，而不是只看总体 F1。
 
-这份评估方案最终的交付物不是一个“模型可用”或“不可用”的结论，而是一份说明：模型在本市的哪些条件下可以作为初筛工具，在哪些条件下必须人工复核，以及需要补充标注哪些本地样本。配套代码 \texttt{code/misc/ch09\_road\_damage\_eval.py} 给出了按国家留出、按路线分组划分和分条件评价的实现框架；由于 RDD2022 数据体积较大，书中不报告具体数值，读者可以下载数据后自行运行。
+\paragraph{一个可以在普通电脑上运行的检验} 完整训练目标检测模型需要 GPU 和大量时间，但检查一和检查二的核心问题——换一个地区之后表现会下降多少、随机划分会不会高估表现——可以用一个轻量的实验先回答。我们从 RDD2022 中取出捷克、印度、美国和中国（摩托车拍摄）四个子集，每个子集随机抽取 800 张训练集图像；用 ImageNet 预训练的 ResNet-18 提取图像特征（不做微调），再对四类病害分别训练“图像中是否存在该病害”的逻辑回归分类器。每个国家留出 30\% 的图像作为测试集，比较两种训练方式：只用同一国家其余 70\% 的图像训练（国内评估），以及只用另外三个国家的图像训练（留一国家）。结果如表~\ref{tab:ch9_rdd} 所示（代码见 \texttt{code/misc/ch09\_rdd\_transfer.py}）。
+
+\begin{table}[H]
+\centering
+\caption{RDD2022 四个子集上的病害存在性识别：四类病害的平均 AP}
+\label{tab:ch9_rdd}
+\small
+\begin{tabular}{lcccc}
+\toprule
+测试子集 & 国内评估 & 留一国家 & \makecell{测试图与同地区训练图\\最大相似度（中位数）} & \makecell{测试图与其他地区训练图\\最大相似度（中位数）} \\
+\midrule
+捷克 & 0.191 & 0.134 & 0.926 & 0.844 \\
+印度 & 0.406 & 0.174 & 0.902 & 0.862 \\
+美国 & 0.449 & 0.365 & 0.918 & 0.878 \\
+中国（摩托车拍摄） & 0.754 & 0.371 & 0.967 & 0.686 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+在四个子集上，换成“其他地区训练”之后，平均 AP 全部下降，印度和中国子集的下降幅度超过一半。右侧两列给出了另一个信号：在同一地区内随机划分时，测试图像几乎总能在训练集中找到非常相似的图像（中国子集的中位数高达 0.967），而与其他地区训练图像的相似度则明显更低。这意味着，一个在“同地区随机划分”下取得的高分，有相当一部分可能来自拍摄设备、路面材质和取景方式的相似，而不是模型真正学会了识别病害。此外，各地区的病害构成差异很大：例如在抽样图像中，坑槽（D40）在印度约占 20\%，在美国只有约 2.6\%——这本身就会让在一个地区训练的阈值和先验在另一个地区失效。
+
+这个轻量实验不能代替正式的检测模型评估，但它用一个下午就回答了部署决策最关心的问题：公开排行榜上的成绩，不能直接当作本市的预期表现。评估方案最终的交付物也因此不是一个“模型可用”或“不可用”的结论，而是一份说明：模型在本市的哪些条件下可以作为初筛工具，在哪些条件下必须人工复核，以及需要补充标注哪些本地样本。完整训练检测模型的留一国家评估框架见 \texttt{code/misc/ch09\_road\_damage\_eval.py}。
 
 \subsection{CNN 在工程场景中的应用延伸}
 CNN 的思想并不限于普通照片分类，它在土木工程与真实工程决策中有着广泛应用：
@@ -939,7 +1040,12 @@ CNN 的思想并不限于普通照片分类，它在土木工程与真实工程�
 
 图结构数据广泛存在于现实世界中。与图像中的像素点、文本中的词序列不同，图数据由节点（node）以及节点之间的边（edge）构成，更强调对象之间的关系。
 
-\figholder{图结构数据及其典型形式示意图}{fig:ch09_orig17}{源稿中的示意图，待按本书风格重绘。内容应与“图结构数据及其典型形式”一节的讲解相对应。}
+\begin{figure}[H]
+  \centering
+  \resizebox{0.95\textwidth}{!}{\input{figures/chapter09/tikz/graph_data.tex}}
+  \caption{把道路网络上的检测器抽象为图结构数据}
+  \label{fig:ch09_orig17}
+\end{figure}
 
 例如，在交通网络中，可以将道路传感器、路口或路段看作节点，将道路连接关系或空间邻近关系看作边；在结构健康监测中，可以将布设在结构不同部位的传感器视为节点，将构件连接关系、空间距离或相关性视为边。与规则网格不同，图中的节点数量可以变化、节点的邻居数也不固定，因此图数据具有更高的表达灵活性，同时也给建模带来了更大挑战。
 
@@ -959,7 +1065,12 @@ CNN 的思想并不限于普通照片分类，它在土木工程与真实工程�
 \end{equation}
 其中第 $i$ 行对应第 $i$ 个节点的特征向量。
 
-\figholder{图的数学定义与数据表示示意图}{fig:ch09_orig18}{源稿中的示意图，待按本书风格重绘。内容应与“图的数学定义与数据表示”一节的讲解相对应。}
+\begin{figure}[H]
+  \centering
+  \resizebox{0.95\textwidth}{!}{\input{figures/chapter09/tikz/graph_matrix.tex}}
+  \caption{图的数学表示：邻接矩阵 $\mathbf{A}$ 与节点特征矩阵 $\mathbf{X}$}
+  \label{fig:ch09_orig18}
+\end{figure}
 
 由此可见，图学习的输入通常由两部分构成：一部分是节点特征矩阵 $\mathbf{X}$，另一部分是表示图结构的邻接矩阵 $\mathbf{A}$。这与普通前馈神经网络或 CNN 只处理单一输入张量不同，图学习模型需要同时利用“属性信息”和“结构信息”。
 
@@ -974,7 +1085,12 @@ CNN 在图像上的卷积操作依赖一个关键前提：输入数据位于规�
     \item 图的规模通常可变，节点数和边数在不同样本间并不一致。
 \end{itemize}
 
-\figholder{为什么传统 CNN 难以直接处理图数据示意图}{fig:ch09_orig19}{源稿中的示意图，待按本书风格重绘。内容应与“为什么传统 CNN 难以直接处理图数据”一节的讲解相对应。}
+\begin{figure}[H]
+  \centering
+  \input{figures/chapter09/tikz/grid_vs_graph.tex}
+  \caption{规则网格与图结构的邻域差异}
+  \label{fig:ch09_orig19}
+\end{figure}
 
 因此，CNN 中“固定卷积核 + 固定局部窗口”的基本设定无法直接套用到图结构数据上。我们需要一种新的机制，使得模型能够依据图中边的连接关系，自适应地聚合相关节点的信息，这正是 GCN 的核心出发点。
 
@@ -1009,7 +1125,12 @@ CNN 在图像上的卷积操作依赖一个关键前提：输入数据位于规�
 
 这一过程常被称为\textbf{消息传递（message passing）}：邻居节点先将自身特征“传递”给目标节点，目标节点再对接收到的信息进行聚合与变换。
 
-\figholder{图卷积网络的基本思想示意图}{fig:ch09_orig20}{源稿中的示意图，待按本书风格重绘。内容应与“图卷积网络的基本思想”一节的讲解相对应。}
+\begin{figure}[H]
+  \centering
+  \resizebox{0.95\textwidth}{!}{\input{figures/chapter09/tikz/message_passing.tex}}
+  \caption{图卷积的消息传递：邻居传递、聚合与非线性变换}
+  \label{fig:ch09_orig20}
+\end{figure}
 
 进一步地，GCN 的每一层输入和输出仍然是“图上的节点表示”，只是经过传播后，每个节点的特征发生了更新。因此，GCN 层并不是改变图的节点集合，而是在原图拓扑约束下不断重构节点特征空间。
 
@@ -1017,7 +1138,12 @@ CNN 在图像上的卷积操作依赖一个关键前提：输入数据位于规�
 
 GCN 可以理解为图上的局部聚合器。一层 GCN 主要聚合一跳邻居信息，两层 GCN 则可以让一个节点接收到二跳邻域的信息，层数继续增加时，感受野也会逐步扩大。
 
-\figholder{GCN 的层间传播机制示意图}{fig:ch09_orig21}{源稿中的示意图，待按本书风格重绘。内容应与“GCN 的层间传播机制”一节的讲解相对应。}
+\begin{figure}[H]
+  \centering
+  \input{figures/chapter09/tikz/gcn_hops.tex}
+  \caption{堆叠 GCN 层使节点逐步聚合多跳邻居的信息}
+  \label{fig:ch09_orig21}
+\end{figure}
 
 这说明 GCN 与 CNN 在思想上是一致的：都试图通过局部聚合逐层构建高层特征。但二者的“局部”定义不同。CNN 的局部由规则几何窗口确定，而 GCN 的局部由图结构中的邻接关系确定。
 
@@ -1070,13 +1196,23 @@ GCN 可以理解为图上的局部聚合器。一层 GCN 主要聚合一跳邻�
 
 从这个角度看，GCN 的本质就是一种“结构引导下的特征变换”：它不再像全连接网络那样忽略样本之间的关系，也不再像 CNN 那样依赖固定网格，而是直接通过图结构来决定信息应该如何流动。
 
-\figholder{标准 GCN 层及其归一化形式示意图}{fig:ch09_orig22}{源稿中的示意图，待按本书风格重绘。内容应与“标准 GCN 层及其归一化形式”一节的讲解相对应。}
+\begin{figure}[H]
+  \centering
+  \resizebox{\textwidth}{!}{\input{figures/chapter09/tikz/gcn_norm.tex}}
+  \caption{标准 GCN 层的计算步骤：加自环、对称归一化、聚合变换与激活}
+  \label{fig:ch09_orig22}
+\end{figure}
 
 \subsection{GCN 与 CNN 的区别与联系}
 
 虽然 GCN 常被称为“图上的卷积网络”，但它与 CNN 在数据结构、邻域定义及适用任务上都存在显著差异。
 
-\figholder{GCN 与 CNN 的区别与联系示意图}{fig:ch09_orig23}{源稿中的示意图，待按本书风格重绘。内容应与“GCN 与 CNN 的区别与联系”一节的讲解相对应。}
+\begin{figure}[H]
+  \centering
+  \input{figures/chapter09/tikz/cnn_vs_gcn.tex}
+  \caption{CNN 卷积与 GCN 聚合的对照}
+  \label{fig:ch09_orig23}
+\end{figure}
 
 \begin{table}[htbp]
     \centering
@@ -1200,7 +1336,12 @@ GAN 的设计灵感来源于博弈论中的\textbf{零和博弈 (Zero-Sum Game)}
 
 
 
-\figholder{核心思想：零和博弈示意图}{fig:ch09_orig24}{源稿中的示意图，待按本书风格重绘。内容应与“核心思想：零和博弈”一节的讲解相对应。}
+\begin{figure}[H]
+  \centering
+  \resizebox{\textwidth}{!}{\input{figures/chapter09/tikz/gan.tex}}
+  \caption{生成对抗网络：生成器与判别器的对抗训练}
+  \label{fig:ch09_orig24}
+\end{figure}
 
 
 

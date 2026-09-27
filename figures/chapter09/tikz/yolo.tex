@@ -1,0 +1,9 @@
+\begin{tikzpicture}[font=\scriptsize, >=Stealth]
+\fill[gray!10] (0,0) rectangle (4.2,4.2);
+\foreach \i in {0,...,7} { \draw[gray!60] (0.6*\i,0) -- (0.6*\i,4.2); \draw[gray!60] (0,0.6*\i) -- (4.2,0.6*\i); }
+\fill[orange!40] (1.8,1.8) rectangle (2.4,2.4); \fill[red] (2.1,2.1) circle (1.5pt);
+\draw[red, thick] (1.0,0.9) rectangle (3.3,3.2);
+\node[align=center] at (2.1,-0.5) {输入图像划分为 $S\times S$ 网格\\目标中心所在的格子负责预测该目标};
+\node[draw, rounded corners, fill=blue!10, align=left, anchor=west] at (5.0,2.1) {每个格子输出：\\$B$ 个边界框 $(x, y, w, h)$ 及置信度\\$+$ $C$ 个类别概率\\[3pt]整幅图一次前向传播\\输出 $S\times S\times(5B+C)$ 的张量};
+\draw[->] (2.4,2.4) -- (5.0,2.4);
+\end{tikzpicture}

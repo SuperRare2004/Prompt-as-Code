@@ -1,0 +1,15 @@
+\begin{tikzpicture}[font=\scriptsize, >=Stealth, b/.style={draw, rounded corners, minimum height=10mm, align=center}]
+\node[b, fill=green!15] (env) at (0,0) {环境};
+\node[b, fill=blue!15] (q) at (4.0,0) {在线 Q 网络 $Q(s,\cdot;\theta)$\\输出每个行动的 Q 值};
+\node[b, fill=yellow!25] (buf) at (4.0,-2.8) {经验回放缓冲区\\$(s,a,r,s')$};
+\node[b, fill=orange!20] (tq) at (10.0,-2.8) {目标网络\\$Q(s',\cdot;\theta^-)$};
+\node[b, fill=red!12] (loss) at (10.0,0) {损失函数\\$\big(r+\gamma\max_{a'}Q(s',a';\theta^-)-Q(s,a;\theta)\big)^2$};
+\draw[->] (env) -- node[above] {状态 $s$} (q);
+\draw[->] (q.north) -- ++(0,0.7) -| node[pos=0.25, above] {$\epsilon$-贪心选择行动 $a$} (env.north);
+\draw[->] (env.south) |- node[pos=0.75, below] {存储经验} (buf);
+\draw[->] (buf) -- node[below] {随机抽取小批量} (tq);
+\draw[->] (buf) -- (q);
+\draw[->] (tq) -- (loss);
+\draw[->] (loss) -- node[below] {梯度更新 $\theta$} (q);
+\draw[->, dashed] (q.south east) -- node[sloped, above, pos=0.55] {每隔 $C$ 步复制 $\theta\to\theta^-$} (tq.north west);
+\end{tikzpicture}

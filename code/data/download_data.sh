@@ -19,3 +19,9 @@ curl -L -o stats19_casualty_5y.csv  $DFT/dft-road-casualty-statistics-casualty-l
 
 # 案例 C：纽约大都会运输署（MTA）地铁分小时客流，经 Socrata API 按车站聚合下载
 cd ../../case_C_metro && python fetch_mta.py && python fetch_context.py
+
+# 第 11 章：NHTSA 车辆安全投诉（公开接口）
+cd ../misc && python fetch_nhtsa.py
+
+# 第 9 章：RDD2022 的四个国家子集（从 figshare 上 13 GB 的总压缩包中按成员分段读取，约 1.4 GB）
+cd ../misc && python fetch_rdd2022.py

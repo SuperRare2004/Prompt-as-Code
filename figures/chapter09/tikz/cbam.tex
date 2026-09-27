@@ -1,0 +1,11 @@
+\begin{tikzpicture}[font=\scriptsize, >=Stealth, b/.style={draw, rounded corners, minimum height=9mm, align=center}]
+\node[b, fill=blue!15, minimum width=14mm] (f) at (0,0) {输入特征\\$\mathbf{F}$};
+\node[b, fill=orange!20] (mc) at (2.6,0) {通道注意力\\$\mathbf{M}_c$（关注“什么”）};
+\node[circle, draw, inner sep=1pt] (m1) at (4.6,0) {$\otimes$};
+\node[b, fill=blue!20, minimum width=14mm] (f1) at (6.0,0) {$\mathbf{F}'$};
+\node[b, fill=green!20] (ms) at (8.4,0) {空间注意力\\$\mathbf{M}_s$（关注“哪里”）};
+\node[circle, draw, inner sep=1pt] (m2) at (10.4,0) {$\otimes$};
+\node[b, fill=blue!30, minimum width=14mm] (f2) at (11.8,0) {输出\\$\mathbf{F}''$};
+\draw[->] (f) -- (mc); \draw[->] (mc) -- (m1); \draw[->] (m1) -- (f1); \draw[->] (f1) -- (ms); \draw[->] (ms) -- (m2); \draw[->] (m2) -- (f2);
+\draw[->] (f.south) -- ++(0,-0.6) -| (m1.south); \draw[->] (f1.south) -- ++(0,-0.6) -| (m2.south);
+\end{tikzpicture}

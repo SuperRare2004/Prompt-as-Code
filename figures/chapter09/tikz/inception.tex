@@ -1,0 +1,12 @@
+\begin{tikzpicture}[font=\scriptsize, >=Stealth, b/.style={draw, rounded corners, minimum width=17mm, minimum height=6mm, align=center}]
+\node[b, fill=gray!15, minimum width=60mm] (in) at (3.2,0) {上一层输出};
+\node[b, fill=yellow!30] (a1) at (0,-1.4) {$1\times1$ 卷积};
+\node[b, fill=yellow!30] (b1) at (2.1,-1.4) {$1\times1$ 卷积}; \node[b, fill=orange!30] (b2) at (2.1,-2.6) {$3\times3$ 卷积};
+\node[b, fill=yellow!30] (c1) at (4.2,-1.4) {$1\times1$ 卷积}; \node[b, fill=red!25] (c2) at (4.2,-2.6) {$5\times5$ 卷积};
+\node[b, fill=blue!15] (d1) at (6.3,-1.4) {$3\times3$ 最大池化}; \node[b, fill=yellow!30] (d2) at (6.3,-2.6) {$1\times1$ 卷积};
+\node[b, fill=green!20, minimum width=60mm] (out) at (3.2,-4.0) {在通道维度拼接（Concatenate）};
+\foreach \n in {a1,b1,c1,d1} \draw[->] (in) -- (\n);
+\draw[->] (b1) -- (b2); \draw[->] (c1) -- (c2); \draw[->] (d1) -- (d2);
+\draw[->] (a1) -- (a1 |- out.north); \foreach \n in {b2,c2,d2} \draw[->] (\n) -- (\n |- out.north);
+\node[align=left, anchor=west] at (7.6,-1.4) {黄色 $1\times1$ 卷积\\用于降低通道数};
+\end{tikzpicture}

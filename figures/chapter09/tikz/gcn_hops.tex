@@ -1,0 +1,11 @@
+\begin{tikzpicture}[font=\scriptsize, v/.style={circle, draw, minimum size=4.5mm, inner sep=0pt}]
+\fill[blue!6] (0,0) circle (2.5); \fill[blue!14] (0,0) circle (1.35);
+\node[v, fill=red!50] (c) at (0,0) {};
+\foreach \a/\n in {0/a,120/b,240/c1} \node[v, fill=orange!40] (\n) at (\a:1.0) {};
+\foreach \a/\n/\p in {20/d/a,-25/e/a,100/f/b,145/g/b,220/h/c1,265/k/c1} \node[v, fill=green!25] (\n) at (\a:2.05) {};
+\foreach \n in {a,b,c1} \draw (c) -- (\n);
+\draw (a) -- (d); \draw (a) -- (e); \draw (b) -- (f); \draw (b) -- (g); \draw (c1) -- (h); \draw (c1) -- (k);
+\node[anchor=west, align=left] at (3.0,0.8) {\tikz\node[v, fill=orange!40]{};\ 一跳邻居：1 层 GCN 可聚合};
+\node[anchor=west, align=left] at (3.0,0) {\tikz\node[v, fill=green!25]{};\ 二跳邻居：2 层 GCN 可聚合};
+\node[anchor=west, align=left] at (3.0,-0.8) {层数越多，感受野越大；过深则容易“过平滑”};
+\end{tikzpicture}

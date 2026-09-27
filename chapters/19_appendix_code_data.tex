@@ -20,13 +20,16 @@
 案例 B & STATS19 道路交通伤亡事故数据，2021—2025 年事故表、车辆表与伤亡人员表 & 英国交通部\cite{dft2026stats19} \\
 案例 C & MTA 地铁分小时进站量（9 座车站，按车站 $\times$ 小时 $\times$ 支付方式聚合，2022-02 至 2024-12） & 纽约州开放数据平台\cite{mta2025hourly} \\
 案例 C & MLB 扬基队、大都会队主场比赛时间（2022—2024 赛季） & MLB 官方赛程接口 \\
-案例 C & 纽约中央公园附近逐日降水与最高气温：实测（再分析）与历史预报 & Open-Meteo 历史天气与历史预报接口 \\
+案例 C & 纽约中央公园附近逐日降水与最高气温：实测（再分析）与历史预报 & Open-Meteo 历史天气与历史预报接口\cite{openmeteo2026} \\
 第 8 章 & diabetes 与 breast\_cancer 数据集 & scikit-learn 自带 \\
-第 9 章 & RDD2022 多国路面病害图像 & \citet{arya2022rdd} \\
 第 10 章 & CartPole-v1 环境 & gymnasium \\
+第 11 章 & NHTSA 车辆安全投诉（16 款车型 2018—2021 年款），评价集 160 条 & 美国国家公路交通安全管理局公开接口\cite{nhtsa2026complaints} \\
+第 9 章 & RDD2022 中捷克、印度、美国、中国（摩托车）四个子集 & \citet{arya2022rdd}，figshare，CC BY 4.0 \\
 \bottomrule
 \end{tabular}
 \end{table}
+
+各数据的许可与使用条款如下：METR-LA 的 CSV 版本在 Zenodo 上以 CC BY 4.0 许可发布\cite{kwak2020metrla}；STATS19 以英国开放政府许可（Open Government Licence v3.0）发布；MTA 数据适用纽约州开放数据平台的使用条款；RDD2022 在 figshare 上以 CC BY 4.0 许可发布；NHTSA 投诉数据为美国联邦政府公开数据；Open-Meteo 的天气数据以 CC BY 4.0 许可发布\cite{openmeteo2026}，其免费接口限于非商业用途，商业用途需按其条款申请；MLB 赛程为公开的事实性信息，通过其官方接口获取时应遵守接口的使用条款。
 
 公开数据会更新。例如 STATS19 的“最近五年”文件会随年度发布滚动，重新下载后个别数值可能与书中略有差异；书中数值对应 2026 年 9 月下载的数据版本。
 
@@ -40,7 +43,7 @@ bash data/download_data.sh     # 下载公开数据到 data/raw/
 bash run_all.sh                # 运行全部案例，输出写入 outputs/
 \end{lstlisting}
 
-在普通笔记本电脑（CPU）上，全部脚本约需 20—30 分钟，其中 LSTM 训练最慢。第 9 章路面病害案例需要单独下载 RDD2022 数据并建议使用 GPU；第 11 章文本分类案例需要读者自备金标准数据和大语言模型服务的访问凭据。
+在普通笔记本电脑（CPU）上，全部脚本约需 20—30 分钟，其中 LSTM 训练最慢。第 9 章路面病害案例需要单独下载 RDD2022 数据（书中使用捷克、印度、美国和中国摩托车四个子集，约 1.4 GB），轻量检验可在 CPU 上运行，完整训练检测模型建议使用 GPU；第 11 章的评价集与书中报告的模型输出已随代码保存；如需用其他模型重新生成输出，需要大语言模型服务的访问凭据。
 
 \section{代码与章节对应}
 
@@ -65,8 +68,11 @@ bash run_all.sh                # 运行全部案例，输出写入 outputs/
 \texttt{ch08\_traditional\_ml/demos.py} & 第 8 章 & 各模型小节的演示 \\
 \texttt{ch10\_rl/demos.py} & 第 10 章 & 价值迭代、Q-learning、SARSA、DQN、REINFORCE \\
 \texttt{figures/make\_figures.py} & 第 7、8、9、16、17 章 & 根据运行结果绘制书中插图 \\
-\texttt{misc/ch09\_road\_damage\_eval.py} & 第 9 章 & RDD2022 留一国家评估框架 \\
-\texttt{misc/ch11\_llm\_text\_classification.py} & 第 11 章 & LLM 文本分类、基线与核查 \\
+\texttt{misc/ch09\_rdd\_transfer.py} & 第 9 章 & RDD2022 跨地区轻量检验 \\
+\texttt{misc/ch09\_road\_damage\_eval.py} & 第 9 章 & RDD2022 检测模型留一国家评估框架 \\
+\texttt{figures/concept\_figures.py} & 第 7—10 章 & 概念示意图 \\
+\texttt{misc/ch11\_llm\_text\_classification.py} & 第 11 章 & 通过 API 进行 LLM 文本分类与核查 \\
+\texttt{misc/fetch\_nhtsa.py}、\texttt{ch11\_nhtsa\_eval.py} & 第 11 章 & NHTSA 数据下载与评价（含书中评价集） \\
 \bottomrule
 \end{tabular}
 \end{table}

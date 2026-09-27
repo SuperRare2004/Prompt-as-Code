@@ -185,7 +185,12 @@ L_{\mathrm{multi}}(\theta)=
 
 在实际训练中，通常不会每次都用全部样本计算梯度，而是使用小批量随机梯度下降（Mini-batch SGD）：每次抽取一个 batch 估计梯度，然后更新参数。Adam、RMSProp、Momentum 等优化器，都是在这一基本思想上改进更新方向和步长。
 
-\figholder{梯度下降示意图}{fig:ch07_orig1}{源稿图示待按本书风格重绘。图示内容：读图重点是：等高线越靠中心表示损失越低，每一个箭头代表一次参数更新。}
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.95\textwidth]{figures/chapter07/gradient_descent.pdf}
+  \caption{梯度下降在二次损失上的迭代路径：学习率较小时稳定收敛，较大时来回振荡}
+  \label{fig:ch07_orig1}
+\end{figure}
 
 图~\ref{fig:ch07_orig1} 的读图重点是：等高线越靠中心表示损失越低，每一个箭头代表一次参数更新。梯度下降并不是“直接跳到最优点”，而是反复根据当前位置的梯度方向修正参数；学习率过大可能跨过低损失区域，学习率过小则会让路径变得很长。
 
@@ -276,7 +281,12 @@ L_{\mathrm{multi}}(\theta)=
 \]
 在类别极度不平衡时，准确率可能具有误导性。例如 1\% 的样本是故障，如果模型永远预测“无故障”，准确率也有 99\%，但它完全没有业务价值。
 
-\figholder{分类任务的混淆矩阵示意图}{fig:ch07_orig2}{源稿图示待按本书风格重绘。图示内容：把分类结果拆成四种情况。}
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.55\textwidth]{figures/chapter07/confusion_matrix.pdf}
+  \caption{二分类的混淆矩阵}
+  \label{fig:ch07_orig2}
+\end{figure}
 
 图~\ref{fig:ch07_orig2} 把分类结果拆成四种情况。对于安全检测、疾病筛查或交通事件识别等任务，FN 和 FP 的代价往往并不相同，因此只看 Accuracy 容易掩盖业务风险。Precision 更关注“报出来的正例有多少是真的”，Recall 更关注“真实正例中有多少被找出来”。
 
@@ -295,7 +305,12 @@ L_{\mathrm{multi}}(\theta)=
 
 因此，ROC 曲线不是某一个固定混淆矩阵画出来的，而是\textbf{同一个概率模型在不同分类阈值下产生的一系列混淆矩阵}汇总出来的。AUC 则是 ROC 曲线下的面积，反映模型把正样本排在负样本前面的整体能力。
 
-\figholder{ROC 曲线是怎么画出来的示意图}{fig:ch07_orig3}{源稿图示待按本书风格重绘。图示内容：左侧强调阈值变化带来的分类结果变化，右侧则把这些结果映射为 ROC 空间中的点。}
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.98\textwidth]{figures/chapter07/roc_construction.pdf}
+  \caption{ROC 曲线的构造：以第 8 章案例 B 的随机森林得分为例，不同阈值（左）对应 ROC 空间中的不同点（右）}
+  \label{fig:ch07_orig3}
+\end{figure}
 
 图~\ref{fig:ch07_orig3} 左侧强调阈值变化带来的分类结果变化，右侧则把这些结果映射为 ROC 空间中的点。阈值较高时，模型更保守，通常 FPR 较低但 TPR 也可能较低；阈值降低后，更多样本会被判为正类，TPR 和 FPR 都可能上升。
 
@@ -303,7 +318,12 @@ L_{\mathrm{multi}}(\theta)=
 
 模型训练中最常见的两个问题是欠拟合和过拟合。
 
-\figholder{欠拟合、过拟合与解决方法示意图}{fig:ch07_orig4}{源稿图示待按本书风格重绘。图示内容：展示的是模型复杂度与泛化能力之间的折中。}
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.98\textwidth]{figures/chapter07/fit_regimes.pdf}
+  \caption{欠拟合、合适拟合与过拟合（示意数据）}
+  \label{fig:ch07_orig4}
+\end{figure}
 
 图~\ref{fig:ch07_orig4} 展示的是模型复杂度与泛化能力之间的折中。欠拟合时，模型连主要趋势都没有学到；合适拟合时，模型捕捉主趋势但不过度追逐噪声；过拟合时，训练集上的点可能被贴得很紧，但对新样本的预测反而不稳定。
 

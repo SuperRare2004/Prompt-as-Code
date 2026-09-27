@@ -1,0 +1,13 @@
+\begin{tikzpicture}[font=\small]
+\foreach \layer/\n/\hl/\lab in {0/9/7/输入（感受野 $7\times7$）, 1/7/5/第 1 层输出, 2/5/3/第 2 层输出, 3/3/1/第 3 层输出}{
+  \begin{scope}[shift={(4.2*\layer,0)}]
+    \pgfmathsetmacro{\off}{(\n-\hl)/2}
+    \foreach \r in {1,...,\n} \foreach \c in {1,...,\n} {
+      \pgfmathtruncatemacro{\inr}{(\r>\off) && (\r<=\off+\hl) && (\c>\off) && (\c<=\off+\hl)}
+      \ifnum\inr=1 \fill[orange!35] (0.36*\c,-0.36*\r) rectangle ++(0.36,0.36); \fi
+      \draw[gray!60] (0.36*\c,-0.36*\r) rectangle ++(0.36,0.36);
+    }
+    \node[font=\scriptsize] at ({0.36*(\n+2)/2}, -0.36*\n-0.45) {\lab};
+  \end{scope}}
+\node[font=\scriptsize] at (7.8,0.55) {连续三层 $3\times3$ 卷积（步长 1）：输出中的 1 个位置对应输入中 $7\times7$ 的区域};
+\end{tikzpicture}

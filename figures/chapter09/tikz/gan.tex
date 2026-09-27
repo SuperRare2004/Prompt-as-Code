@@ -1,0 +1,10 @@
+\begin{tikzpicture}[font=\small, >=Stealth, b/.style={draw, rounded corners, minimum width=22mm, minimum height=9mm, align=center}]
+\node (z) at (0,0) {噪声 $\mathbf{z}\sim p(\mathbf{z})$};
+\node[b, fill=green!20] (G) at (3.2,0) {生成器 $G$};
+\node (fake) at (6.2,0) {生成样本 $G(\mathbf{z})$};
+\node (real) at (6.2,1.6) {真实样本 $\mathbf{x}\sim P_{data}$};
+\node[b, fill=orange!25] (D) at (9.4,0.8) {判别器 $D$};
+\node[align=center] (out) at (12.3,0.8) {$D(\cdot)\in[0,1]$\\“真”还是“假”};
+\draw[->] (z) -- (G); \draw[->] (G) -- (fake); \draw[->] (fake) -- (D); \draw[->] (real) -- (D); \draw[->] (D) -- (out);
+\draw[->, dashed, red!70] (D.south) |- (7.6,-1.2) -| node[pos=0.75, left, font=\scriptsize, align=right] {梯度反馈：\\让 $D$ 更难分辨} (G.south);
+\end{tikzpicture}

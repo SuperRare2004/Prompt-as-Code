@@ -17,7 +17,12 @@
 \end{itemize}
 这种交互是一个循环过程：智能体观察状态 $\to$ 智能体选择行动 $\to$ 环境给出奖励和新状态 $\to$ 智能体再次观察新状态，如此往复。
 
-\figholder{智能体（Agent）与环境（Environment）示意图}{fig:ch10_orig1}{源稿中的示意图，待按本书风格重绘。内容应与“智能体（Agent）与环境（Environment）”一节的讲解相对应。}
+\begin{figure}[H]
+  \centering
+  \input{figures/chapter10/tikz/agent_env.tex}
+  \caption{智能体与环境的交互循环}
+  \label{fig:ch10_orig1}
+\end{figure}
 
 \subsection{状态（State）、行动（Action）与奖励（Reward）}
 \begin{itemize}
@@ -34,7 +39,12 @@
 \end{itemize}
 强化学习的目标就是学习一个最优策略 $\pi^*$，使得智能体能够获得最大的长期累积奖励。
 
-\figholder{策略（Policy）示意图}{fig:ch10_orig2}{源稿中的示意图，待按本书风格重绘。内容应与“策略（Policy）”一节的讲解相对应。}
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.9\textwidth]{figures/chapter10/grid_policy.pdf}
+  \caption{确定性策略（左，4×3 网格世界中由价值迭代得到的最优策略）与随机性策略（右，示意）}
+  \label{fig:ch10_orig2}
+\end{figure}
 
 \subsection{价值函数（Value Function）}
 价值函数用于衡量在给定状态下或在给定状态下采取某个行动后，智能体能够获得的未来累积奖励的期望。它们帮助智能体评估不同状态或行动的“好坏”。
@@ -46,7 +56,12 @@
 \end{itemize}
 其中 $G_t$ 是从时刻 $t$ 开始的折扣累积奖励（回报），$\gamma \in [0, 1]$ 是折扣因子，用于平衡即时奖励和未来奖励的重要性。$\gamma$ 越大，未来奖励在计算中占的比重越大。
 
-\figholder{价值函数（Value Function）示意图}{fig:ch10_orig3}{源稿中的示意图，待按本书风格重绘。内容应与“价值函数（Value Function）”一节的讲解相对应。}
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.55\textwidth]{figures/chapter10/grid_values.pdf}
+  \caption[4×3 网格世界中由价值迭代计算得到的最优状态价值]{4×3 网格世界中由价值迭代计算得到的最优状态价值（代码见 \texttt{code/figures/concept\_figures.py}）}
+  \label{fig:ch10_orig3}
+\end{figure}
 
 \subsection{模型（Model）}
 在强化学习中，“模型”指的是智能体对环境动态的理解。
@@ -67,7 +82,12 @@
 
 \subsection{MDP 经典示例：网格世界（Grid World）}
 为了直观理解 MDP，我们可以看一个简单的 $4 \times 3$ 网格环境。
-\figholder{MDP 经典示例：网格世界（Grid World）示意图}{fig:ch10_orig4}{源稿中的示意图，待按本书风格重绘。内容应与“MDP 经典示例：网格世界（Grid World）”一节的讲解相对应。}
+\begin{figure}[H]
+  \centering
+  \resizebox{0.95\textwidth}{!}{\input{figures/chapter10/tikz/gridworld_mdp.tex}}
+  \caption{4×3 网格世界：状态、行动、随机转移与奖励}
+  \label{fig:ch10_orig4}
+\end{figure}
 
 \subsection{贝尔曼方程（Bellman Equations）}
 贝尔曼方程是MDP中的核心概念，它以递归的方式定义了价值函数。它表达了当前状态的价值与其可能达到的下一个状态的价值之间的关系。
@@ -92,7 +112,12 @@ $$ \pi^*(s) = \arg\max_{a \in A} Q^*(s, a) $$
 强化学习算法可以从不同维度进行分类：
 
 
-\figholder{强化学习算法分类示意图}{fig:ch10_orig5}{源稿中的示意图，待按本书风格重绘。内容应与“强化学习算法分类”一节的讲解相对应。}
+\begin{figure}[H]
+  \centering
+  \resizebox{\textwidth}{!}{\input{figures/chapter10/tikz/rl_taxonomy.tex}}
+  \caption{强化学习算法的主要分类}
+  \label{fig:ch10_orig5}
+\end{figure}
 
 \subsection{基于模型（Model-Based）与无模型（Model-Free）}
 \begin{itemize}
@@ -224,7 +249,12 @@ SARSA 是一种同策略的价值学习算法，它学习的是当前策略下�
 
 DQN的核心思想是使用一个深度神经网络来\textbf{近似Q函数}，即 $Q(s, a; \theta)$，其中 $\theta$ 是神经网络的参数。神经网络的输入是状态 $s$，输出是该状态下所有可能行动的 Q 值（对于离散动作空间），或者直接输出单个动作的 Q 值（需要多次前向传播）。
 
-\figholder{深度Q网络（Deep Q-Network, DQN）示意图}{fig:ch10_orig6}{源稿中的示意图，待按本书风格重绘。内容应与“深度Q网络（Deep Q-Network, DQN）”一节的讲解相对应。}
+\begin{figure}[H]
+  \centering
+  \resizebox{\textwidth}{!}{\input{figures/chapter10/tikz/dqn.tex}}
+  \caption{DQN 的训练结构：经验回放与目标网络}
+  \label{fig:ch10_orig6}
+\end{figure}
 
 DQN引入了两个关键的创新来稳定神经网络的训练：
 \begin{itemize}

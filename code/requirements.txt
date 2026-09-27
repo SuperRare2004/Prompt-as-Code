@@ -12,3 +12,5 @@ pydantic>=2
 # 第 9 章路面病害案例（可选）
 ultralytics
 gymnasium>=0.29
+remotezip
+torchvision

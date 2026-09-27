@@ -1,0 +1,14 @@
+\begin{tikzpicture}[>=Stealth, font=\small, cell/.style={draw, rounded corners, fill=green!12, minimum width=11mm, minimum height=8mm}, io/.style={minimum size=6mm}]
+\node[cell] (h) at (0,0) {$\mathbf{h}$}; \node[io] (x) at (0,-1.5) {$\mathbf{x}_t$}; \node[io] (y) at (0,1.5) {$\mathbf{y}_t$};
+\draw[->] (x) -- node[left, font=\scriptsize] {$\mathbf{W}_{xh}$} (h); \draw[->] (h) -- node[left, font=\scriptsize] {$\mathbf{W}_{hy}$} (y);
+\draw[->] (h) edge[loop right, looseness=6] node[right, font=\scriptsize] {$\mathbf{W}_{hh}$} (h);
+\node at (2.4,0) {\Large $=$};
+\foreach \t/\lab in {0/t-1, 1/t, 2/t+1} {
+  \node[cell] (h\t) at (4.0+2.4*\t,0) {$\mathbf{h}_{\lab}$};
+  \node[io] (x\t) at (4.0+2.4*\t,-1.5) {$\mathbf{x}_{\lab}$}; \node[io] (y\t) at (4.0+2.4*\t,1.5) {$\mathbf{y}_{\lab}$};
+  \draw[->] (x\t) -- node[right, font=\scriptsize] {$\mathbf{W}_{xh}$} (h\t); \draw[->] (h\t) -- node[right, font=\scriptsize] {$\mathbf{W}_{hy}$} (y\t);
+}
+\draw[->] (h0) -- node[above, font=\scriptsize] {$\mathbf{W}_{hh}$} (h1); \draw[->] (h1) -- node[above, font=\scriptsize] {$\mathbf{W}_{hh}$} (h2);
+\draw[->] (2.9,0) -- (h0); \draw[->] (h2) -- (10.3,0);
+\node[font=\scriptsize] at (6.4,-2.3) {展开后，各时间步共享同一组参数 $\mathbf{W}_{xh},\mathbf{W}_{hh},\mathbf{W}_{hy}$};
+\end{tikzpicture}

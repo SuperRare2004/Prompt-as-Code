@@ -10,7 +10,7 @@
 | B 事故严重程度 | STATS19 英国道路交通伤亡事故数据，2021–2025 年事故表、车辆表、伤亡人员表 | 英国交通部 data.dft.gov.uk |
 | C 地铁进站客流 | MTA Subway Hourly Ridership 2020–2024（选取 9 座车站，按车站 × 小时 × 支付方式聚合）；MLB 主场赛程；Open-Meteo 天气实测与历史预报 | data.ny.gov（wujg-7c2s）；statsapi.mlb.com；open-meteo.com |
 | 第 9 章路面病害 | RDD2022 多国路面病害图像 | Arya et al. (2022)，figshare 21431547 |
-| 第 11 章文本分类 | 读者自备已脱敏的投诉文本金标准；公开练习可用 NHTSA 车辆安全投诉数据 | nhtsa.gov |
+| 第 11 章文本分类 | NHTSA 车辆安全投诉（16 款车型 2018–2021 年款）；书中评价集与模型输出保存在 `misc/nhtsa_eval/` | api.nhtsa.gov |
 
 ## 运行步骤
 
@@ -40,8 +40,11 @@ bash run_all.sh                 # 依次运行案例 A、B、C，输出写入 ou
 | `case_C_metro/step1_clean.py` … `step4_validate.py` | 第 15、16 章 | 描述与清洗、特征、基准与模型、验证 |
 | `ch08_traditional_ml/demos.py` | 第 8 章 | 各模型小节的演示：diabetes、乳腺肿瘤数据；METR-LA 检测器日变化曲线的 K-均值、GMM、PCA |
 | `ch10_rl/demos.py` | 第 10 章 | 价值迭代、迷宫 Q-learning、悬崖行走中的 Q-learning 与 SARSA、CartPole 上的 DQN 与 REINFORCE |
+| `figures/concept_figures.py` | 第 7—10 章 | 概念示意图（其中 ROC、手肘图、GMM、PCA、网格世界价值等使用真实数据或真实计算） |
 | `figures/make_figures.py` | 第 7、8、9、16、17 章 | 根据运行结果绘制书中插图，输出到仓库的 `figures/` |
+| `misc/ch09_rdd_transfer.py` | 第 9 章 | RDD2022 四个子集的轻量跨地区检验（ResNet-18 特征 + 逻辑回归，CPU 可运行） |
 | `misc/ch09_road_damage_eval.py` | 第 9 章 | RDD2022 留一国家评估框架（未在书中报告数值） |
+| `misc/fetch_nhtsa.py`、`misc/ch11_nhtsa_eval.py` | 第 11 章 | 下载 NHTSA 投诉；评价 LLM 输出与 TF-IDF 基线 |
 | `misc/ch11_llm_text_classification.py` | 第 11 章 | LLM 分类与抽取、TF-IDF 基线、证据/名录/稳定性检查 |
 
 ## 说明

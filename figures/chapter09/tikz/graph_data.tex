@@ -1,0 +1,12 @@
+\begin{tikzpicture}[font=\scriptsize, >=Stealth, s/.style={circle, draw, fill=blue!20, minimum size=5mm, inner sep=0pt}]
+% 路网示意
+\draw[gray!50, line width=4pt] (0,0) -- (4,0) (0,2) -- (4,2) (1,-0.6) -- (1,2.6) (3,-0.6) -- (3,2.6);
+\foreach \n/\p in {a/{(0.4,0)}, b/{(2,0)}, c/{(3.6,0)}, d/{(1,1)}, e/{(3,1)}, f/{(0.4,2)}, g/{(2,2)}, h/{(3.6,2)}} \node[s] (\n) at \p {};
+\node[below=4pt] at (2,-0.6) {道路网络上的检测器};
+\begin{scope}[shift={(6,0)}]
+\foreach \n/\p in {a/{(0.4,0)}, b/{(2,0)}, c/{(3.6,0)}, d/{(1,1)}, e/{(3,1)}, f/{(0.4,2)}, g/{(2,2)}, h/{(3.6,2)}} \node[s] (G\n) at \p {};
+\foreach \u/\v in {a/b, b/c, a/d, d/f, f/g, g/h, c/e, e/h, b/e, d/g} \draw[->, thick] (G\u) -- (G\v);
+\node[below=4pt] at (2,-0.6) {抽象为图：节点 = 检测器，边 = 道路连接};
+\end{scope}
+\draw[->, very thick, gray] (4.5,1) -- (5.6,1);
+\end{tikzpicture}

@@ -1,0 +1,16 @@
+\begin{tikzpicture}[font=\scriptsize, >=Stealth, v/.style={circle, draw, fill=blue!15, minimum size=5mm, inner sep=0pt}]
+\foreach \r in {0,...,4} \foreach \c in {0,...,4} \draw[gray!60] (0.5*\c,0.5*\r) rectangle ++(0.5,0.5);
+\fill[orange!35] (0.5,0.5) rectangle (2,2); \fill[red!50] (1,1) rectangle (1.5,1.5);
+\node at (1.25,-0.4) {规则网格：每个像素恰有 8 个邻居};
+\node at (1.25,-0.75) {可以用固定大小的 $3\times3$ 卷积核};
+\begin{scope}[shift={(4.2,0.2)}]
+\node[v, fill=red!50] (c) at (1.2,1.1) {};
+\foreach \a/\d/\n in {10/1.0/a, 95/0.8/b, 200/1.1/c1} \node[v] (\n) at ($(c)+(\a:\d)$) {};
+\draw (c) -- (a); \draw (c) -- (b); \draw (c) -- (c1);
+\node[v, fill=red!50] (e) at (3.6,1.1) {};
+\foreach \a/\n in {0/p,45/q,90/r,135/s,180/t,225/u,300/w} \node[v] (\n) at ($(e)+(\a:0.85)$) {};
+\foreach \n in {p,q,r,s,t,u,w} \draw (e) -- (\n);
+\node at (2.4,-0.6) {图：不同节点的邻居数量和排列顺序都不同};
+\node at (2.4,-0.95) {无法直接套用固定形状的卷积核};
+\end{scope}
+\end{tikzpicture}

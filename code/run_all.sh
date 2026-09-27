@@ -19,5 +19,9 @@ cd "$(dirname "$0")"; mkdir -p outputs
   python step4_validate.py  > ../outputs/C_step4_validate.txt )
 ( cd ch08_traditional_ml && python demos.py > ../outputs/ch08_demos.txt )
 ( cd ch10_rl && python demos.py > ../outputs/ch10_demos.txt )
+( cd misc && python ch11_nhtsa_eval.py > ../outputs/ch11_nhtsa_eval.txt )
 python figures/make_figures.py          # 根据运行结果绘制书中插图
+python figures/concept_figures.py       # 概念示意图
+# 第 9 章 RDD2022 检验（需先运行 misc/fetch_rdd2022.py 下载约 1.4 GB 图像）：
+[ -d data/raw/rdd2022/Czech ] && ( cd misc && python ch09_rdd_transfer.py > ../outputs/ch09_rdd_transfer.txt )
 echo "done: see outputs/ and ../figures/"

@@ -1,0 +1,10 @@
+\begin{tikzpicture}[font=\scriptsize, >=Stealth, b/.style={draw, rounded corners, minimum height=7mm, align=center}]
+\node[b, fill=blue!15, minimum width=16mm, minimum height=14mm] (u) at (0,0) {$\mathbf{U}$\\$H\times W\times C$};
+\node[b, fill=gray!15] (sq) at (2.6,0) {全局平均池化\\（Squeeze）\\$1\times1\times C$};
+\node[b, fill=yellow!25] (fc1) at (5.0,0) {FC 降维\\$C/r$ + ReLU};
+\node[b, fill=yellow!25] (fc2) at (7.2,0) {FC 升维\\$C$ + Sigmoid};
+\node[b, fill=green!20] (s) at (7.2,-1.8) {通道权重 $\mathbf{s}$\\（Excitation）};
+\node[circle, draw, inner sep=1pt] (mul) at (0,-1.8) {$\times$};
+\node[b, fill=blue!25, minimum width=16mm, minimum height=14mm] (out) at (0,-3.6) {$\tilde{\mathbf{U}}$\\逐通道加权};
+\draw[->] (u) -- (sq); \draw[->] (sq) -- (fc1); \draw[->] (fc1) -- (fc2); \draw[->] (fc2) -- (s); \draw[->] (s) -- node[above] {$\tilde{\mathbf{u}}_c=s_c\cdot\mathbf{u}_c$} (mul); \draw[->] (u) -- (mul); \draw[->] (mul) -- (out);
+\end{tikzpicture}

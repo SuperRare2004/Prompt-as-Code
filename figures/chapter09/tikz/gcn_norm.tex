@@ -1,0 +1,10 @@
+\begin{tikzpicture}[font=\scriptsize, >=Stealth, b/.style={draw, rounded corners, minimum height=10mm, align=center, fill=gray!8}]
+\node[b] (a) at (0,0) {邻接矩阵\\$\mathbf{A}$};
+\node[b, fill=blue!10] (a1) at (2.5,0) {加自环\\$\tilde{\mathbf{A}}=\mathbf{A}+\mathbf{I}$};
+\node[b, fill=blue!18] (a2) at (5.6,0) {对称归一化\\$\hat{\mathbf{A}}=\tilde{\mathbf{D}}^{-1/2}\tilde{\mathbf{A}}\tilde{\mathbf{D}}^{-1/2}$};
+\node[b, fill=yellow!25] (a3) at (9.0,0) {聚合与变换\\$\hat{\mathbf{A}}\mathbf{H}^{(l)}\mathbf{W}^{(l)}$};
+\node[b, fill=green!20] (a4) at (11.8,0) {激活\\$\mathbf{H}^{(l+1)}=\sigma(\cdot)$};
+\draw[->] (a) -- (a1); \draw[->] (a1) -- (a2); \draw[->] (a2) -- (a3); \draw[->] (a3) -- (a4);
+\node[font=\scriptsize, align=center] at (2.5,-1.1) {保留节点自身信息};
+\node[font=\scriptsize, align=center] at (5.6,-1.1) {避免度数大的节点\\特征尺度过大};
+\end{tikzpicture}

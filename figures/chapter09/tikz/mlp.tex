@@ -1,0 +1,11 @@
+\begin{tikzpicture}[>=Stealth, font=\small, n/.style={circle, draw, minimum size=6mm}]
+\foreach \l/\n/\c/\name in {0/3/blue/输入层, 1/4/green/隐藏层 1, 2/4/green/隐藏层 2, 3/2/orange/输出层} {
+  \foreach \i in {1,...,\n} \node[n, fill=\c!15] (L\l-\i) at (2.4*\l, {(\n+1)/2-\i}) {};
+  \node[font=\scriptsize] at (2.4*\l, -2.6) {\name};
+}
+\foreach \a/\na/\b/\nb in {0/3/1/4, 1/4/2/4, 2/4/3/2}
+  \foreach \i in {1,...,\na} \foreach \j in {1,...,\nb} \draw[->, gray!60] (L\a-\i) -- (L\b-\j);
+\node[font=\scriptsize] at (1.2, 2.2) {$\mathbf{h}^{(1)}=\sigma(\mathbf{W}^{(1)}\mathbf{x}+\mathbf{b}^{(1)})$};
+\node[font=\scriptsize] at (6.0, 2.2) {$\hat{\mathbf{y}}=g(\mathbf{W}^{(3)}\mathbf{h}^{(2)}+\mathbf{b}^{(3)})$};
+\draw[->, thick, blue!60] (-0.6,-3.1) -- node[below, font=\scriptsize] {前向传播方向} (7.8,-3.1);
+\end{tikzpicture}

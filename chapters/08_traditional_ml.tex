@@ -64,7 +64,12 @@ J_{\text{Ridge}}(\beta) = \sum_{i=1}^{m} (y_i - \hat{y}_i)^2 + \alpha \sum_{j=1}
 
 从几何角度看，普通最小二乘的损失函数可以画成一组椭圆形等高线，最优解位于等高线的中心；而岭回归相当于要求参数向量落在一个 $L_2$ 球内。最终解出现在"损失等高线"和"参数约束球"相切的位置。由于 $L_2$ 球是光滑的，相切点通常不会正好落在坐标轴上，因此岭回归倾向于把所有系数一起缩小，而不是直接把某些系数压成 0。
 
-\figholder{正则化线性模型：岭回归、Lasso 与弹性网示意图}{fig:ch08_orig1}{源稿图示待按本书风格重绘。图示内容：中的椭圆表示损失函数等高线，圆形或菱形表示参数约束范围。}
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.85\textwidth]{figures/chapter08/ridge_lasso_geometry.pdf}
+  \caption{岭回归与 Lasso 的几何解释：椭圆为损失等高线，阴影为参数约束范围，红点为相切处的解}
+  \label{fig:ch08_orig1}
+\end{figure}
 
 图~\ref{fig:ch08_orig1} 中的椭圆表示损失函数等高线，圆形或菱形表示参数约束范围。Ridge 的相切点多落在坐标轴之外，因此常表现为整体收缩；Lasso 的尖角更容易与等高线相切在坐标轴上，因此可能把某些特征系数直接压为 0。
 
@@ -110,9 +115,14 @@ J_{\text{ElasticNet}}(\beta) = \sum_{i=1}^{m} (y_i - \hat{y}_i)^2 + \alpha \rho 
 \begin{equation}
     \log \left( \frac{P(y_n=1|\mathbf{x}_n)}{1 - P(y_n=1|\mathbf{x}_n)} \right) = w_0 + \mathbf{w}^{\textrm{T}} \mathbf{x}_n.
 \end{equation}
-决策规则直观：计算概率 $P(y_n=1|\mathbf{x}_n)$，若大于 0.5 则预测类别 $C_1$；否则预测类别 $C_2$（$y_n=0$）。相关图示 展示了 Logistic 函数最重要的性质：无论线性输入取多大或多小，输出都会被压缩到 $0$ 和 $1$ 之间，因此可以被解释为概率。
+决策规则直观：计算概率 $P(y_n=1|\mathbf{x}_n)$，若大于 0.5 则预测类别 $C_1$；否则预测类别 $C_2$（$y_n=0$）。图~\ref{fig:ch08_orig2} 展示了 Logistic 函数最重要的性质：无论线性输入取多大或多小，输出都会被压缩到 $0$ 和 $1$ 之间，因此可以被解释为概率。
 
-\figholder{逻辑回归示意图}{fig:ch08_orig2}{源稿中的示意图，待按本书风格重绘。内容应与“逻辑回归”一节的讲解相对应。}
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.95\textwidth]{figures/chapter08/logistic.pdf}
+  \caption{Logistic 函数（左）与复习时间—考试通过的逻辑回归拟合（右，数据见表~\ref{tab:exam_data}）}
+  \label{fig:ch08_orig2}
+\end{figure}
 
 \paragraph{应用实例：学习时间与考试通过率}
 
@@ -245,9 +255,14 @@ Softmax 有三个重要性质：所有 $z_{nk}$ 都大于 0；所有类别概率
 \end{equation}
 需要注意的是，Softmax 回归并不只输出一个硬标签，而是先输出一整组类别概率。如果最高概率只有 0.42 而第二高为 0.39，说明模型并不确定，后续决策时可以保留这种不确定性。
 
-相关图示 的作用是说明 Softmax 并不是只给出一个类别标签，而是先为每个类别计算概率，再选择概率最大的类别作为预测结果。在二维特征空间中，不同类别概率最大的区域共同形成多分类决策边界。
+图~\ref{fig:ch08_orig3} 的作用是说明 Softmax 并不是只给出一个类别标签，而是先为每个类别计算概率，再选择概率最大的类别作为预测结果。在二维特征空间中，不同类别概率最大的区域共同形成多分类决策边界。
 
-\figholder{多项逻辑回归与 Softmax 回归示意图}{fig:ch08_orig3}{源稿中的示意图，待按本书风格重绘。内容应与“多项逻辑回归与 Softmax 回归”一节的讲解相对应。}
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.95\textwidth]{figures/chapter08/softmax_regions.pdf}
+  \caption{Softmax 回归：概率最大的类别形成决策区域（左），每个样本得到一组类别概率（右）}
+  \label{fig:ch08_orig3}
+\end{figure}
 
 \subsection{支持向量机}
 
@@ -265,9 +280,14 @@ Softmax 有三个重要性质：所有 $z_{nk}$ 都大于 0；所有类别概率
 \end{equation}
 因此，最大化间隔等价于最小化 $\frac{1}{2}||\mathbf{w}||^2$。
 
-相关图示 展示了硬间隔 SVM 的理想情形：两类样本完全线性可分，实线是最终分类超平面，两条虚线分别表示 $\mathbf{w}^{\textrm{T}}\mathbf{x}+w_0=\pm 1$。被圈出的样本点就是支持向量，它们直接决定了间隔的位置和宽度；远离边界的样本虽然参与训练，但对最终分隔面的位置影响较小。
+图~\ref{fig:ch08_orig4} 展示了硬间隔 SVM 的理想情形：两类样本完全线性可分，实线是最终分类超平面，两条虚线分别表示 $\mathbf{w}^{\textrm{T}}\mathbf{x}+w_0=\pm 1$。被圈出的样本点就是支持向量，它们直接决定了间隔的位置和宽度；远离边界的样本虽然参与训练，但对最终分隔面的位置影响较小。
 
-\figholder{超平面与间隔示意图}{fig:ch08_orig4}{源稿中的示意图，待按本书风格重绘。内容应与“超平面与间隔”一节的讲解相对应。}
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.5\textwidth]{figures/chapter08/svm_margin.pdf}
+  \caption{硬间隔 SVM：实线为分类超平面，虚线为间隔边界，圈出的点为支持向量}
+  \label{fig:ch08_orig4}
+\end{figure}
 
 \paragraph{优化问题：对偶推导与支持向量}
 
@@ -312,7 +332,12 @@ Softmax 有三个重要性质：所有 $z_{nk}$ 都大于 0；所有类别概率
 \end{equation}
 约束条件变为 $y_n (\mathbf{w}^{\textrm{T}} \mathbf{x}_n + w_0) \geq 1 - \xi_n$。其中 $C$ 是正则化参数：$C$ 越大，对误分类的惩罚越大，模型趋向于硬间隔（容易过拟合）；$C$ 越小，容忍更多误分类，间隔越宽（泛化能力可能更强）。实际建模时，$C$ 通常通过验证集或交叉验证选择。
 
-\figholder{软间隔与正则化示意图}{fig:ch08_orig5}{源稿图示待按本书风格重绘。图示内容：中，位于间隔边界之外的样本 $\xi_n=0$；进入两条间隔边界之间的样本 $0<\xi_n<1$；落到分类超平面错误一侧的样本通常有 $\xi_n\geq 1$。}
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.9\textwidth]{figures/chapter08/svm_soft.pdf}
+  \caption{软间隔 SVM：正则化参数 $C$ 对间隔宽度与违例样本的影响}
+  \label{fig:ch08_orig5}
+\end{figure}
 
 图~\ref{fig:ch08_orig5} 中，位于间隔边界之外的样本 $\xi_n=0$；进入两条间隔边界之间的样本 $0<\xi_n<1$；落到分类超平面错误一侧的样本通常有 $\xi_n\geq 1$。
 
@@ -336,9 +361,14 @@ SVM 在处理中小型数据集、高维数据和具有清晰决策边界的问�
 
 决策树是一种非参数的监督学习方法，既可以用于分类也可以用于回归。其核心思想采用"分而治之"（divide-and-conquer）的策略，通过一系列递归的划分步骤将特征空间分割为多个区域。决策树由两种节点组成：\textbf{内部决策节点（Internal decision node）}包含一个测试函数，基于特征划分出多个分支；\textbf{叶节点（Terminal leaf node）}定义了特征空间的一个局部区域，落入该区域的实例具有相同的预测输出。
 
-相关图示 可以从特征空间划分的角度理解决策树：每一次节点测试都相当于在特征空间中画出一条划分边界，多个节点递归叠加后形成若干个局部区域。与线性模型用一条整体边界分割空间不同，决策树通过多次轴向切分形成阶梯状区域，解释性强，但树过深时容易把训练数据中的局部噪声切分出来。
+图~\ref{fig:ch08_orig5} 可以从特征空间划分的角度理解决策树：每一次节点测试都相当于在特征空间中画出一条划分边界，多个节点递归叠加后形成若干个局部区域。与线性模型用一条整体边界分割空间不同，决策树通过多次轴向切分形成阶梯状区域，解释性强，但树过深时容易把训练数据中的局部噪声切分出来。
 
-\figholder{决策树示意图}{fig:ch08_orig6}{源稿中的示意图，待按本书风格重绘。内容应与“决策树”一节的讲解相对应。}
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.9\textwidth]{figures/chapter08/tree_partition.pdf}
+  \caption{决策树对特征空间的轴向划分：浅树（左）与不限深度的树（右）}
+  \label{fig:ch08_orig6}
+\end{figure}
 
 \paragraph{分类树的构建与纯度度量}
 
@@ -362,7 +392,12 @@ SVM 在处理中小型数据集、高维数据和具有清晰决策边界的问�
 
 完全生长的树容易过拟合训练数据，导致泛化能力差。解决策略包括两类：\textbf{预剪枝（Pre-pruning）}在树生长过程中提前停止，例如限制最大树深度或节点分裂所需的最小样本数；\textbf{后剪枝（Post-pruning）}先生成一棵非常大的树，然后利用代价复杂度剪枝（Cost Complexity Pruning）将其剪成子树，通过参数 $\alpha$ 权衡树的复杂度与对训练数据的拟合程度。
 
-\figholder{过拟合与剪枝示意图}{fig:ch08_orig7}{源稿中的示意图，待按本书风格重绘。内容应与“过拟合与剪枝”一节的讲解相对应。}
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.65\textwidth]{figures/chapter08/tree_pruning.pdf}
+  \caption{代价复杂度剪枝路径上训练集与测试集准确率的变化（乳腺肿瘤数据）}
+  \label{fig:ch08_orig7}
+\end{figure}
 
 决策树的主要优点是易于解释、可视化效果好，能处理定性预测变量而无需虚拟变量。主要缺点是预测精度通常低于其他复杂模型，且对数据的微小变化敏感，可能导致树结构发生巨大变化。
 
@@ -404,15 +439,25 @@ K-Means 算法是一个迭代优化过程：初始化 $K$ 个簇中心 $\boldsym
 \end{equation}
 这证明了在平方误差准则下，簇内所有点的算术平均值确实是使误差最小的最优质心。K-Means 只能保证收敛到局部较优解，因此实际使用中常会多次初始化并选择 Inertia 最小的一组结果。
 
-相关图示 展示了 K-Means 的两个交替步骤：先根据当前质心把样本分配到最近簇，再用每个簇内样本的平均值更新质心，不断降低簇内平方误差直到收敛。
+图~\ref{fig:ch08_orig8} 展示了 K-Means 的两个交替步骤：先根据当前质心把样本分配到最近簇，再用每个簇内样本的平均值更新质心，不断降低簇内平方误差直到收敛。
 
-\figholder{算法流程示意图}{fig:ch08_orig8}{源稿中的示意图，待按本书风格重绘。内容应与“算法流程”一节的讲解相对应。}
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.98\textwidth]{figures/chapter08/kmeans_steps.pdf}
+  \caption{K-均值的迭代过程：分配样本与更新质心交替进行}
+  \label{fig:ch08_orig8}
+\end{figure}
 
 \paragraph{K 值的选择：手肘法}
 
-在无监督学习中，没有直接的误差指标来评估聚类效果。手肘法通过绘制 Inertia 随 $K$ 变化的曲线来确定最佳簇数：最佳点通常位于曲线的"肘部"，即 Inertia 下降速度显著变缓的点。阅读相关图示时，重点不是寻找最低点（因为 $K$ 越大 Inertia 通常越小），而是观察下降幅度从"明显变好"转为"收益有限"的位置。该位置对应的 $K$ 往往能在模型复杂度与聚类解释性之间取得较好平衡。
+在无监督学习中，没有直接的误差指标来评估聚类效果。手肘法通过绘制 Inertia 随 $K$ 变化的曲线来确定最佳簇数：最佳点通常位于曲线的"肘部"，即 Inertia 下降速度显著变缓的点。阅读图~\ref{fig:ch08_orig9}时，重点不是寻找最低点（因为 $K$ 越大 Inertia 通常越小），而是观察下降幅度从"明显变好"转为"收益有限"的位置。该位置对应的 $K$ 往往能在模型复杂度与聚类解释性之间取得较好平衡。
 
-\figholder{K 值的选择：手肘法示意图}{fig:ch08_orig9}{源稿中的示意图，待按本书风格重绘。内容应与“K 值的选择：手肘法”一节的讲解相对应。}
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.6\textwidth]{figures/chapter08/elbow.pdf}
+  \caption{手肘法：METR-LA 检测器日变化曲线聚类的 Inertia 随 $K$ 的变化}
+  \label{fig:ch08_orig9}
+\end{figure}
 
 \paragraph{实现与结果}
 完整代码见 \texttt{demos.py kmeans}。这里用一个交通数据的例子：对 METR-LA 的 207 个检测器，计算其工作日 6:00—20:00 每 15 分钟的平均车速，得到每个检测器一条 56 维的“日变化曲线”，再做 K-均值聚类。$k$ 从 2 增加到 7 时，SSE 从约 102 万单调下降到约 34 万，下降速度在 $k=3$ 到 4 之后明显放缓，轮廓系数在 $k=4$ 时最高（0.404）。取 $k=3$ 时，三个簇的含义非常清晰：90 个检测器全天畅通（最低均速 55.0 mph）；51 个检测器早高峰拥堵（8:00 均速 29.6 mph）；66 个检测器晚高峰拥堵（17:00 均速 34.9 mph，而 8:00 为 58.9 mph）。后两类对应的正是通勤潮汐的进城与出城方向。“手肘”与轮廓系数只提供参考，最终的 $k$ 取决于聚类结果是否具有可解释的交通含义。
@@ -440,7 +485,12 @@ K-均值聚类是一种硬聚类（Hard Clustering），每个点只能属于一
 \end{equation}
 其中 $\pi_k$ 是混合系数（先验概率），满足 $\sum \pi_k = 1$；$\mathcal{N}(\mathbf{x} | \boldsymbol{\mu}_k, \boldsymbol{\Sigma}_k)$ 是第 $k$ 个高斯分量的密度函数。
 
-\figholder{概率论回顾：贝叶斯定理示意图}{fig:ch08_orig10}{源稿中的示意图，待按本书风格重绘。内容应与“概率论回顾：贝叶斯定理”一节的讲解相对应。}
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.95\textwidth]{figures/chapter08/gmm_responsibility.pdf}
+  \caption{贝叶斯定理在高斯混合模型中的作用：由各分量的联合密度（左）得到样本属于各分量的后验概率（右）}
+  \label{fig:ch08_orig10}
+\end{figure}
 
 \paragraph{EM 算法 (Expectation-Maximization)}
 
@@ -452,9 +502,9 @@ GMM 的参数 $\{\pi_k, \boldsymbol{\mu}_k, \boldsymbol{\Sigma}_k\}$ 无法直�
     \end{equation}
     \item \textbf{M 步（Maximization）}：利用 E 步得到的 $\gamma(z_{nk})$ 更新参数（令 $N_k = \sum_{n=1}^N \gamma(z_{nk})$）：
     \begin{align*}
-        \boldsymbol{\mu}_k^{new} &= \frac{1}{N_k} \sum_{n=1}^N \gamma(z_{nk}) \mathbf{x}_n, \qquad
-        \boldsymbol{\Sigma}_k^{new} = \frac{1}{N_k} \sum_{n=1}^N \gamma(z_{nk}) (\mathbf{x}_n - \boldsymbol{\mu}_k^{new})(\mathbf{x}_n - \boldsymbol{\mu}_k^{new})^T, \qquad
-        \pi_k^{new} = \frac{N_k}{N}.
+        \boldsymbol{\mu}_k^{new} &= \frac{1}{N_k} \sum_{n=1}^N \gamma(z_{nk}) \mathbf{x}_n, \\
+        \boldsymbol{\Sigma}_k^{new} &= \frac{1}{N_k} \sum_{n=1}^N \gamma(z_{nk}) (\mathbf{x}_n - \boldsymbol{\mu}_k^{new})(\mathbf{x}_n - \boldsymbol{\mu}_k^{new})^T, \\
+        \pi_k^{new} &= \frac{N_k}{N}.
     \end{align*}
 \end{enumerate}
 
@@ -468,9 +518,14 @@ GMM 的参数 $\{\pi_k, \boldsymbol{\mu}_k, \boldsymbol{\Sigma}_k\}$ 无法直�
 
 \paragraph{工程应用案例：基于 GMM 的交通速度分布建模}
 
-GMM 在土木工程中常用于处理异质性数据。例如，Park 等人（2010）使用贝叶斯混合模型来捕捉车辆速度数据的异质性。在美国得克萨斯州 IH-35 高速公路上收集的 24 小时交通数据中，交通流在不同时间段表现出不同模式（如自由流、拥堵流），单一的高斯分布无法拟合整体速度分布。通过 $K=4$ 的混合模型，可以清晰地识别出不同交通状态下的速度分布模式（如夜间高速模式、早高峰低速模式等），这比单一分布提供了更丰富的信息，研究者通过计算 AIC/BIC 确定了 $K=4$ 是最优选择。
+GMM 在土木工程中常用于处理异质性数据。例如，\citet{park2010mixture}（\citep{park2010mixture}）使用贝叶斯混合模型来捕捉车辆速度数据的异质性。在美国得克萨斯州 IH-35 高速公路上收集的 24 小时交通数据中，交通流在不同时间段表现出不同模式（如自由流、拥堵流），单一的高斯分布无法拟合整体速度分布。通过 $K=4$ 的混合模型，可以清晰地识别出不同交通状态下的速度分布模式（如夜间高速模式、早高峰低速模式等），这比单一分布提供了更丰富的信息，研究者通过计算 AIC/BIC 确定了 $K=4$ 是最优选择。
 
-\figholder{工程应用案例：基于 GMM 的交通速度分布建模示意图}{fig:ch08_orig11}{源稿图示待按本书风格重绘。图示内容：中，每一条红色虚线可以理解为一种典型交通状态下的速度分布，蓝色实线则是这些状态按权重叠加后的总体分布。}
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.7\textwidth]{figures/chapter08/gmm_speed.pdf}
+  \caption{METR-LA 全部检测器 5 分钟速度的 4 分量高斯混合拟合：红色虚线为各分量，蓝色实线为混合分布}
+  \label{fig:ch08_orig11}
+\end{figure}
 
 图~\ref{fig:ch08_orig11} 中，每一条红色虚线可以理解为一种典型交通状态下的速度分布，蓝色实线则是这些状态按权重叠加后的总体分布。混合模型比用单个高斯分布更能解释交通系统在自由流、过渡流和拥堵流之间切换的异质性。
 
@@ -507,9 +562,14 @@ GMM 比 K-均值更灵活，能够更好地处理非球形簇和不同密度的�
 \end{equation}
 其中 $\lambda_i$ 是协方差矩阵的特征值（按降序排列）。通常选择截断点 $k$，使得 $PoV > 0.9$（即保留 90\% 的原始信息）。碎石图（Scree Graph）用于直观确定保留多少个主成分：若前几个主成分已经解释了大部分方差，就可以用较低维表示替代原始高维特征。
 
-相关图示 的关键是"换坐标系"：PCA 不是随便丢掉几个原始变量，而是先寻找数据变化最明显的方向，把它定义为第一主成分，再在正交方向中寻找第二主成分。样本投影到主成分方向后，原本由多个相关特征共同表达的信息，可以被更少的新坐标概括。
+图~\ref{fig:ch08_orig12} 的关键是"换坐标系"：PCA 不是随便丢掉几个原始变量，而是先寻找数据变化最明显的方向，把它定义为第一主成分，再在正交方向中寻找第二主成分。样本投影到主成分方向后，原本由多个相关特征共同表达的信息，可以被更少的新坐标概括。
 
-\figholder{主成分分析（PCA）示意图}{fig:ch08_orig12}{源稿中的示意图，待按本书风格重绘。内容应与“主成分分析（PCA）”一节的讲解相对应。}
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.95\textwidth]{figures/chapter08/pca.pdf}
+  \caption{主成分分析：寻找方差最大的方向（左）；METR-LA 检测器日变化曲线在前两个主成分上的投影（右）}
+  \label{fig:ch08_orig12}
+\end{figure}
 
 \paragraph{实现与结果}
 完整代码见 \texttt{demos.py pca}。对同样的 56 维日变化曲线做主成分分析，第一主成分解释了 58.9\% 的方差，前两个主成分累计解释 87.8\%，前三个为 92.7\%。第一主成分载荷绝对值最大的时段集中在 16:00—16:45，即晚高峰开始阶段——检测器之间最大的差异，是“晚高峰是否拥堵”。用两个主成分就能在平面上清楚地展示三类检测器的分布，这是降维在交通数据探索中的典型用途。

@@ -1,0 +1,10 @@
+\begin{tikzpicture}[font=\scriptsize, >=Stealth, v/.style={circle, draw, fill=blue!15, minimum size=7mm, inner sep=0pt}]
+\node[v, fill=red!35] (i) at (0,0) {$\mathbf{h}_i$};
+\foreach \a/\n/\l in {90/j1/\mathbf{h}_{j_1}, 200/j2/\mathbf{h}_{j_2}, 330/j3/\mathbf{h}_{j_3}} {\node[v] (\n) at (\a:1.8) {$\l$}; \draw[->, thick, blue!60] (\n) -- (i);}
+\node[align=center] at (0,-2.2) {(1) 邻居传递消息};
+\draw[->, very thick, gray] (2.4,0) -- (3.6,0);
+\node[draw, rounded corners, fill=yellow!25, align=center] (agg) at (5.2,0) {(2) 聚合\\$\sum_{j\in\mathcal{N}(i)\cup\{i\}} \frac{1}{c_{ij}}\mathbf{W}\mathbf{h}_j$};
+\draw[->, very thick, gray] (6.9,0) -- (7.6,0);
+\node[v, fill=red!55, minimum size=9mm] (o) at (8.6,0) {$\mathbf{h}_i'$};
+\node[align=center] at (8.6,-1.1) {(3) 非线性变换\\$\mathbf{h}_i'=\sigma(\cdot)$};
+\end{tikzpicture}

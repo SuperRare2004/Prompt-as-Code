@@ -1,0 +1,6 @@
+\begin{tikzpicture}[font=\small, >=Stealth, b/.style={draw, rounded corners, minimum width=30mm, minimum height=11mm, align=center}]
+\node[b, fill=blue!15] (a) at (0,1.6) {智能体（Agent）\\策略 $\pi(a|s)$};
+\node[b, fill=green!15] (e) at (0,-1.6) {环境（Environment）\\状态转移 $P(s'|s,a)$};
+\draw[->, thick] (a.east) -- ++(1.6,0) |- node[pos=0.25, right] {行动 $A_t$} (e.east);
+\draw[->, thick] (e.west) -- ++(-1.9,0) |- node[pos=0.25, left, align=right] {新状态 $S_{t+1}$\\奖励 $R_{t+1}$} (a.west);
+\end{tikzpicture}
