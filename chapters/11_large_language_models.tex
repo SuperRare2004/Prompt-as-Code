@@ -2,6 +2,16 @@
 
 本章从模型机制的角度重新理解本书一直在使用的协作伙伴。理解 token、表示、注意力、训练与对齐，并不是为了从零训练大模型，而是为了更准确地判断提示、上下文、工具调用和模型输出之间的关系。
 
+\begin{chapterguide}
+\begin{itemize}
+  \item 说明 Token、Embedding、位置编码和 Transformer 如何构成大语言模型的技术基础；
+  \item 描述预训练、监督微调与对齐三个训练阶段各自赋予模型什么能力；
+  \item 认识幻觉、时效性、成本和可解释性等局限，并据此设计与检索、规则和人工审核协同的系统；
+  \item 理解 Agent、MCP、Skills 与 ReAct 等框架的本质，判断一个 AI 系统是否可靠；
+  \item 用金标准、可核查的输出格式和低成本基线评价大语言模型在文本任务上的表现。
+\end{itemize}
+\end{chapterguide}
+
 \section{大语言模型的技术基础}
 \label{sec:llm_foundation}
 
@@ -317,15 +327,15 @@ TF-IDF + 逻辑回归（10,411 条训练样本） & 0.875 & 0.875 \\
 \section{实战练习}
 % ----------------------------------------------------------------
 
-\subsection*{练习一}
+\subsection*{练习一：建立小型金标准}
 
 选取 200 条公开的交通投诉文本（例如 NHTSA 车辆安全投诉），由两人独立标注并计算一致性，建立一个小型金标准。
 
-\subsection*{练习二}
+\subsection*{练习二：与低成本基线比较}
 
 使用 \texttt{code/misc/ch11\_llm\_text\_classification.py}，比较大语言模型与 TF-IDF 基线的宏平均 F1，并统计 evidence 字段不是原文子串的比例。
 
-\subsection*{练习三}
+\subsection*{练习三：检验输出的稳定性}
 
 对同一批文本重复运行 3 次，找出类别不稳定的样本，并与人工标注存在分歧的样本进行对照。
 

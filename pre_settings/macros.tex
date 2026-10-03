@@ -79,6 +79,22 @@
   \end{mdframed}%
 }
 
+% 章首：本章学习目标（左侧色条）
+\mdfdefinestyle{chapterguidestyle}{%
+  skipabove=\bigskipamount, skipbelow=\bigskipamount,
+  leftline=true, rightline=false, topline=false, bottomline=false,
+  linewidth=4pt, linecolor=blue!55!black, backgroundcolor=blue!5,
+  innertopmargin=10pt, innerbottommargin=10pt,
+  innerleftmargin=14pt, innerrightmargin=10pt,
+}
+\newenvironment{chapterguide}{%
+  \begin{mdframed}[style=chapterguidestyle]%
+  {\large\bfseries\color{blue!55!black}本章学习目标}\par\smallskip
+  \noindent 学完本章后，读者应当能够：\par
+}{%
+  \end{mdframed}%
+}
+
 \renewcommand{\lstlistingname}{代码清单}
 \lstset{extendedchars=false,texcl=false,columns=fullflexible,keepspaces=true}
 
