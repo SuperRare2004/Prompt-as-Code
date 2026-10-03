@@ -41,6 +41,7 @@ bash run_all.sh                 # 依次运行案例 A、B、C，输出写入 ou
 | `case_C_metro/step1_clean.py` … `step4_validate.py` | 第 15、16 章 | 描述与清洗、特征、基准与模型、验证 |
 | `ch08_traditional_ml/demos.py` | 第 8 章 | 各模型小节的演示：diabetes、乳腺肿瘤数据；METR-LA 检测器日变化曲线的 K-均值、GMM、PCA |
 | `ch10_rl/demos.py` | 第 10 章 | 价值迭代、迷宫 Q-learning、悬崖行走中的 Q-learning 与 SARSA、CartPole 上的 DQN 与 REINFORCE |
+| `figures/bookstyle.py` | 第 7—11 章 | `concept_figures.py` 中第 7—11 章新增插图（以 `@newfig` 注册）使用的配色与样式 |
 | `figures/concept_figures.py` | 前言，第 1—18 章 | 概念示意图，以及由 `outputs/` 日志和原始数据绘制的结果图（如 METR-LA 缺失矩阵、自相关、STATS19 交互效应、NHTSA 混淆矩阵） |
 | `figures/make_figures.py` | 第 7、8、9、16、17 章 | 根据运行结果绘制书中插图，输出到仓库的 `figures/` |
 | `misc/ch09_rdd_transfer.py` | 第 9 章 | RDD2022 四个子集的轻量跨地区检验（ResNet-18 特征 + 逻辑回归，CPU 可运行） |

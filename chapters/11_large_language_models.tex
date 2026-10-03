@@ -147,6 +147,15 @@ X \in \mathbb{R}^{L \times d_{\text{model}}}
 
 第四，\textbf{预训练带来的通用先验}。模型在下游任务中表现出来的能力，并不只来自下游小数据集，而是建立在大规模先验学习基础上的。
 
+理解“预测下一个 token”还能解释大语言模型输出的随机性。模型在每一步输出的是一个概率分布，再从中采样得到具体的 token；温度参数 $T$ 控制这个分布的“尖锐”程度：$p_i \propto \exp(z_i/T)$。图~\ref{fig:ch11_temp} 用一组示意的得分展示了这一点：温度越低，概率越集中在得分最高的 token 上，输出越确定；温度越高，分布越平坦，同一个提示更容易得到不同的回答。这也是为什么对同一批数据重复调用大语言模型，结果可能并不完全一致，评价时需要检查输出的稳定性。
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{figures/chapter11/temperature.pdf}
+  \caption{温度参数对下一个 token 概率分布的影响（得分为示意值）}
+  \label{fig:ch11_temp}
+\end{figure}
+
 \subsection{大语言模型与前文知识点的关系}
 
 从本书整体结构看，大语言模型并不是与前文割裂的主题。

@@ -124,6 +124,15 @@ y_i\log \hat{p}_i+(1-y_i)\log(1-\hat{p}_i)
 \]
 这个式子的含义很直接：真实标签为 1 时，模型若给类别 1 很低概率，就会受到很大惩罚；真实标签为 0 时，模型若给类别 0 很低概率，也会受到很大惩罚。
 
+图~\ref{fig:ch07_losses} 把两类损失放在一起：回归中，平方损失对大残差的惩罚远重于绝对值损失，Huber 损失则在两者之间折中；分类中，模型对错误答案越自信，交叉熵损失就越大，并且在概率趋近 0 时趋于无穷。
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{figures/chapter07/loss_functions.pdf}
+  \caption{常见的回归损失与二分类交叉熵损失}
+  \label{fig:ch07_losses}
+\end{figure}
+
 可以通过一个简单问题来理解 MLE。假设某个样本的真实标签是 \(y=1\)，如果希望模型更准确，应该让模型预测的 \(P(y=1|\mathbf{x})\) 更大，还是让 \(P(y=0|\mathbf{x})\) 更大？答案显然是前者。反过来，如果真实标签是 \(y=0\)，就应让 \(P(y=0|\mathbf{x})=1-\hat{p}\) 更大。极大似然法说的正是这件朴素的事情：调整参数 \(\theta\)，让真实发生的标签在模型看来尽可能“有可能发生”。交叉熵只是把这个思想写成了便于优化的负对数形式。
 
 \subsection{多分类损失：Softmax 与交叉熵}
@@ -280,6 +289,15 @@ L_{\mathrm{multi}}(\theta)=
     它衡量模型相对于“只预测均值”的改进程度。
 \end{itemize}
 
+MAE 与 RMSE 的差别，在误差分布有长尾时尤其明显。图~\ref{fig:ch07_errdist} 是案例 A 中持续性基准在测试集上的绝对误差分布：大多数样本的误差只有一两个 mph，但有 2.1\% 的样本误差超过 20 mph，其中约 56\% 发生在 15 分钟内车速从 50 mph 以上跌到 35 mph 以下（拥堵形成）或反向回升（拥堵消散）的时刻。这些少数大误差使 RMSE（6.19）接近 MAE（3.39）的两倍。如果任务最关心的恰恰是这些大误差，只报告 MAE 就会低估问题。
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.92\textwidth]{figures/chapter07/error_distribution.pdf}
+  \caption{持续性基准的绝对误差分布（METR-LA 测试集，纵轴为对数刻度）}
+  \label{fig:ch07_errdist}
+\end{figure}
+
 \subsection{分类任务的混淆矩阵}
 
 二分类评估通常从混淆矩阵开始：
@@ -308,6 +326,15 @@ L_{\mathrm{multi}}(\theta)=
 \end{figure}
 
 图~\ref{fig:ch07_orig2} 把分类结果拆成四种情况。对于安全检测、疾病筛查或交通事件识别等任务，FN 和 FP 的代价往往并不相同，因此只看 Accuracy 容易掩盖业务风险。Precision 更关注“报出来的正例有多少是真的”，Recall 更关注“真实正例中有多少被找出来”。
+
+精确率和召回率都随阈值变化。图~\ref{fig:ch07_thresh} 以第 8 章案例 B 的随机森林为例：阈值从 0.2 升到 0.8，被判为 KSI 的事故从几乎全部降到极少数，召回率随之下降、精确率随之上升；F1 在阈值约 0.47 处达到最大（0.454）。但 F1 最大并不意味着这个阈值最合适——真正的阈值应当由能投入的资源和两类错误的代价决定（见第 8 章第三步）。
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.92\textwidth]{figures/chapter07/threshold_metrics.pdf}
+  \caption{精确率、召回率与 F1 随分类阈值的变化（STATS19，2025 年测试集）}
+  \label{fig:ch07_thresh}
+\end{figure}
 
 \subsection{ROC 曲线是怎么画出来的}
 
@@ -371,6 +398,15 @@ L_{\mathrm{multi}}(\theta)=
     \item 使用 Early Stopping，在验证集表现开始变差前停止训练；
     \item 使用集成方法，例如随机森林通过 bagging 降低单棵树的方差。
 \end{itemize}
+
+判断应当“增加数据”还是“换模型”，可以借助学习曲线：在不同规模的训练样本上训练同一个模型，比较训练误差和验证误差。图~\ref{fig:ch07_lc} 是案例 A 的结果。深度为 12 的回归树在只有 500 个样本时，训练 MAE 仅 0.50，验证 MAE 却高达 5.15，是典型的过拟合；随着样本增加到 100 万，两条曲线逐渐靠拢（2.96 与 3.15）。岭回归的两条曲线从一开始就几乎重合，增加数据也无法让它继续变好——它受限的是模型表达能力，而不是数据量。
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.92\textwidth]{figures/chapter07/learning_curve.pdf}
+  \caption{学习曲线：训练样本数对训练误差与验证误差的影响（METR-LA）}
+  \label{fig:ch07_lc}
+\end{figure}
 
 监督学习和无监督学习主要从静态数据中学习规律。机器学习的第三类范式——\textbf{强化学习（Reinforcement Learning, RL）}——则关注智能体如何在与环境的持续交互中，通过试错和奖励反馈学习最优行动策略。强化学习以状态、动作、奖励和策略为核心要素，将在第10章中系统展开。
 

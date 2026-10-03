@@ -58,6 +58,15 @@
     其输出范围为 $(0, 1)$，常被解释为神经元被激活的概率。
 \end{enumerate}
 
+除 Sigmoid 外，常用的激活函数还有 tanh、ReLU 和 GELU（图~\ref{fig:ch09_act}）。右图的导数尤其值得注意：反向传播时，梯度每经过一层都要乘上激活函数的导数。Sigmoid 的导数最大只有 0.25，多层连乘后梯度会迅速变小，这正是后文梯度消失问题的来源之一；ReLU 在正半轴的导数恒为 1，因而成为深层网络的默认选择。
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{figures/chapter09/activations.pdf}
+  \caption{常用激活函数（左）及其导数（右）}
+  \label{fig:ch09_act}
+\end{figure}
+
 \paragraph{感知机的局限性：XOR 问题}
 单个神经元（即感知机）本质上是一个线性分类器。如图~\ref{fig:ch09_orig2} 所示，它可以完美解决逻辑“与”（AND）或“或”（OR）问题，因为这些问题是\textbf{线性可分}的。
 
@@ -130,6 +139,16 @@
         J(\theta) = - \sum_{n=1}^N \sum_{k=1}^K y_k^{(n)} \log \hat{y}_k^{(n)}
     \end{equation}
 \end{itemize}
+
+\paragraph{优化器}
+普通梯度下降的步长受损失面最陡方向的限制：步长稍大就会在陡峭方向来回振荡，而在平缓方向上又前进得很慢。动量法累积历史梯度，抵消来回振荡、加速平缓方向的前进；Adam 则为每个参数单独调整步长。图~\ref{fig:ch09_opt} 在一个狭长的二次损失面上比较了三者（梯度下降步长 0.075，接近该损失面的稳定上限 0.08；动量法步长 0.03、动量系数 0.8；Adam 步长 0.1）。可以看到，没有哪一种优化器在所有设置下都最好：在这个例子中，动量法收敛最快，而 Adam 在固定步长下会在最优点附近徘徊。实践中优化器和学习率都需要在验证集上选择。
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{figures/chapter09/optimizers.pdf}
+  \caption{三种优化器在狭长二次损失面上的迭代路径（左）与损失下降过程（右）}
+  \label{fig:ch09_opt}
+\end{figure}
 
 \paragraph{梯度下降与 Epoch/Step}
 为了最小化损失，我们采用梯度下降法（Gradient Descent）。在实际训练中，厘清以下概念至关重要：
@@ -393,6 +412,15 @@ LSTM & 2.93 & 5.74 & 3.55 & 4.64 & 2.57 & 33.38 \\
 
 这张表呈现了一个耐人寻味的结果。LSTM 的总体 MAE 最低，比持续性基准改进约 14\%，在早晚高峰也都是最好的模型。如果只看这几列，结论似乎很清楚：序列模型更好。但在拥堵形成阶段，LSTM 的 MAE 为 33.38 mph，是所有方法中最差的，甚至不如持续性基准；同时，它的 RMSE 也高于 MLP，说明它在少数时刻犯了更大的错误。
 
+图~\ref{fig:ch09_lstmtrain} 是 LSTM 的训练过程：验证集 MAE 随训练轮数平稳下降，第 14 轮达到最低的 2.907 mph，始终明显低于岭回归和持续性基准。单看这条曲线，训练是“成功”的；拥堵形成阶段的失败只有在按子集评价时才会暴露出来。
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.85\textwidth]{figures/chapter09/lstm_training.pdf}
+  \caption{案例 A：LSTM 的验证集 MAE 随训练轮数的变化}
+  \label{fig:ch09_lstmtrain}
+\end{figure}
+
 使用者请 AI 分析原因，并对 AI 的解释逐项核对。一个合理的解释是：本案例中 LSTM 以 MAE（L1 损失）为训练目标，L1 损失倾向于让模型预测条件中位数；在“当前畅通”的条件下，15 分钟后仍然畅通是绝大多数情况，拥堵突然形成的样本只占约 0.6\%，模型因此学会了在畅通时坚定地预测“继续畅通”。对总体指标而言，这是一个好策略；对诱导屏而言，这恰恰是最不能接受的失败方式。另一个同样重要的原因是：单个检测器过去 1 小时的速度序列，本身就很难提前预示由下游传播过来的拥堵。
 
 这个案例说明了两点：第一，更复杂的模型可能在总体指标上更好，同时在最关键的子集上更差，只有预先定义了关键子集并单独评价，才能看到这一点；第二，训练目标（损失函数）的选择本身就包含了对错误成本的隐含假设，而这一假设应当与第 3 章定义的错误成本保持一致。后续可以尝试的方向包括：对拥堵形成样本加权、把“是否即将拥堵”单独作为分类任务，以及引入相邻检测器的信息——本章末的综合案例将讨论最后一种方向。
@@ -449,6 +477,15 @@ LSTM & 2.93 & 5.74 & 3.55 & 4.64 & 2.57 & 33.38 \\
   \resizebox{0.95\textwidth}{!}{\input{figures/chapter09/tikz/conv.tex}}
   \caption{二维卷积（互相关）运算示意}
   \label{fig:ch09_orig7}
+\end{figure}
+
+图~\ref{fig:ch09_convmaps} 用一幅真实的 $8\times8$ 手写数字图像演示了这一过程：同一幅图像分别与检测竖直边缘和水平边缘的两个卷积核做卷积，得到的特征图在不同位置被“点亮”；经过 ReLU 保留正响应，再经 $2\times2$ 最大池化压缩尺寸。卷积核决定了网络在图像中“寻找什么”。
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{figures/chapter09/conv_maps.pdf}
+  \caption{卷积、ReLU 与最大池化：两个边缘检测卷积核作用于手写数字“7”}
+  \label{fig:ch09_convmaps}
 \end{figure}
 
 在最简单的二维单通道情形下，卷积层可写为：

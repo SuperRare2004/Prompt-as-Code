@@ -156,6 +156,7 @@ def dqn(episodes=300, seed=0):
                 tgt.load_state_dict(net.state_dict())
         lens.append(L)
     print(f"[DQN CartPole] 回合长度：前 50 回合均值={np.mean(lens[:50]):.1f}，最后 50 回合均值={np.mean(lens[-50:]):.1f}，最大={max(lens)}（上限 500）")
+    return lens
 
 
 @demo
@@ -184,6 +185,7 @@ def reinforce(episodes=600, seed=0):
     lens = np.array(lens)
     print(f"[REINFORCE CartPole] 回合长度：前 50 回合均值={lens[:50].mean():.1f}，最后 50 回合均值={lens[-50:].mean():.1f}，"
           f"最后 100 回合的标准差={lens[-100:].std():.1f}")
+    return lens
 
 
 if __name__ == "__main__":

@@ -73,6 +73,15 @@
   \label{fig:ch10_orig3}
 \end{figure}
 
+折扣因子决定了智能体“看多远”。图~\ref{fig:ch10_discount} 画出了第 $k$ 步奖励的权重 $\gamma^k$：$\gamma=0.5$ 时，几步之后的奖励几乎不再起作用；$\gamma=0.99$ 时，智能体会关心大约 100 步之后的结果。$\gamma$ 的选择本身就是对任务时间尺度的判断。
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.85\textwidth]{figures/chapter10/discount.pdf}
+  \caption{不同折扣因子下未来奖励的权重}
+  \label{fig:ch10_discount}
+\end{figure}
+
 \subsection{模型（Model）}
 在强化学习中，“模型”指的是智能体对环境动态的理解。
 \begin{itemize}
@@ -252,6 +261,15 @@ SARSA的同策略性质意味着它学习的是遵循其自身行为策略下的
 下面对比 Q-Learning 和 SARSA 的行为差异。
 
 完整代码见 \texttt{demos.py sarsa\_vs\_q}。为了让两者的差异更明显，这里使用强化学习教材中经典的“悬崖行走”环境：$4\times12$ 的网格，起点和终点分别位于底行两端，底行中间是悬崖，掉下去奖励 $-100$ 并回到起点，其余每步 $-1$。在相同参数（$\epsilon=0.1$，500 回合，10 个随机种子）下，Q-learning 学到的贪心路径（13 步）紧贴悬崖边缘，是理论上的最短路径；但由于训练时仍以 $\epsilon$ 的概率随机探索，它经常掉下悬崖，最后 100 回合的平均回报只有 $-50.4$。SARSA 学到的路径（15 步）则远离悬崖一行，训练中的平均回报为 $-23.4$。异策略的 Q-learning 学的是“假如以后都不再探索”的最优策略，同策略的 SARSA 学的是“考虑到自己还会犯错”的策略——在试错代价高的场景中，后者往往更可取。
+图~\ref{fig:ch10_cliff} 画出了两种算法的训练过程和学到的路径。
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{figures/chapter10/cliff_curves.pdf}
+  \caption{悬崖行走环境中 Q-learning 与 SARSA 的训练回报（左）和贪心路径（右）}
+  \label{fig:ch10_cliff}
+\end{figure}
+
 SARSA 是一种同策略的价值学习算法，它学习的是当前策略下的价值函数。与Q-学习相比，SARSA在学习过程中会考虑实际执行的下一步动作，这使其在有风险（例如悬崖）的环境中可能学到更保守（更安全）的策略。在状态和动作空间较小的情况下，SARSA是Q-学习的有效替代方案。
 
 \subsection{深度Q网络（Deep Q-Network, DQN）}
@@ -306,6 +324,15 @@ $$ \nabla_\theta J(\theta) = E_{\pi_\theta} \left[ \nabla_\theta \log \pi_\theta
 我们将使用REINFORCE算法来解决CartPole环境，以展示策略梯度的基本原理。
 
 完整代码见 \texttt{demos.py reinforce}。策略网络为一个 64 个神经元的隐藏层，对每个回合的折扣回报做标准化以降低方差，训练 600 回合。前 50 回合的平均坚持步数为 13.0，最后 50 回合为 294.3；但最后 100 回合的标准差高达 236.1，即有的回合能坚持到上限 500 步，有的回合很快失败。这正是前文所说“纯策略梯度方法方差较高、学习不稳定”的直观体现，也是 Actor-Critic 等方法引入价值函数作为基线的原因。
+图~\ref{fig:ch10_deep} 画出了 DQN 与 REINFORCE 在 CartPole 上的完整训练过程。DQN 的探索率在前 150 回合从 1 线性降到 0.05，此后表现才明显提升，但很快又回落；REINFORCE 在约 300 回合后多次达到 500 步的上限，却在接近训练结束时突然崩溃，又在最后几十回合恢复。如果只报告“最后 50 回合的平均值”，或只看某一个时间点的结果，就会对这两种算法得出截然不同的结论。这正是强化学习结果需要报告完整训练曲线和多个随机种子的原因。
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{figures/chapter10/deep_rl_curves.pdf}
+  \caption{DQN 与 REINFORCE 在 CartPole 上的训练曲线（细线为每回合步数）}
+  \label{fig:ch10_deep}
+\end{figure}
+
 REINFORCE 是策略梯度方法的一个简单实现，它直接优化参数化的策略。与基于价值的方法相比，策略梯度能够处理连续动作空间和随机性策略，这在许多控制问题中非常有用。然而，纯粹的策略梯度方法通常具有较高的方差，导致学习过程不稳定且收敛速度较慢。更高级的策略梯度方法（如Actor-Critic, A2C, A3C, PPO, DDPG, SAC等）通过引入价值函数（评论家）来降低方差，提高训练效率和稳定性。
 
 \section{强化学习的典型应用}
@@ -415,6 +442,15 @@ REINFORCE 是策略梯度方法的一个简单实现，它直接优化参数化�
 \bottomrule
 \end{tabular}
 \end{table}
+
+图~\ref{fig:ch10_signal} 把其中三项指标画了出来。只看左图，AI 默认方案的平均延误最低，似乎是最好的方案；中图和右图揭示了代价：它让其他方向的车辆最长等待了近一个小时，仿真结束时仍有近千辆车在排队。只奖励下匝道排队的策略，用“饿死”其他进口换来了一个漂亮的指标。
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{figures/chapter10/signal_results.pdf}
+  \caption{信号控制方案比较（基准需求）：平均延误、最长等待与剩余排队}
+  \label{fig:ch10_signal}
+\end{figure}
 
 第二轮的策略消除了第一轮的所有严重问题：没有约束违规，没有车辆被长时间“遗忘”，下匝道也没有发生回溢。但它的表现并不比传统方法好——放行车辆的平均延误为 33.2 秒，高于感应控制的 23.7 秒，甚至高于固定配时。在需求上浮 30\% 的情景下，所有方案都出现了约 45 分钟的回溢，第二轮 RL 的平均延误（150.7 秒）同样高于感应控制（106.1 秒）。在 10\% 检测器读数失效的情景下，感应控制和第二轮 RL 的表现都只有小幅变化。
 

@@ -1057,7 +1057,463 @@ def error_pairs():
     ax.set_title("(b) 2025 年测试集：按报告系统的校准", fontsize=9)
     return f
 
+# ================= 第 7—11 章新增插图 =================
+# 这些插图使用 bookstyle.py 的样式，绘制与保存时在独立的 rc 环境中进行，不影响前面各图的样式。
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import bookstyle as bs
+STYLED = set()
+
+
+def newfig(chapter, name):
+    STYLED.add(name)
+    return fig(chapter, name)
+
+def _caseA_frame(n_sensors=None, seed=0):
+    """案例 A 的特征表（与 ch07_baselines_ridge.py 相同的构造方式），可只取部分检测器以节省时间。"""
+    sys.path.insert(0, str(ROOT / "case_A_freeway"))
+    from common import load_speed, to_long, split, H
+    w = load_speed()
+    if n_sensors:
+        w = w[sorted(np.random.default_rng(seed).choice(w.columns, n_sensors, replace=False))]
+    df = to_long(w)
+    g = df.groupby("sensor")["speed"]
+    df["target"] = g.shift(-H)
+    for k in range(1, 6):
+        df[f"lag{k}"] = g.shift(k)
+    tod = df.timestamp.dt.hour * 12 + df.timestamp.dt.minute // 5
+    df["tod_sin"], df["tod_cos"] = np.sin(2 * np.pi * tod / 288), np.cos(2 * np.pi * tod / 288)
+    df["weekend"] = (df.timestamp.dt.dayofweek >= 5).astype(int)
+    feats = ["speed"] + [f"lag{k}" for k in range(1, 6)] + ["tod_sin", "tod_cos", "weekend"]
+    tr, va, te = split(df)
+    return [d.dropna(subset=feats + ["target"]) for d in (tr, va, te)], feats
+
+
+# ---------------- 第 7 章 ----------------
+@newfig("chapter07", "loss_functions")
+def loss_functions():
+    r = np.linspace(-3, 3, 400)
+    f, axes = plt.subplots(1, 2, figsize=(8.4, 3.1))
+    ax = axes[0]
+    ax.plot(r, r ** 2 / 2, color=bs.BLUE, label=r"平方损失 $\frac{1}{2}r^2$")
+    ax.plot(r, np.abs(r), color=bs.ORANGE, label=r"绝对值损失 $|r|$")
+    hub = np.where(np.abs(r) <= 1, r ** 2 / 2, np.abs(r) - 0.5)
+    ax.plot(r, hub, color=bs.AQUA, ls="--", label=r"Huber 损失（$\delta=1$）")
+    ax.set_xlabel(r"残差 $r=y-\hat y$"); ax.set_ylabel("损失"); ax.set_ylim(0, 4.6); bs.grid(ax)
+    ax.legend(loc="upper center"); ax.set_title("(a) 回归：大残差受到的惩罚不同")
+    ax = axes[1]
+    p = np.linspace(0.005, 0.995, 400)
+    ax.plot(p, -np.log(p), color=bs.BLUE, label=r"真实标签 $y=1$：$-\log \hat p$")
+    ax.plot(p, -np.log(1 - p), color=bs.ORANGE, label=r"真实标签 $y=0$：$-\log(1-\hat p)$")
+    ax.set_xlabel(r"模型给出的正类概率 $\hat p$"); ax.set_ylabel("交叉熵损失"); ax.set_ylim(0, 5); bs.grid(ax)
+    ax.legend(loc="upper center"); ax.set_title("(b) 分类：越自信地答错，损失越大")
+    return f
+
+
+@newfig("chapter07", "threshold_metrics")
+def threshold_metrics():
+    d = pd.read_parquet(ROOT / "data" / "B_ch08_test_scores.parquet")
+    y, s_ = d.ksi.to_numpy(), d.score.to_numpy()
+    th = np.linspace(0.2, 0.8, 121)
+    P, R, F, Q = [], [], [], []
+    for t in th:
+        pred = s_ >= t
+        tp = (pred & (y == 1)).sum()
+        P.append(tp / max(pred.sum(), 1)); R.append(tp / (y == 1).sum()); Q.append(pred.mean())
+        F.append(2 * P[-1] * R[-1] / max(P[-1] + R[-1], 1e-9))
+    f, ax = plt.subplots(figsize=(7.2, 3.1))
+    ax.plot(th, P, color=bs.BLUE, label="精确率 Precision")
+    ax.plot(th, R, color=bs.ORANGE, label="召回率 Recall")
+    ax.plot(th, F, color=bs.AQUA, ls="--", label="F1")
+    ax.plot(th, Q, color=bs.NEUTRAL, lw=1.4, ls=":", label="被判为 KSI 的事故占比")
+    k = int(np.argmax(F)); ax.plot(th[k], F[k], "o", color=bs.AQUA, mec="white", mew=1.5, ms=7)
+    ax.annotate(f"F1 最大：阈值 {th[k]:.2f}", (th[k], F[k]), xytext=(-6, -22), textcoords="offset points", fontsize=8, color=bs.INK2, ha="right")
+    ax.set_xlabel("判为 KSI 的得分阈值"); ax.set_ylabel("比例"); ax.set_ylim(0, 1.02); bs.grid(ax)
+    ax.legend(loc="upper right", ncol=2)
+    print("threshold_metrics best F1", round(F[k], 3), "at", round(th[k], 2))
+    return f
+
+
+@newfig("chapter07", "error_distribution")
+def error_distribution():
+    te = _persist_test()
+    e = (te["target"] - te["speed"]).to_numpy()
+    a = np.abs(e)
+    mae, rmse = a.mean(), np.sqrt((e ** 2).mean())
+    f, ax = plt.subplots(figsize=(7.2, 3.0))
+    bins = np.arange(0, 61, 1)
+    ax.hist(a, bins=bins, color=bs.BLUE, edgecolor="white", linewidth=0.5)
+    ax.set_yscale("log")
+    for v, lab, ls in [(mae, f"MAE = {mae:.2f}", "-"), (rmse, f"RMSE = {rmse:.2f}", "--")]:
+        ax.axvline(v, color=bs.INK2, lw=1.2, ls=ls)
+        ax.text(v + 0.6, ax.get_ylim()[1] * (0.3 if ls == "-" else 0.06), lab, fontsize=8.5, color=bs.INK2,
+                bbox=dict(fc="white", ec="none", pad=1.2))
+    share = (a > 20).mean()
+    ax.set_xlabel("绝对误差（mph）"); ax.set_ylabel("样本数（对数刻度）"); bs.grid(ax)
+    ax.set_title(f"持续性基准在测试集上的绝对误差分布：{share * 100:.1f}% 的样本误差超过 20 mph")
+    print("error_distribution mae", round(mae, 3), "rmse", round(rmse, 3), "share>20", round(share * 100, 2))
+    return f
+
+
+@newfig("chapter07", "learning_curve")
+def learning_curve():
+    from sklearn.linear_model import Ridge
+    from sklearn.tree import DecisionTreeRegressor
+    (tr, va, _), feats = _caseA_frame()
+    va = va.sample(200_000, random_state=0)
+    sizes = [500, 2_000, 10_000, 50_000, 200_000, 1_000_000]
+    res = {"ridge": [], "tree": []}
+    for n in sizes:
+        sub = tr.sample(n, random_state=0)
+        for name, m in [("ridge", Ridge(alpha=1.0)), ("tree", DecisionTreeRegressor(max_depth=12, random_state=0))]:
+            m.fit(sub[feats], sub.target)
+            res[name].append((np.abs(m.predict(sub[feats]) - sub.target).mean(), np.abs(m.predict(va[feats]) - va.target).mean()))
+    f, ax = plt.subplots(figsize=(7.2, 3.2))
+    for name, lab, c, mk in [("ridge", "岭回归", bs.BLUE, "o"), ("tree", "回归树（深度 12）", bs.ORANGE, "s")]:
+        trm = [x[0] for x in res[name]]; vam = [x[1] for x in res[name]]
+        ax.plot(sizes, vam, marker=mk, color=c, label=f"{lab}：验证集")
+        ax.plot(sizes, trm, marker=mk, color=c, ls=":", mfc="white", label=f"{lab}：训练集")
+    ax.set_xscale("log"); ax.set_xlabel("训练样本数（对数刻度）"); ax.set_ylabel("MAE（mph）"); bs.grid(ax)
+    ax.legend(ncol=2, loc="upper right")
+    print("learning_curve", {k: [tuple(round(v, 3) for v in x) for x in vv] for k, vv in res.items()})
+    return f
+
+
+# ---------------- 第 8 章 ----------------
+@newfig("chapter08", "poly_fit")
+def poly_fit():
+    w = _metr()
+    x = w["717472"]
+    x = x[x.index.dayofweek < 5].dropna()
+    tr = x["2012-03-08"]                       # 只用一天训练；这一天有两段缺失
+    te = x["2012-03-19":"2012-04-27"]          # 之后六周的工作日作为测试
+    h = lambda s_: (s_.index.hour + s_.index.minute / 60).to_numpy() / 24
+    f, axes = plt.subplots(1, 3, figsize=(8.8, 2.9), sharey=True)
+    grid_ = np.linspace(0, 1, 600)
+    out = {}
+    fmt = lambda v: f"{v:.1f}" if v < 1000 else f"约 {v / 1e4:.1f} 万"
+    for ax, deg in zip(axes, [2, 6, 14]):
+        coef = np.polynomial.legendre.legfit(2 * h(tr) - 1, tr.values, deg)
+        fit = lambda t: np.polynomial.legendre.legval(2 * t - 1, coef)
+        mtr = np.abs(fit(h(tr)) - tr.values).mean(); mte = np.abs(fit(h(te)) - te.values).mean()
+        out[deg] = (round(mtr, 2), round(mte, 2))
+        ax.scatter(h(tr) * 24, tr.values, s=5, color=bs.NEUTRAL, lw=0, label="训练数据（一天）")
+        ax.plot(grid_ * 24, fit(grid_), color=bs.BLUE, lw=2, label="多项式拟合")
+        ax.set_title(f"{deg} 次：训练 MAE {fmt(mtr)}\n测试 MAE {fmt(mte)}")
+        ax.set_xticks(range(0, 25, 6)); ax.set_xlabel("一天中的时刻"); ax.set_ylim(-20, 100); ax.set_xlim(0, 24); bs.grid(ax)
+    axes[0].set_ylabel("车速（mph）"); axes[0].legend(loc="lower left", fontsize=7.5)
+    print("poly_fit", out)
+    return f
+
+
+@newfig("chapter08", "reg_paths")
+def reg_paths():
+    from sklearn.linear_model import lasso_path, Ridge
+    from sklearn.preprocessing import StandardScaler
+    (tr, _, _), feats = _caseA_frame(n_sensors=60)
+    sub = tr.sample(100_000, random_state=0)
+    X = StandardScaler().fit_transform(sub[feats]); y = (sub.target - sub.target.mean()).to_numpy()
+    alphas, coefs, _ = lasso_path(X, y, alphas=np.logspace(-3, 1.2, 60))
+    lam = np.logspace(-1, 6.5, 60)
+    rc = np.array([Ridge(alpha=a).fit(X, y).coef_ for a in lam]).T
+    names = {"speed": "当前车速", "lag1": "滞后 1 步", "lag2": "滞后 2 步", "lag3": "滞后 3 步", "lag4": "滞后 4 步",
+             "lag5": "滞后 5 步", "tod_sin": "时刻 sin", "tod_cos": "时刻 cos", "weekend": "周末"}
+    show = ["speed", "lag1", "lag2", "tod_cos", "weekend"]
+    cols = dict(zip(show, [bs.BLUE, bs.ORANGE, bs.AQUA, bs.VIOLET, bs.YELLOW]))
+    f, axes = plt.subplots(1, 2, figsize=(8.8, 3.2), sharey=True)
+    for ax, A, C, title in [(axes[0], lam, rc, "(a) 岭回归：系数整体收缩，但不为零"), (axes[1], alphas, coefs, "(b) Lasso：系数逐个变为零")]:
+        for i, nm in enumerate(feats):
+            if nm in show:
+                ax.plot(A, C[i], color=cols[nm], lw=1.8, label=names[nm])
+            else:
+                ax.plot(A, C[i], color=bs.NEUTRAL, lw=0.9, label="其他滞后与时间特征" if nm == "lag3" else None)
+        ax.set_xscale("log"); ax.axhline(0, color=bs.AXISC, lw=0.8); bs.grid(ax)
+        ax.set_xlabel(r"正则化强度 $\lambda$（对数刻度）"); ax.set_title(title)
+    axes[0].set_ylabel("标准化系数")
+    h_, l_ = axes[0].get_legend_handles_labels()
+    f.legend(h_, l_, loc="lower center", ncol=6, bbox_to_anchor=(0.5, -0.06), fontsize=8)
+    return f
+
+
+@newfig("chapter08", "calibration")
+def calibration():
+    d = pd.read_parquet(ROOT / "data" / "B_ch08_test_scores.parquet")
+    f, axes = plt.subplots(1, 2, figsize=(8.4, 3.3), gridspec_kw={"width_ratios": [1, 1.15]})
+    ax = axes[0]
+    ax.plot([0, 1], [0, 1], color=bs.AXISC, lw=1)
+    for col, lab, c, mk in [("p_logit", "逻辑回归（不加权）", bs.BLUE, "o"), ("score", "随机森林（类别加权）", bs.ORANGE, "s")]:
+        q = pd.qcut(d[col], 10, duplicates="drop")
+        g = d.groupby(q, observed=True).agg(p=(col, "mean"), y=("ksi", "mean"))
+        ax.plot(g.p, g.y, marker=mk, color=c, label=lab, mec="white", mew=1)
+    ax.set_xlim(0, 1); ax.set_ylim(0, 0.6); ax.set_aspect("auto")
+    ax.set_xlabel("模型给出的 KSI 概率（十分位组均值）"); ax.set_ylabel("实际 KSI 比例"); bs.grid(ax, "both")
+    ax.legend(loc="upper left"); ax.set_title("(a) 可靠性图：对角线表示概率与频率一致")
+    ax = axes[1]
+    bins = np.linspace(0, 1, 51)
+    ax.hist(d.p_logit, bins=bins, color=bs.BLUE, alpha=0.75, label="逻辑回归（不加权）")
+    ax.hist(d.score, bins=bins, color=bs.ORANGE, alpha=0.65, label="随机森林（类别加权）")
+    ax.axvline(d.ksi.mean(), color=bs.INK2, lw=1.2, ls="--"); ax.text(d.ksi.mean() - 0.015, ax.get_ylim()[1] * 0.93, f"实际 KSI\n比例 {d.ksi.mean():.3f}", fontsize=8, color=bs.INK2, ha="right", va="top")
+    ax.set_xlabel("预测概率"); ax.set_ylabel("事故数"); bs.grid(ax); ax.legend(loc="upper right")
+    ax.set_title("(b) 预测概率的分布")
+    return f
+
+
+@newfig("chapter08", "kmeans_profiles")
+def kmeans_profiles():
+    from sklearn.cluster import KMeans
+    _, P = _speed_profiles()
+    km = KMeans(3, n_init=10, random_state=0).fit(P.values)
+    order = np.argsort([P.values[km.labels_ == k].min(axis=1).mean() for k in range(3)])[::-1]
+    t = [x.hour + x.minute / 60 for x in P.columns]
+    f, axes = plt.subplots(1, 3, figsize=(8.8, 2.8), sharey=True)
+    names = ["全天畅通", "早高峰拥堵", "晚高峰拥堵"]
+    for ax, k, c in zip(axes, order, [bs.BLUE, bs.ORANGE, bs.AQUA]):
+        M = P.values[km.labels_ == k]
+        for row in M:
+            ax.plot(t, row, color=c, lw=0.5, alpha=0.18)
+        ax.plot(t, M.mean(axis=0), color=c, lw=2.4)
+        lo_h = t[int(np.argmin(M.mean(axis=0)))]
+        ax.set_title(f"{len(M)} 个检测器")
+        ax.set_xticks([6, 9, 12, 15, 18]); ax.set_xlabel("时刻（工作日）"); bs.grid(ax)
+    # 用最低点所在时段为三类命名
+    lows = [t[int(np.argmin(P.values[km.labels_ == k].mean(axis=0)))] for k in order]
+    for ax, k, lo in zip(axes, order, lows):
+        nm = "全天畅通" if P.values[km.labels_ == k].mean(axis=0).min() > 50 else ("早高峰拥堵" if lo < 12 else "晚高峰拥堵")
+        ax.set_title(f"{nm}（{(km.labels_ == k).sum()} 个检测器）")
+    axes[0].set_ylabel("平均车速（mph）"); axes[0].set_ylim(10, 72)
+    return f
+
+
+
+# ---------------- 第 9 章 ----------------
+@newfig("chapter09", "activations")
+def activations():
+    from math import sqrt, pi
+    x = np.linspace(-4, 4, 400)
+    sig = 1 / (1 + np.exp(-x)); th = np.tanh(x); relu = np.maximum(0, x)
+    gelu = 0.5 * x * (1 + np.tanh(np.sqrt(2 / np.pi) * (x + 0.044715 * x ** 3)))
+    acts = [("Sigmoid", sig, sig * (1 - sig), bs.BLUE, "-"), ("tanh", th, 1 - th ** 2, bs.ORANGE, "-"),
+            ("ReLU", relu, (x > 0).astype(float), bs.AQUA, "-"), ("GELU", gelu, np.gradient(gelu, x), bs.VIOLET, "--")]
+    f, axes = plt.subplots(1, 2, figsize=(8.6, 3.1))
+    for nm, y, dy, c, ls in acts:
+        axes[0].plot(x, y, color=c, ls=ls, label=nm)
+        axes[1].plot(x, dy, color=c, ls=ls, label=nm)
+    axes[0].set_ylim(-1.3, 3.2); axes[0].set_title("(a) 激活函数 $g(z)$")
+    axes[1].set_ylim(-0.15, 1.25); axes[1].set_title("(b) 导数 $g'(z)$：反向传播时梯度乘上的因子")
+    axes[1].annotate("Sigmoid 的导数最大只有 0.25", (0, 0.25), xytext=(1.2, 0.45), fontsize=8, color=bs.INK2,
+                     arrowprops=dict(arrowstyle="-", color=bs.INK2, lw=0.8))
+    for ax in axes:
+        ax.axhline(0, color=bs.AXISC, lw=0.8); ax.axvline(0, color=bs.AXISC, lw=0.8)
+        ax.set_xlabel("$z$"); bs.grid(ax)
+    axes[0].legend(loc="upper left")
+    return f
+
+
+@newfig("chapter09", "optimizers")
+def optimizers():
+    a, b = 1.0, 25.0                                     # 狭长的二次碗：L = (a x^2 + b y^2)/2
+    L = lambda p: 0.5 * (a * p[0] ** 2 + b * p[1] ** 2)
+    g = lambda p: np.array([a * p[0], b * p[1]])
+    start = np.array([-4.0, 1.5]); n = 60
+
+    def sgd(lr=0.075):          # 稳定上限为 2/b = 0.08
+        p = start.copy(); P = [p.copy()]
+        for _ in range(n):
+            p = p - lr * g(p); P.append(p.copy())
+        return np.array(P)
+
+    def momentum(lr=0.03, beta=0.8):
+        p = start.copy(); v = np.zeros(2); P = [p.copy()]
+        for _ in range(n):
+            v = beta * v + g(p); p = p - lr * v; P.append(p.copy())
+        return np.array(P)
+
+    def adam(lr=0.1, b1=0.9, b2=0.999, eps=1e-8):
+        p = start.copy(); m = np.zeros(2); v = np.zeros(2); P = [p.copy()]
+        for t in range(1, n + 1):
+            gr = g(p); m = b1 * m + (1 - b1) * gr; v = b2 * v + (1 - b2) * gr ** 2
+            p = p - lr * (m / (1 - b1 ** t)) / (np.sqrt(v / (1 - b2 ** t)) + eps); P.append(p.copy())
+        return np.array(P)
+
+    xx, yy = np.meshgrid(np.linspace(-4.6, 1.6, 300), np.linspace(-2, 2, 300))
+    f, axes = plt.subplots(1, 2, figsize=(8.8, 3.2), gridspec_kw={"width_ratios": [1.45, 1]})
+    ax = axes[0]
+    ax.contour(xx, yy, 0.5 * (a * xx ** 2 + b * yy ** 2), levels=np.geomspace(0.05, 40, 12), colors=bs.AXISC, linewidths=0.6)
+    runs = [("梯度下降", sgd(), bs.BLUE, "o"), ("动量法", momentum(), bs.ORANGE, "s"), ("Adam", adam(), bs.AQUA, "^")]
+    for nm, P, c, mk in runs:
+        ax.plot(P[:, 0], P[:, 1], color=c, lw=1.4, marker=mk, ms=3.2, mec="white", mew=0.5, label=nm)
+    ax.plot(0, 0, "*", color=bs.INK, ms=9); ax.set_xlabel("$\\theta_1$"); ax.set_ylabel("$\\theta_2$")
+    ax.set_title("(a) 在狭长损失面上的前 60 步"); ax.legend(loc="lower right")
+    ax = axes[1]
+    for nm, P, c, mk in runs:
+        ax.plot(range(n + 1), [L(p) for p in P], color=c, label=nm)
+    ax.set_yscale("log"); ax.set_xlabel("迭代步数"); ax.set_ylabel("损失（对数刻度）"); bs.grid(ax)
+    ax.set_title("(b) 损失下降过程")
+    return f
+
+
+@newfig("chapter09", "lstm_training")
+def lstm_training():
+    import re
+    t = (OUT / "A_ch09_mlp_lstm.txt").read_text(encoding="utf-8")
+    ep = [(int(a), float(b)) for a, b in re.findall(r"epoch (\d+): valid MAE=([\d.]+)", t)]
+    v7 = (OUT / "A_ch07_baselines_ridge.txt").read_text(encoding="utf-8")
+    blk = v7.split("[验证集] 基准 vs 岭回归")[1]
+    persist = float(re.search(r"persist\s+([\d.]+)", blk).group(1)); ridge = float(re.search(r"ridge\s+([\d.]+)", blk).group(1))
+    f, ax = plt.subplots(figsize=(6.8, 2.9))
+    ax.plot([e + 1 for e, _ in ep], [v for _, v in ep], marker="o", color=bs.BLUE, mec="white", mew=1, label="LSTM：验证集 MAE")
+    for v, lab, ls in [(persist, f"持续性基准 {persist:.2f}", "--"), (ridge, f"岭回归 {ridge:.2f}", ":")]:
+        ax.axhline(v, color=bs.NEUTRAL, lw=1.3, ls=ls)
+        ax.text(len(ep) + 2.9, v + 0.008, lab, va="bottom", ha="right", fontsize=8, color=bs.INK2)
+    best = min(ep, key=lambda z: z[1])
+    ax.annotate(f"最低 {best[1]:.3f}（第 {best[0] + 1} 轮）", (best[0] + 1, best[1]), xytext=(-60, -24), textcoords="offset points",
+                fontsize=8, color=bs.INK2, arrowprops=dict(arrowstyle="-", color=bs.INK2, lw=0.8))
+    ax.set_xlim(0.5, len(ep) + 3.2); ax.set_ylim(2.8, 3.45)
+    ax.set_xlabel("训练轮数（epoch）"); ax.set_ylabel("MAE（mph）"); bs.grid(ax)
+    return f
+
+
+@newfig("chapter09", "conv_maps")
+def conv_maps():
+    from sklearn.datasets import load_digits
+    from scipy.signal import correlate2d
+    img = load_digits().images[7] / 16.0                 # 手写数字“7”
+    kv = np.array([[1, 0, -1], [2, 0, -2], [1, 0, -1]])   # 竖直边缘（Sobel）
+    kh = kv.T                                            # 水平边缘
+    out = []
+    for k in (kv, kh):
+        fm = correlate2d(img, k, mode="valid")
+        r = np.maximum(fm, 0)
+        pool = r[:6, :6].reshape(3, 2, 3, 2).max(axis=(1, 3))
+        out.append((k, fm, r, pool))
+    f, axes = plt.subplots(2, 5, figsize=(9.0, 3.9), gridspec_kw={"width_ratios": [1.3, 0.7, 1.1, 1.1, 0.75]})
+    for i, (k, fm, r, pool) in enumerate(out):
+        axes[i, 0].imshow(img, cmap=bs.SEQ, vmin=0, vmax=1)
+        axes[i, 1].imshow(k, cmap=bs.DIV.reversed(), vmin=-2, vmax=2)
+        for (yy, xx), v in np.ndenumerate(k):
+            axes[i, 1].text(xx, yy, f"{v:d}", ha="center", va="center", fontsize=7.5, color="white" if abs(v) == 2 else bs.INK)
+        vmax = np.abs(fm).max()
+        axes[i, 2].imshow(fm, cmap=bs.DIV.reversed(), vmin=-vmax, vmax=vmax)
+        axes[i, 3].imshow(r, cmap=bs.SEQ, vmin=0, vmax=vmax)
+        axes[i, 4].imshow(pool, cmap=bs.SEQ, vmin=0, vmax=vmax)
+    titles = ["输入图像 8×8", "卷积核 3×3", "卷积结果 6×6", "ReLU 之后", "2×2 最大池化 3×3"]
+    for j, t_ in enumerate(titles):
+        axes[0, j].set_title(t_, fontsize=8.5)
+    axes[0, 0].set_ylabel("竖直边缘核", fontsize=8.5); axes[1, 0].set_ylabel("水平边缘核", fontsize=8.5)
+    for ax in axes.ravel():
+        ax.set_xticks([]); ax.set_yticks([])
+        for sp in ax.spines.values():
+            sp.set_visible(True); sp.set_color(bs.AXISC); sp.set_linewidth(0.6)
+    return f
+
+
+# ---------------- 第 10 章 ----------------
+def _rl_demos():
+    sys.path.insert(0, str(ROOT / "ch10_rl"))
+    import demos
+    return demos
+
+
+@newfig("chapter10", "cliff_curves")
+def cliff_curves():
+    D = _rl_demos()
+    f, axes = plt.subplots(1, 2, figsize=(9.0, 3.1), gridspec_kw={"width_ratios": [1.15, 1]})
+    ax = axes[0]
+    paths = {}
+    for algo, lab, c in [("q", "Q-learning（异策略）", bs.BLUE), ("sarsa", "SARSA（同策略）", bs.ORANGE)]:
+        R = np.array([D.run_td(D.cliff_step, (3, 0), (4, 12), algo, episodes=500, seed=s)[1] for s in range(10)])
+        sm = pd.DataFrame(R.T).rolling(20, min_periods=1).mean().to_numpy().T
+        m = sm.mean(0); lo, hi = np.percentile(sm, [10, 90], axis=0)
+        ax.fill_between(range(1, 501), lo, hi, color=c, alpha=0.12, lw=0)
+        ax.plot(range(1, 501), m, color=c, label=lab)
+        Q, _ = D.run_td(D.cliff_step, (3, 0), (4, 12), algo, episodes=500, seed=0)
+        paths[algo] = D.greedy_path(Q, D.cliff_step, (3, 0))
+    ax.set_ylim(-120, 0); ax.set_xlabel("回合"); ax.set_ylabel("每回合回报（20 回合滑动平均）"); bs.grid(ax)
+    ax.legend(loc="lower right"); ax.set_title("(a) 训练过程中的回报（10 个随机种子，阴影为 10%—90% 区间）")
+    ax = axes[1]
+    for r_ in range(4):
+        for c_ in range(12):
+            fc = "#f6d4cf" if (r_ == 3 and 0 < c_ < 11) else "#f7f6f3"
+            ax.add_patch(Rectangle((c_, 3 - r_), 1, 1, fc=fc, ec="white", lw=1.2))
+    ax.text(5.5, 0.5, "悬崖（掉入回报 −100）", ha="center", va="center", fontsize=8, color=bs.INK2)
+    ax.text(0.5, 0.5, "S", ha="center", va="center", fontsize=9, fontweight="bold"); ax.text(11.5, 0.5, "G", ha="center", va="center", fontsize=9, fontweight="bold")
+    for algo, c, off, lab in [("q", bs.BLUE, -0.12, "Q-learning：贴着悬崖走"), ("sarsa", bs.ORANGE, 0.12, "SARSA：绕开悬崖")]:
+        P = np.array([(p[1] + 0.5 + off, 3 - p[0] + 0.5 + off) for p in paths[algo]])
+        ax.plot(P[:, 0], P[:, 1], color=c, lw=2.2, label=lab)
+    ax.set_xlim(0, 12); ax.set_ylim(0, 4); ax.set_aspect("equal"); ax.axis("off")
+    ax.legend(loc="upper center", bbox_to_anchor=(0.5, -0.02), ncol=2, fontsize=8)
+    ax.set_title("(b) 训练后的贪心路径（种子 0）")
+    return f
+
+
+@newfig("chapter10", "discount")
+def discount():
+    k = np.arange(0, 61)
+    f, ax = plt.subplots(figsize=(6.8, 2.9))
+    for g_, c, mk in [(0.5, bs.BLUE, "o"), (0.9, bs.ORANGE, "s"), (0.99, bs.AQUA, "^")]:
+        ax.plot(k, g_ ** k, color=c, marker=mk, markevery=6, mec="white", mew=0.8,
+                label=f"$\\gamma={g_}$：有效视野约 $1/(1-\\gamma)={1 / (1 - g_):.0f}$ 步")
+    ax.set_xlabel("未来第 $k$ 步"); ax.set_ylabel("奖励的权重 $\\gamma^k$"); bs.grid(ax)
+    ax.legend(loc="upper right")
+    return f
+
+
+@newfig("chapter10", "signal_results")
+def signal_results():
+    import re
+    t = (OUT / "A_ch10_signal_rl.txt").read_text(encoding="utf-8")
+    blk = t.split("== test demand x1.0")[1].split("==")[0]
+    rows = re.findall(r"^(\S+).*?avg_delay_s=\s*([\d.]+).*?max_wait_s=\s*([\d.]+).*?left_in_queue=\s*([\d.]+)", blk, flags=re.M)
+    names = {"fixed_time": "定时控制", "actuated": "感应控制", "RL_default(ramp-only": "RL：AI 默认方案", "RL_human(total": "RL：人定义的方案"}
+    lab = [names.get(r[0], r[0]) for r in rows]
+    cols = [bs.NEUTRAL, bs.NEUTRAL, bs.RED, bs.BLUE]
+    f, axes = plt.subplots(1, 3, figsize=(9.0, 2.9))
+    for ax, j, title, fmt in [(axes[0], 1, "(a) 已放行车辆的平均延误（秒）", "%.1f"), (axes[1], 2, "(b) 最长等待时间（秒）", "%.0f"),
+                              (axes[2], 3, "(c) 仿真结束时仍在排队的车辆", "%.0f")]:
+        v = [float(r[j]) for r in rows]
+        b_ = bs.bars(ax, range(4), v, color=cols, width=0.62)
+        ax.bar_label(b_, fmt=fmt, fontsize=7.8, padding=2, color=bs.INK2)
+        ax.set_xticks(range(4), lab, rotation=25, ha="right", fontsize=8); ax.set_title(title); bs.grid(ax)
+        ax.set_ylim(0, max(v) * 1.18)
+    return f
+
+
+# ---------------- 第 11 章 ----------------
+@newfig("chapter11", "temperature")
+def temperature():
+    toks = ["拥堵", "缓行", "畅通", "封闭", "事故", "施工"]
+    z = np.array([3.1, 2.4, 1.6, 0.6, 0.3, -0.2])
+    f, axes = plt.subplots(1, 3, figsize=(8.8, 2.8), sharey=True)
+    for ax, T in zip(axes, [0.5, 1.0, 2.0]):
+        p = np.exp(z / T); p /= p.sum()
+        b_ = bs.bars(ax, range(len(toks)), p, color=bs.BLUE, width=0.6)
+        ax.bar_label(b_, labels=[f"{v:.2f}" for v in p], fontsize=7.5, padding=2, color=bs.INK2)
+        ax.set_xticks(range(len(toks)), toks, fontsize=8.5); ax.set_title(f"温度 $T={T}$"); bs.grid(ax)
+    axes[0].set_ylabel("下一个 token 的概率"); axes[0].set_ylim(0, 1.0)
+    return f
+
+
+
+@newfig("chapter10", "deep_rl_curves")
+def deep_rl_curves():
+    D = _rl_demos()
+    runs = [("DQN", D.dqn(), bs.BLUE), ("REINFORCE", D.reinforce(), bs.ORANGE)]
+    f, axes = plt.subplots(1, 2, figsize=(8.8, 2.9), sharey=True)
+    for ax, (nm, L, c) in zip(axes, runs):
+        L = np.asarray(L)
+        ax.plot(np.arange(1, len(L) + 1), L, color=c, lw=0.6, alpha=0.35)
+        ax.plot(np.arange(1, len(L) + 1), pd.Series(L).rolling(20, min_periods=1).mean(), color=c, lw=2, label="20 回合滑动平均")
+        ax.axhline(500, color=bs.NEUTRAL, lw=1, ls="--"); ax.text(len(L), 505, "上限 500", ha="right", va="bottom", fontsize=8, color=bs.INK2)
+        ax.set_title(f"{nm}（CartPole，种子 0）"); ax.set_xlabel("回合"); bs.grid(ax); ax.set_ylim(0, 560)
+        ax.legend(loc="upper left")
+    axes[0].set_ylabel("每回合坚持的步数")
+    return f
+
+
 if __name__ == "__main__":
+    from contextlib import nullcontext
     names = sys.argv[1:] or list(FIGS)
     for n in names:
-        ch, f = FIGS[n]; save(f(), ch, n); print("ok", n)
+        ch, f = FIGS[n]
+        with (plt.rc_context(bs.RC) if n in STYLED else nullcontext()):
+            save(f(), ch, n)
+        print("ok", n)
