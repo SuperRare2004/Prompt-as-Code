@@ -1,0 +1,9 @@
+\begin{tikzpicture}
+\node[hbox, text width=30mm] (a) at (90:2.0)  {\textbf{提出假设}\\\footnotesize 领域机制、EDA 发现};
+\node[abox, text width=30mm] (b) at (0:3.4)   {\textbf{构造特征}\\\footnotesize AI 生成代码与文档};
+\node[abox, text width=30mm] (c) at (-90:2.0) {\textbf{评估}\\\footnotesize 与基准比较、分组误差};
+\node[hbox, text width=30mm] (d) at (180:3.4) {\textbf{诊断与修订}\\\footnotesize 可得性、泄露、解释};
+\draw[flow] (a) to[bend left=20] (b); \draw[flow] (b) to[bend left=20] (c);
+\draw[flow] (c) to[bend left=20] (d); \draw[flow] (d) to[bend left=20] (a);
+\node[tag] at (0,0) {每一轮都记录\\特征版本与理由};
+\end{tikzpicture}

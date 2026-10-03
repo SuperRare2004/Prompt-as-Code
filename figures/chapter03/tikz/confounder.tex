@@ -1,0 +1,8 @@
+\begin{tikzpicture}
+\node[pbox, text width=30mm] (c) at (0,1.8) {\textbf{区域商业发展程度}\\\footnotesize（混杂因素，未被观测）};
+\node[abox, text width=26mm] (x) at (-3.2,0) {共享单车\\停靠密度};
+\node[abox, text width=26mm] (y) at (3.2,0) {步行街客流量};
+\draw[flow] (c) -- (x); \draw[flow] (c) -- (y);
+\draw[<->, thick, dashed, black!50] (x) -- node[tag, below]{观察到的强相关} (y);
+\node[rbox, text width=46mm, font=\footnotesize] at (0,-1.5) {错误推论：多投放单车 $\Rightarrow$ 带动客流};
+\end{tikzpicture}

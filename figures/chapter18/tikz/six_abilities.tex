@@ -1,0 +1,9 @@
+\begin{tikzpicture}[c/.style={hbox, text width=30mm, minimum height=13mm, font=\footnotesize}]
+\node[abox, minimum width=28mm, minimum height=14mm, font=\small] (o) at (0,0) {\textbf{工程判断}};
+\foreach \ang/\t/\q in {90/领域建模/把现实翻译成可计算的问题, 30/数据与因果思维/知道数据能说明什么, -30/AI 协作与任务编排/设计可靠的人机工作流,
+                        -90/验证与审计/系统性检查 AI 的结果, 210/系统工程与运维/让分析走出 Notebook, 150/沟通、治理与责任/连接技术与现实}
+{
+  \node[c] (n\ang) at (\ang:4.1cm and 2.45cm) {\textbf{\t}\\\q};
+  \draw[black!40] (o) -- (n\ang);
+}
+\end{tikzpicture}

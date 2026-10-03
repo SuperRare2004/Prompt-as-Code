@@ -102,3 +102,30 @@
 \setlength{\emergencystretch}{3em}
 \let\origunderscore\_
 \renewcommand{\_}{\origunderscore\allowbreak}
+
+% 概念图的统一样式（第 3 步新增插图使用）
+% 注意：样式名不要用 out、id 等 TikZ 内置键名
+\tikzset{
+  pbox/.style={draw=black!55, rounded corners=2pt, fill=black!4, align=flush center,
+    font=\small, inner sep=5pt, minimum height=9mm},
+  hbox/.style={pbox, draw=blue!55!black, fill=blue!8},      % 人负责
+  abox/.style={pbox, draw=orange!70!black, fill=orange!10}, % AI 负责
+  gbox/.style={pbox, draw=green!45!black, fill=green!8},    % 通过 / 结果
+  rbox/.style={pbox, draw=red!55!black, fill=red!7},        % 风险 / 错误
+  tag/.style={font=\scriptsize, align=flush center, text=black!70},
+  flow/.style={-Stealth, thick, draw=black!65},
+  backflow/.style={-Stealth, dashed, draw=black!45},
+}
+
+% 左对齐的定宽列：避免中文在窄列中被两端对齐拉开
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+
+% 插入 TikZ 图：超过版心宽度时按比例缩小，否则保持原尺寸
+\newsavebox{\fitfigbox}
+\newcommand{\fitinput}[1]{%
+  \sbox{\fitfigbox}{\input{#1}}%
+  \ifdim\wd\fitfigbox>\linewidth
+    \resizebox{\linewidth}{!}{\usebox{\fitfigbox}}%
+  \else
+    \usebox{\fitfigbox}%
+  \fi}

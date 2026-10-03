@@ -1,0 +1,13 @@
+\begin{tikzpicture}[lay/.style={draw=black!50, rounded corners=2pt, minimum height=10mm, font=\footnotesize, align=flush center, inner sep=3pt}]
+\foreach \i/\n/\d/\c/\h in {0/技术性错误/代码没有正确完成指定的计算/blue!10/运行小样本、检查中间结果,
+                           1/统计性错误/划分、指标或推断方式不成立/blue!16/对照基准、检查划分与指标,
+                           2/数据性错误/正确的代码处理了被误解的数据/orange!14/核对数据字典与采集机制,
+                           3/领域性错误/统计上合理，现实中不合理/orange!22/依靠领域知识判断合理性,
+                           4/幻觉性错误/生成了不存在或不准确的信息/red!12/回到原始来源逐条核验}
+{
+  \node[lay, fill=\c, minimum width={(96-6*\i)*1mm}] (l\i) at (0,{-1.15*\i}) {\textbf{\n}：\d};
+  \node[tag, anchor=west, font=\scriptsize] at (5.15,{-1.15*\i}) {\h};
+}
+\draw[-Stealth, very thick, black!45] (-5.15,0.4) -- (-5.15,-5.0) node[midway, left, tag, text width=15mm]{从代码层\\到现实层，\\越来越依赖\\领域知识};
+\node[tag, anchor=south west] at (5.15,0.55) {\textbf{主要发现方法}};
+\end{tikzpicture}

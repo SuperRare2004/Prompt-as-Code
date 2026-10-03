@@ -1,0 +1,17 @@
+\begin{tikzpicture}[ai/.style={abox, text width=22mm, font=\footnotesize, minimum height=12mm},
+  hu/.style={hbox, text width=22mm, font=\footnotesize, minimum height=12mm}]
+\node[tag, anchor=east] at (-1.35,0.9) {\textbf{AI}\\生成与计算};
+\node[tag, anchor=east] at (-1.35,-0.9) {\textbf{人}\\提问与解释};
+\draw[black!25] (-2.5,0) -- (12.0,0);
+\foreach \a/\h [count=\k] in {读取数据\\输出概览/行数与时间范围\\是否符合预期？,
+                             绘制字段分布/数值范围与形状\\能否被领域解释？,
+                             统计缺失与异常/缺失机制是什么？\\异常是错误还是事件？,
+                             日内、周内与\\空间模式/规律是否符合\\常识？差异合理吗？,
+                             相关与散点/方向是否合理？\\有无第三变量？}
+{
+  \node[ai] (a\k) at ({2.7*(\k-1)}, 0.9) {\a};
+  \node[hu] (h\k) at ({2.7*(\k-1)}, -0.9) {\h};
+  \draw[-Stealth, black!45] (a\k) -- (h\k);
+}
+\foreach \a/\b in {1/2,2/3,3/4,4/5} \draw[flow] (h\a.east) -- (a\b.west);
+\end{tikzpicture}

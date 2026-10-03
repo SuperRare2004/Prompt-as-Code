@@ -1,0 +1,11 @@
+\begin{tikzpicture}[node distance=5mm and 8mm]
+\node[abox, text width=25mm] (p) {\textbf{车速预测}\\\footnotesize AI：执行者\\生成预测与\\验证图形};
+\node[abox, text width=25mm, right=of p] (c) {\textbf{配时候选方案}\\\footnotesize AI：副驾驶\\提出并比较候选};
+\node[hbox, text width=25mm, right=of c] (d) {\textbf{是否采用}\\\footnotesize 信号控制工程师\\结合现场决定};
+\node[gbox, text width=22mm, right=of d] (i) {实施并记录\\建议、决定\\与实际结果};
+\draw[flow] (p) -- (c); \draw[flow] (c) -- (d); \draw[flow] (d) -- (i);
+\node[rbox, text width=100mm, below=9mm of c.south east, anchor=north, font=\footnotesize, align=left] (stop)
+  {\textbf{停止条件}（触发任何一条即停止给出建议，退回现有的感应控制）：\\检测器读数中断；输入进入训练数据未覆盖的情景；预测或建议超出合理范围};
+\draw[backflow] (p.south) |- (stop.west);
+\draw[backflow] (i.south) |- (stop.east);
+\end{tikzpicture}

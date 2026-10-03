@@ -19,7 +19,14 @@
 % ----------------------------------------------------------------
 \section{AI协作系统是如何工作的}
 
-今天人们所说的“AI 工具”，通常不是一个孤立模型，而是由基础模型、系统提示、检索模块、代码执行环境、外部工具和权限控制共同组成的协作系统。基础模型决定能力上限，系统设计决定能力以何种方式被调用，使用者提供的上下文则决定当前任务究竟被解释成什么。将这三个层次混在一起，会使人把一次偶然成功误认为稳定能力，也会把界面限制误认为模型本身的限制。基础模型研究因此强调，通用能力能够迁移到大量下游任务，但这种广泛适用性同时带来难以预先穷举的失效方式与社会风险\cite{bommasani2021opportunities}。
+今天人们所说的“AI 工具”，通常不是一个孤立模型，而是由基础模型、系统提示、检索模块、代码执行环境、外部工具和权限控制共同组成的协作系统。基础模型决定能力上限，系统设计决定能力以何种方式被调用，使用者提供的上下文则决定当前任务究竟被解释成什么。将这三个层次混在一起，会使人把一次偶然成功误认为稳定能力，也会把界面限制误认为模型本身的限制。基础模型研究因此强调，通用能力能够迁移到大量下游任务，但这种广泛适用性同时带来难以预先穷举的失效方式与社会风险\cite{bommasani2021opportunities}。图~\ref{fig:ch01_system} 展示了这三个层次之间的关系。
+
+\begin{figure}[H]
+  \centering
+  \fitinput{figures/chapter01/tikz/system_layers.tex}
+  \caption{AI 工具作为协作系统：基础模型、系统组件、权限控制与使用者上下文}
+  \label{fig:ch01_system}
+\end{figure}
 % ----------------------------------------------------------------
 
 \subsection{大语言模型的基本工作方式}
@@ -241,35 +248,15 @@ AI 工具更新很快，具体产品名称和功能会变化。比记住产品�
 
 \paragraph{对话型AI：适合探索、解释与方案讨论}
 
-对话型 AI 以自然语言交流为主，适合概念解释、头脑风暴、任务拆解、文字修改和方案比较。这类工具最具代表性的有 OpenAI 的 ChatGPT、Anthropic 的 Claude 以及 Google 的 Gemini，它们通常以网页或应用程序界面的形式提供服务，无需本地配置即可开始使用（见图~\ref{fig:chat_ai_tools}）。它的优势是启动成本低，适合在问题尚未完全清楚时展开讨论。
+对话型 AI 以自然语言交流为主，适合概念解释、头脑风暴、任务拆解、文字修改和方案比较。这类工具最具代表性的有 OpenAI 的 ChatGPT、Anthropic 的 Claude 以及 Google 的 Gemini，它们通常以网页或应用程序界面的形式提供服务，无需本地配置即可开始使用（见表~\ref{tab:ai_products}）。它的优势是启动成本低，适合在问题尚未完全清楚时展开讨论。
 
-\begin{figure}[H]
-  \centering
-  \begin{center}
-    \includesvg[height=1cm, keepaspectratio]{figures/chapter01/OpenAI.svg}
-    \hspace{0.4cm}
-    \includesvg[height=1cm, keepaspectratio]{figures/chapter01/Claude.svg}
-    \hspace{0.4cm}
-    \includesvg[height=1cm, keepaspectratio]{figures/chapter01/Google_Gemini.svg}
-  \end{center}
-  \caption{主流对话型 AI 工具示例，包括 ChatGPT、Claude 与 Gemini。其中 ChatGPT 以 OpenAI 品牌标识示意。}
-  \label{fig:chat_ai_tools}
-\end{figure}
 
 它的局限是对真实项目上下文了解有限。如果使用者只粘贴少量代码或局部数据，AI 可能在缺少整体结构的情况下提出修改建议。对话型 AI 更适合回答“我应该考虑什么”和“有哪些可能方案”，不宜在缺少项目材料时直接承担大范围修改。
 
 \paragraph{代码协作型AI：适合在真实项目中执行}
 
-代码协作型 AI 可以读取项目文件、搜索代码、修改内容、运行命令并检查测试。它适合跨文件开发、错误修复、重构、批量修改和构建自动化流程。代表性工具包括 Anthropic 的 Claude Code（可在终端中直接与整个代码库交互）、GitHub Copilot（集成在 VS Code 等编辑器中，提供代码补全与内联对话）以及 Cursor（内置 AI 能力的代码编辑器）。OpenAI 早期推出的 Codex 奠定了代码生成能力的基础，后续许多工具都在此基础上发展而来。与只看到一段粘贴代码的对话工具相比，代码协作型 AI 能够利用更完整的项目上下文（见图~\ref{fig:code_ai_tools}）。
+代码协作型 AI 可以读取项目文件、搜索代码、修改内容、运行命令并检查测试。它适合跨文件开发、错误修复、重构、批量修改和构建自动化流程。代表性工具包括 Anthropic 的 Claude Code（可在终端中直接与整个代码库交互）、GitHub Copilot（集成在 VS Code 等编辑器中，提供代码补全与内联对话）以及 Cursor（内置 AI 能力的代码编辑器）。OpenAI 早期推出的 Codex 奠定了代码生成能力的基础，后续许多工具都在此基础上发展而来。与只看到一段粘贴代码的对话工具相比，代码协作型 AI 能够利用更完整的项目上下文。
 
-\begin{figure}[H]
-  \centering
-    \includesvg[height=0.8cm, keepaspectratio]{figures/chapter01/Antigravity.svg}
-    \hspace{0.2cm}
-    \includesvg[height=0.8cm, keepaspectratio]{figures/chapter01/Github_Copilot.svg}
-  \caption{代码协作型 AI 工具示例（Google Antigravity 与 GitHub Copilot）}
-  \label{fig:code_ai_tools}
-\end{figure}
 
 代码协作型 AI 的权限也更高，因此需要更清楚的边界。使用前应确认：
 
@@ -298,6 +285,26 @@ AI 工具更新很快，具体产品名称和功能会变化。比记住产品�
 一些 AI 工具围绕特定领域设计，例如面向法律文书检索的 Harvey 和 CoCounsel，面向学术文献综述的 Consensus，以及部分医疗平台提供的 AI 辅助记录工具。这些工具往往集成了专业数据源、格式要求和工作流，因此可能比通用工具更适合特定任务。
 
 “专业工具”并不自动意味着“结果正确”。选择时仍应检查数据来源、适用范围、更新频率、引用方式和责任边界。专业工具的价值在于缩小任务范围和提供领域上下文，而不是取消人工验证。
+
+表~\ref{tab:ai_products} 汇总了五类工具的代表性产品和典型交互方式。产品名称和功能变化很快，这张表只反映本书写作时的情况；比记住产品更重要的，是理解每一类工具能接触到多少上下文、拥有多大的执行权限。
+
+\begin{table}[H]
+\centering
+\caption{五类 AI 工具的代表性产品与交互方式（截至本书写作时）}
+\label{tab:ai_products}
+\small
+\begin{tabular}{L{2.3cm}L{4.9cm}L{5.6cm}}
+\toprule
+类别 & 代表性产品 & 典型交互方式与上下文范围 \\
+\midrule
+对话型 & ChatGPT、Claude、Gemini & 网页或应用中的多轮对话；只能看到使用者粘贴或上传的内容 \\
+代码协作型 & Claude Code、GitHub Copilot、Cursor、Google Antigravity & 在终端或编辑器中读取整个项目、修改文件、运行命令和测试 \\
+数据分析型 & ChatGPT 数据分析功能；Excel、BI 平台与 Notebook 中的 AI 助手 & 上传或连接数据，生成并运行分析代码，输出图表 \\
+检索与研究型 & Perplexity、Elicit、Consensus & 检索网络或学术文献，回答时附带可核查的来源 \\
+专业领域型 & Harvey、CoCounsel 及部分医疗记录工具 & 集成专业数据源、格式要求和领域工作流 \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \subsection{根据任务特征选择工具}
 
@@ -334,7 +341,14 @@ AI 工具更新很快，具体产品名称和功能会变化。比记住产品�
 
 一个工具能够读取数据、运行命令或生成决策建议，并不意味着它应该被允许这样做。权限应与任务风险匹配。
 
-对于低风险、易恢复的任务，可以给予 AI 较高执行权限，例如整理公开资料或修改有完整测试覆盖的代码。对于涉及敏感数据、不可逆操作或高风险决策的任务，应限制访问范围，并要求人在关键节点确认。
+对于低风险、易恢复的任务，可以给予 AI 较高执行权限，例如整理公开资料或修改有完整测试覆盖的代码。对于涉及敏感数据、不可逆操作或高风险决策的任务，应限制访问范围，并要求人在关键节点确认。图~\ref{fig:ch01_permission} 按“结果是否容易验证”和“出错的代价有多高”两个维度，给出了权限设置的一般原则。
+
+\begin{figure}[H]
+  \centering
+  \fitinput{figures/chapter01/tikz/permission_matrix.tex}
+  \caption{按可验证性与错误代价设置 AI 的权限}
+  \label{fig:ch01_permission}
+\end{figure}
 
 % ----------------------------------------------------------------
 \section{人机协作的基本框架}
@@ -407,7 +421,14 @@ AI 工具更新很快，具体产品名称和功能会变化。比记住产品�
 \text{Prompting} \rightarrow \text{Modeling} \rightarrow \text{Evaluation}
 \]
 
-这三个词不是指 AI 自动执行的三个步骤，而是指人在 AI 时代仍然不能外包的三项能力。Prompting 解决“如何把问题说清楚”；Modeling 解决“如何把问题表示成可计算、可执行的形式”；Evaluation 解决“如何判断 AI 生成的结果能否被采用”。
+这三个词不是指 AI 自动执行的三个步骤，而是指人在 AI 时代仍然不能外包的三项能力。Prompting 解决“如何把问题说清楚”；Modeling 解决“如何把问题表示成可计算、可执行的形式”；Evaluation 解决“如何判断 AI 生成的结果能否被采用”。如图~\ref{fig:ch01_cycle} 所示，三者并不是一次走完的直线，而是围绕 AI 生成的候选答案反复往返。
+
+\begin{figure}[H]
+  \centering
+  \fitinput{figures/chapter01/tikz/core_cycle.tex}
+  \caption{人在 AI 协作中的三项核心工作}
+  \label{fig:ch01_cycle}
+\end{figure}
 
 \subsection{Prompting：把问题说清楚}
 
@@ -471,6 +492,15 @@ AI 的字段分类表帮助分析人员排除了 6 个事后字段或标签派�
 \paragraph{第四轮：Evaluation——判断结果能否被采用}
 
 在新的设定下，模型在 2025 年测试集上的 ROC-AUC 为 0.653，PR-AUC 为 0.412，而随机猜测的 PR-AUC 约为 0.262（即测试集中 KSI 的占比）。数字远不如第一轮漂亮，但它第一次回答了一个有意义的问题：在事前可以获得的信息中，确实存在能够区分严重事故的信号，只是这种信号相当有限。进一步的分析（见第 8 章）显示，涉及摩托车或行人、农村道路、较高的限速、夜间以及无照明的黑暗条件，都与更高的 KSI 比例相关。
+
+图~\ref{fig:ch01_default_audit} 对比了两种做法：左图是同一份数据上“一键建模”与审查后建模的指标，右图说明了事后字段为什么会让模型“作弊”——警员是否到场本身就与事故严重程度强烈相关，但它在事故发生之前无法获得。
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{figures/chapter01/default_vs_audit.pdf}
+  \caption{案例 B：一键建模与审查后建模的对比（STATS19，2021—2025 年）}
+  \label{fig:ch01_default_audit}
+\end{figure}
 
 最后，分析人员把 AI 生成的代码、每一轮修改的原因、排除的字段清单和分组评价结果整理为一份协作记录。报告中的结论也被写得更加审慎：“在现有数据下，涉及摩托车或行人、农村道路、高限速和夜间无照明条件与严重事故显著相关，可作为改善措施的优先候选；这些关联不能直接证明某项措施的效果，且 KSI 比例的时间变化部分受报告系统变化影响。”本案例的完整代码见 \texttt{code/case\_B\_crash/ch01\_ch17\_default\_vs\_audit.py}。这个案例将在第 3、8、12 章中被继续展开，并在第 17 章中作为综合案例完整呈现。
 

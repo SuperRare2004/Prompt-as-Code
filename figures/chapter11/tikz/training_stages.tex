@@ -1,0 +1,9 @@
+\begin{tikzpicture}[st/.style={abox, text width=34mm, minimum height=26mm, font=\footnotesize, align=left}]
+\node[st] (a) at (0,0)   {\textbf{1. 预训练}\\[2pt]数据：海量通用文本与代码\\目标：预测下一个 token\\获得：语言模式、知识、\\代码与任务形式};
+\node[st] (b) at (4.6,0) {\textbf{2. 监督微调（SFT）}\\[2pt]数据：指令—回答对\\目标：按指令生成回答\\获得：“听懂指令”、\\稳定的回答格式};
+\node[st] (c) at (9.2,0) {\textbf{3. 对齐}\\[2pt]数据：人类偏好比较\\方法：RLHF、DPO 等\\获得：更有帮助、更安全\\的输出倾向};
+\draw[flow] (a) -- (b); \draw[flow] (b) -- (c);
+\node[hbox, text width=34mm, font=\footnotesize] (d) at (9.2,-2.4) {\textbf{参数高效微调}\\LoRA、Adapter 等适配具体领域};
+\draw[backflow] (c) -- (d);
+\node[tag, text width=80mm, anchor=north west] at (-1.8,-1.85) {三个阶段都没有改变“根据上下文生成后续内容”的本质；\\“事实正确”并不是任何一个阶段直接优化的目标};
+\end{tikzpicture}

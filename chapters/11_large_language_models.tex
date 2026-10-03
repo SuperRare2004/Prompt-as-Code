@@ -122,6 +122,15 @@ X \in \mathbb{R}^{L \times d_{\text{model}}}
 
 即使经过 SFT，模型输出仍然可能不符合人类偏好，或者出现不安全、无帮助、事实不可靠的回答。因此，还需要进一步进行对齐训练，让模型输出更符合人类偏好与安全要求。常见思路包括 RLHF 和 DPO 等。
 
+图~\ref{fig:ch11_stages} 概括了这三个阶段各自使用的数据、优化的目标和赋予模型的能力。
+
+\begin{figure}[H]
+  \centering
+  \fitinput{figures/chapter11/tikz/training_stages.tex}
+  \caption{大语言模型的训练阶段}
+  \label{fig:ch11_stages}
+\end{figure}
+
 \paragraph{参数高效微调}
 
 当模型变得很大时，直接微调整个模型成本很高，因此工程上经常使用 LoRA、Adapter、Prompt Tuning、Prefix Tuning 等参数高效微调方法，让模型只调整一小部分新增参数就能适配具体领域。
@@ -212,6 +221,15 @@ X \in \mathbb{R}^{L \times d_{\text{model}}}
     \item 重复上述过程，直到任务完成或需要人工确认。
 \end{enumerate}
 
+图~\ref{fig:ch11_agent} 把这一循环画了出来。
+
+\begin{figure}[H]
+  \centering
+  \fitinput{figures/chapter11/tikz/agent_loop.tex}
+  \caption{AI Agent 的执行循环}
+  \label{fig:ch11_agent}
+\end{figure}
+
 ReAct 框架可以理解为“推理（Reasoning）+行动（Acting）”的交替：模型先根据当前信息思考下一步，再调用工具执行动作，然后根据反馈继续推理。MCP（Model Context Protocol）一类协议，则更像是为模型和外部工具之间建立统一接口，让模型能够以标准方式访问文件、数据库、网页、代码仓库或专业软件。Skills 则可以理解为封装好的任务说明和操作流程，告诉模型在特定任务中应该按什么步骤工作。
 
 把这些术语拆开看，就没有那么神秘：
@@ -283,6 +301,15 @@ TF-IDF + 逻辑回归（10,411 条训练样本） & 0.875 & 0.875 \\
 \end{tabular}
 \end{table}
 
+图~\ref{fig:ch11_eval} 展示了同样的结果：左图是基线准确率随训练样本数的变化，右图是大语言模型的混淆矩阵，可以看到 12 条不一致的样本集中在动力传动与发动机、安全气囊与安全带及车身结构之间（完整输出见 \texttt{code/outputs/ch11\_nhtsa\_eval.txt}）。
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{figures/chapter11/nhtsa_eval.pdf}
+  \caption{NHTSA 投诉分类的评价结果}
+  \label{fig:ch11_eval}
+\end{figure}
+
 大语言模型在没有使用任何训练样本的情况下，超过了用一万余条标注样本训练的传统基线；160 条证据摘录全部是原文的逐字子串。但逐条审阅 12 条不一致的样本，比准确率本身更有价值：
 
 \begin{itemize}
@@ -296,6 +323,15 @@ TF-IDF + 逻辑回归（10,411 条训练样本） & 0.875 & 0.875 \\
 \subsection{第四步：确定 AI 在流程中的角色}
 
 根据评价结果，一个稳妥的流程通常是：大语言模型作为执行者完成全部文本的初步分类与抽取；程序化规则检查格式、名录匹配和证据摘录；名录无法匹配、多次运行不一致或类别为“其他”的样本进入人工复核队列；此外定期从其余样本中随机抽检，持续监测准确率是否随时间下降（例如出现了新的投诉类型）。
+
+图~\ref{fig:ch11_review} 是这一流程的示意。
+
+\begin{figure}[H]
+  \centering
+  \fitinput{figures/chapter11/tikz/review_flow.tex}
+  \caption{大语言模型文本分类的生产流程：自动执行、程序检查与人工复核}
+  \label{fig:ch11_review}
+\end{figure}
 
 结构化之后的反馈数据，才能与其他数据相互印证。以地铁为例，把“站内拥挤”类反馈按车站和时段汇总后，可以与第 16 章的客流预测结果对照：如果某座车站的拥挤反馈明显多于其客流规模所对应的水平，一个值得现场核实的假设是该站存在出入口或换乘通道等设施瓶颈——拥挤感未必来自客流总量。这类假设只能作为调查线索，而不能直接作为结论。
 

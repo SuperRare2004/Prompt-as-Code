@@ -1,0 +1,24 @@
+\begin{tikzpicture}[v/.style={pbox, minimum width=17mm, minimum height=8mm, font=\footnotesize},
+  r/.style={rbox, minimum width=17mm, minimum height=8mm, font=\footnotesize},
+  ttl/.style={font=\small\bfseries, align=flush center}]
+\foreach \x/\t/\s in {0/完全随机缺失（MCAR）/缺失与任何变量无关, 4.9/随机缺失（MAR）/缺失只与已观测变量有关, 9.8/非随机缺失（MNAR）/缺失与缺失值本身有关}
+{
+  \node[ttl] at (\x,1.55) {\t};
+  \node[tag] at (\x,1.05) {\s};
+  \draw[black!20, rounded corners=3pt] (\x-2.25,-1.95) rectangle (\x+2.25,1.9);
+}
+% MCAR
+\node[v] (x1) at (-1.1,0.1) {其他变量 $X$}; \node[v] (y1) at (1.1,0.1) {目标变量 $Y$};
+\node[r] (r1) at (0,-1.25) {是否缺失 $R$};
+% MAR
+\node[v] (x2) at (3.8,0.1) {路段类型 $X$}; \node[v] (y2) at (6.0,0.1) {车速 $Y$};
+\node[r] (r2) at (4.9,-1.25) {是否缺失 $R$};
+\draw[flow] (x2) -- (r2);
+% MNAR
+\node[v] (x3) at (8.7,0.1) {其他变量 $X$}; \node[v] (y3) at (10.9,0.1) {流量 $Y$};
+\node[r] (r3) at (9.8,-1.25) {是否缺失 $R$};
+\draw[flow, red!55!black] (y3) -- (r3);
+\node[tag, anchor=north] at (0,-2.05) {删除不引入偏差，只损失样本};
+\node[tag, anchor=north] at (4.9,-2.05) {利用 $X$ 辅助填充，直接删除会有偏};
+\node[tag, anchor=north] at (9.8,-2.05) {简单填充都有偏；应标记并检验敏感性};
+\end{tikzpicture}

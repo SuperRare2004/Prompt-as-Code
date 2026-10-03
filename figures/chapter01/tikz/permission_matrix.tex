@@ -1,0 +1,8 @@
+\begin{tikzpicture}[cell/.style={pbox, minimum width=48mm, minimum height=19mm, text width=44mm, font=\footnotesize}]
+\node[cell, fill=green!10] (a) at (0,0)   {\textbf{较高执行权限}\\自动执行，事后抽查\\\scriptsize 例：整理公开资料、修改有完整测试覆盖的代码};
+\node[cell, fill=yellow!14] (b) at (5.1,0) {\textbf{执行，但关键节点确认}\\查看差异、保留回退\\\scriptsize 例：批量修改项目文件、重构数据管道};
+\node[cell, fill=yellow!14] (c) at (0,-2.1) {\textbf{只给建议，人来执行}\\结果难验证但代价低\\\scriptsize 例：头脑风暴、方案讨论};
+\node[cell, fill=red!9] (d) at (5.1,-2.1) {\textbf{限制访问，人主导}\\AI 只整理证据与备选方案\\\scriptsize 例：敏感数据分析、安全与政策决策};
+\draw[-Stealth, thick, black!60] (-2.6,-3.35) -- node[tag, below]{错误代价与不可逆程度：低 $\rightarrow$ 高} (7.8,-3.35);
+\draw[-Stealth, thick, black!60] (-2.75,-3.2) -- node[tag, above, rotate=90]{结果的可验证性：低 $\rightarrow$ 高} (-2.75,1.15);
+\end{tikzpicture}

@@ -63,6 +63,15 @@ AI 擅长的部分包括：将特征构造想法翻译成可运行的代码，�
 
 一个典型的迭代路径如下：初始版本只包含最基础的时间和空间特征；模型训练后，分析残差分布，发现节假日期间的预测误差明显偏大；据此构造节假日前后的特殊标记特征；下一轮训练后，SHAP 分析显示某个“高峰期”标记的贡献与预期相符，但某个 POI 距离特征的贡献接近零；重新审查发现该 POI 类型与目标场景关联性较弱，将其替换为更合适的变量。这个过程会持续，直到模型性能与可解释性都达到可接受的水平。
 
+图~\ref{fig:ch06_loop} 概括了这一循环。
+
+\begin{figure}[H]
+  \centering
+  \fitinput{figures/chapter06/tikz/fe_loop.tex}
+  \caption{特征工程的迭代循环}
+  \label{fig:ch06_loop}
+\end{figure}
+
 这意味着在项目中保留特征构造历史记录非常重要，包括每个特征的构造动机、具体定义、引入时间和后续评估结论。AI 可以帮助生成并维护这份文档，但需要人来持续判断哪些特征值得保留。
 
 
@@ -98,6 +107,15 @@ AI 擅长的部分包括：将特征构造想法翻译成可运行的代码，�
 \begin{quote}
 请为以下时间字段添加正弦余弦周期性编码。字段包括：\texttt{hour}（周期 24）、\texttt{weekday}（周期 7）、\texttt{month}（周期 12）。对每个字段生成对应的 \texttt{\_sin} 和 \texttt{\_cos} 两个新列，保留原始数值字段。请使用 NumPy 实现，并添加注释说明编码公式。
 \end{quote}
+
+图~\ref{fig:ch06_cyclic} 直观地显示了编码前后的差别。
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.9\textwidth]{figures/chapter06/cyclic_encoding.pdf}
+  \caption{小时的数值表示与正弦余弦编码}
+  \label{fig:ch06_cyclic}
+\end{figure}
 
 需要注意：正弦余弦编码对树模型（如随机森林、XGBoost）的提升通常有限，因为树模型的分裂操作本身可以处理小时 23 和小时 0 的相邻关系。但对于线性回归和深度学习模型，这种编码往往有明显的改善效果。
 
@@ -167,6 +185,22 @@ POI 数据通常来自高德、百度地图 API 或 OpenStreetMap，在使用前
 
 如果不引入任何历史信息，模型只能依赖静态属性（时间标记、空间属性）来预测当前的交通状态。但交通拥堵具有明显的传播性和惯性：上一个五分钟的排队长度，往往是下一个五分钟排队长度的最强预测因子之一。将历史状态直接作为输入特征，能够让模型以最直接的方式利用这种时序规律。
 
+自相关函数可以帮助判断应当使用哪些滞后。图~\ref{fig:ch06_acf} 是 METR-LA 各检测器车速自相关系数的中位数：相邻 5 分钟的自相关高达 0.91，1 小时后降到 0.58，半天后接近于 0，而在 24 小时处又回升到 0.47。这说明短期滞后与“前一天同一时刻”都是有信息的候选特征，而中间的大部分滞后几乎没有价值。图~\ref{fig:ch06_windows} 则标出了滞后特征和滚动统计在时间轴上的位置。
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.92\textwidth]{figures/chapter06/acf.pdf}
+  \caption{车速的自相关函数（METR-LA，207 个检测器的中位数）}
+  \label{fig:ch06_acf}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \fitinput{figures/chapter06/tikz/windows.tex}
+  \caption{滞后特征与滚动统计在时间轴上的位置}
+  \label{fig:ch06_windows}
+\end{figure}
+
 \paragraph{常见的滞后时间窗口}
 
 滞后特征按时间跨度可分为几类。短期滞后（5 分钟前、10 分钟前、15 分钟前）用于捕捉拥堵传播和消散的即时动态；中期滞后（30 分钟前、1 小时前）用于捕捉高峰形成与消退的较慢过程；同期历史（昨天同时段、上周同星期同时段）用于捕捉日内周期性和周内周期性；季节性历史（去年同期）则适用于需要捕捉年度周期性的长期预测任务。
@@ -213,6 +247,15 @@ POI 数据通常来自高德、百度地图 API 或 OpenStreetMap，在使用前
 盲目构造所有可能的特征组合会产生海量冗余特征，引入大量噪声，并使模型解释变得困难。构造交互特征的合理前提，是有明确的领域假设支撑某种联合效应的存在。
 
 以道路交通为例，以下几类交互具有清晰的领域解释。\textbf{降雨天气 × 早晚高峰}：雨天对拥堵的加剧效应在高峰期更为显著，因为高峰期路网本身已处于饱和边缘；而夜间低流量条件下，雨天的影响相对有限。\textbf{节假日 × 长途路段}：节假日出行以长途为主，高速公路和城市快速路的流量特征在节假日与平日的差异，远大于城市支路。\textbf{学校周边 × 放学时间}：16:00--17:00 的学校周边路段，与其他时间或其他区域的路段，具有根本不同的流量构成（大量接送车辆）。\textbf{赛事活动 × 场馆周边}：大型体育赛事结束后，场馆周边路段在短时内面临极端的散场流量，这种效应高度局部化，交互特征比两个独立特征更能精确描述它。
+
+交互效应可以在数据中直接观察。图~\ref{fig:ch06_inter} 来自案例 B 的 STATS19 数据：在各个限速等级上，“黑暗且无路灯”条件下的 KSI 占比都高于白天，但差距随限速变化，从 2.8 到 10.2 个百分点不等。如果只用“限速”和“光照”两个独立特征，线性模型无法表达这种随条件变化的差距。
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.8\textwidth]{figures/chapter06/interaction.pdf}
+  \caption{限速与光照的交互：不同条件下的 KSI 事故占比（STATS19，2021—2025 年）}
+  \label{fig:ch06_inter}
+\end{figure}
 
 构造方式通常是将两个特征相乘（对于连续变量和连续变量），或将类别变量的独热编码与连续变量相乘（捕捉分组效应）。
 
@@ -294,6 +337,32 @@ AI 可以帮助实现“以站点为圆心、给定半径的空间连接”这�
 
 嵌入法在模型训练过程中同时完成特征选择，将选择逻辑内嵌于学习算法本身。\textbf{LASSO 正则化}在线性回归的损失函数中加入 $L_1$ 正则项，会将不重要特征的系数压缩到精确为零，从而自动实现稀疏特征选择；通过调节正则化强度参数 $\lambda$，可以控制被保留特征的数量。\textbf{树模型特征重要性}：随机森林、梯度提升树（XGBoost、LightGBM）等模型在训练过程中记录每个特征在所有树的分裂中降低杂质度（Gini 不纯度或均方误差）的总贡献，据此生成特征重要性排名。\textbf{基于 SHAP 的选择}将 SHAP 值的绝对均值作为特征重要性度量，比传统的树模型内置重要性更稳定，且能处理特征之间的相互作用。
 
+图~\ref{fig:ch06_select} 和表~\ref{tab:ch06_select} 对三类方法作了比较。
+
+
+\begin{figure}[H]
+  \centering
+  \fitinput{figures/chapter06/tikz/selection_methods.tex}
+  \caption{特征选择的三类方法}
+  \label{fig:ch06_select}
+\end{figure}
+
+\begin{table}[H]
+\centering
+\caption{三类特征选择方法的比较}
+\label{tab:ch06_select}
+\small
+\begin{tabular}{L{1.5cm}L{3.6cm}L{1.8cm}L{2.2cm}L{2.9cm}}
+\toprule
+方法 & 原理 & 计算成本 & 能否捕捉交互 & 典型工具 \\
+\midrule
+过滤法 & 单独评价每个特征与目标的统计关联 & 低 & 否 & 相关系数、互信息、卡方检验 \\
+包裹法 & 以模型表现评价特征子集，反复搜索 & 高 & 能 & 递归特征消除（RFE） \\
+嵌入法 & 在模型训练过程中完成选择 & 中 & 部分能 & LASSO、树模型的分裂增益 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
 \subsection{SHAP 值的获取与解读}
 
 SHAP 将合作博弈中的 Shapley value 用于解释单次预测，使不同特征归因方法能够在统一框架下比较\cite{lundberg2017unified}。但 SHAP 解释的是模型如何使用特征，而不是特征对现实结果的因果作用；当特征高度相关时，归因还会受背景分布和实现选择影响。因此，SHAP 图适合用于发现模型行为和生成检查问题，不应被直接写成政策结论。
@@ -324,6 +393,15 @@ SHAP（SHapley Additive exPlanations）是目前最广泛使用的模型可解�
 对于货运通道安全管理这样的任务，重型货车恰恰是需要单独分析的对象。分析人员因此保留了这一特征，并在特征文档中写明理由：“统计贡献低源于样本稀少，而非风险低；该特征与货运安全政策直接相关。”这正是本节所说的冲突：统计重要性回答的是模型的问题，业务必要性回答的是决策的问题。
 \end{quote}
 
+图~\ref{fig:ch06_imp} 给出了这个模型置换重要性排名前 10 的特征。排在前面的多数是由车辆表和伤亡人员表汇总得到的“涉事方”特征；“是否涉及重型货车”则不在前 10 名之列。
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.8\textwidth]{figures/chapter06/rf_importance.pdf}
+  \caption{案例 B 随机森林的置换重要性（前 10 名，以 PR-AUC 为评分）}
+  \label{fig:ch06_imp}
+\end{figure}
+
 \subsection{特征选择决策的记录与说明}
 
 特征选择的结果应当被文档化，包括：最终保留了哪些特征，为什么保留；哪些候选特征被剔除，剔除的理由是什么（统计原因还是业务判断）；不同特征组合的实验结果对比。这份记录既是科学严谨性的要求，也是向合作者和审稿人说明建模决策合理性的依据。
@@ -348,6 +426,15 @@ SHAP（SHapley Additive exPlanations）是目前最广泛使用的模型可解�
 假设目标是预测 $t+1$ 时刻的流量，构造了“过去一小时的平均流量”特征，但在计算时，窗口的截止时刻是 $t+1$ 而不是 $t$，即使用了 $t-11$ 到 $t+1$ 共 12 个时段的均值。这个均值中包含了目标时刻本身的流量值，相当于模型在训练时获得了它在部署时绝不可能拥有的“答案的一部分”。
 
 在 pandas 中，这种错误通常表现为：使用了 \texttt{rolling(12).mean()} 而没有追加 \texttt{.shift(1)}。
+
+图~\ref{fig:ch06_leak} 把正确的窗口与两种常见的泄露窗口放在一起比较。
+
+\begin{figure}[H]
+  \centering
+  \fitinput{figures/chapter06/tikz/leakage_windows.tex}
+  \caption{滚动窗口的正确位置与两种泄露}
+  \label{fig:ch06_leak}
+\end{figure}
 
 \paragraph{用测试集的统计量对训练集进行标准化}
 
@@ -434,6 +521,26 @@ SHAP（SHapley Additive exPlanations）是目前最广泛使用的模型可解�
 
 注意事项应特别指出该特征是否依赖外部数据（如节假日日历）、是否存在数据泄露风险、以及在数据集开头若干行是否会产生 NaN 值。
 \end{quote}
+
+表~\ref{tab:ch06_doc} 是这种特征文档的一个示例，取自案例 A 的车速预测任务。其中“可用时点”一列最为关键：它直接回答了这个特征在预测时刻能否获得。
+
+\begin{table}[H]
+\centering
+\caption{特征文档示例（案例 A：预测 15 分钟后的车速）}
+\label{tab:ch06_doc}
+\small
+\begin{tabular}{L{2.5cm}L{3.6cm}L{2.6cm}L{4.2cm}}
+\toprule
+特征名 & 构造方法 & 可用时点 & 预期含义与注意事项 \\
+\midrule
+\texttt{speed\_lag0..5} & 当前及过去 5 个时刻的车速 & 预测时刻 $t$ & 交通状态的惯性；0 值须先按缺失处理 \\
+\texttt{roll\_mean\_30m} & 过去 30 分钟车速均值，窗口截止于 $t$ & 预测时刻 $t$ & 平滑短时噪声；严禁使用居中窗口 \\
+\texttt{hour\_sin/cos} & 小时的正弦、余弦编码 & 任何时刻 & 日内周期；树模型中收益有限 \\
+\texttt{is\_weekend} & 周六、周日或联邦假日 & 任何时刻 & 区分两类日内曲线；依赖假日日历 \\
+\texttt{missing\_flag} & 过去 30 分钟内是否有缺失 & 预测时刻 $t$ & 让模型知道输入不完整 \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \subsection{特征版本管理}
 

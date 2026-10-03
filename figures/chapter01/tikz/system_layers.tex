@@ -1,0 +1,15 @@
+\begin{tikzpicture}
+\node[pbox, fill=orange!14, draw=orange!70!black, minimum width=46mm, minimum height=12mm] (core) at (0,0)
+  {\textbf{基础模型}\\\footnotesize 决定能力上限};
+\foreach \n/\x/\t in {m1/-3.3/系统提示, m2/-1.1/检索模块, m3/1.1/代码执行环境, m4/3.3/外部工具}
+  \node[pbox, font=\footnotesize, minimum width=20mm] (\n) at (\x,-1.8) {\t};
+\foreach \m in {m1,m2,m3,m4} \draw[-Stealth, black!50] (\m.north) -- (core.south);
+\node[draw=black!60, dashed, rounded corners=4pt, inner sep=4mm, fit=(core)(m1)(m4)] (sys) {};
+\node[tag, anchor=south] at (sys.north) {\textbf{AI 工具是一个协作系统}：系统设计决定能力以何种方式被调用};
+\node[tag, anchor=north] at (sys.south) {权限控制：能读取什么、能修改什么、能否联网、哪些操作需要人工确认};
+\node[hbox, text width=22mm, left=7mm of sys] (user) {\textbf{使用者}\\\footnotesize 任务描述\\上下文与约束\\验收标准};
+\node[gbox, text width=22mm, right=7mm of sys] (res) {\textbf{候选答案}\\\footnotesize 代码、图表、\\解释、方案\\（需要验证）};
+\draw[flow] (user) -- (sys);
+\draw[flow] (sys) -- (res);
+\draw[backflow] (res.south) to[out=-90, in=-90, looseness=0.55] node[tag, below]{人检查结果，修改上下文与约束后再次提交} (user.south);
+\end{tikzpicture}

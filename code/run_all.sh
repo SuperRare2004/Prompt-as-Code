@@ -10,6 +10,7 @@ cd "$(dirname "$0")"; mkdir -p outputs
   python ch10_signal_rl.py         > ../outputs/A_ch10_signal_rl.txt )
 ( cd case_B_crash
   python ch01_ch17_default_vs_audit.py > ../outputs/B_ch01_default_vs_audit.txt
+  python ch04_table_structure.py       > ../outputs/B_ch04_table_structure.txt
   python ch08_logit_forest.py          > ../outputs/B_ch08_logit_forest.txt
   python ch17_error_audit.py           > ../outputs/B_ch17_error_audit.txt )
 ( cd case_C_metro

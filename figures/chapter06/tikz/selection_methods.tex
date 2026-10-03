@@ -1,0 +1,20 @@
+\begin{tikzpicture}[st/.style={pbox, text width=30mm, font=\footnotesize, minimum height=9mm},
+  ttl/.style={font=\small\bfseries}, node distance=3mm]
+\node[ttl] (t1) at (0,0) {过滤法};
+\node[st, below=of t1] (a1) {全部候选特征};
+\node[abox, st, below=of a1] (a2) {逐个计算与目标的\\统计关联（相关、互信息）};
+\node[st, below=of a2] (a3) {按分数保留前 $k$ 个};
+\node[ttl] (t2) at (4.6,0) {包裹法};
+\node[st, below=of t2] (b1) {当前特征子集};
+\node[abox, st, below=of b1] (b2) {训练模型、\\在验证集上评估};
+\node[st, below=of b2] (b3) {删除最不重要的特征};
+\draw[backflow] (b3.east) -- ++(0.35,0) |- node[tag, right, pos=0.25]{重复} (b1.east);
+\node[ttl] (t3) at (9.2,0) {嵌入法};
+\node[st, below=of t3] (c1) {全部候选特征};
+\node[abox, st, below=of c1] (c2) {带正则化或分裂准则的\\模型训练（LASSO、树）};
+\node[st, below=of c2] (c3) {训练结束时得到\\被保留的特征};
+\foreach \p in {a,b,c} { \draw[flow] (\p1) -- (\p2); \draw[flow] (\p2) -- (\p3); }
+\node[tag, below=2mm of a3] {快；忽略特征间的交互};
+\node[tag, below=2mm of b3] {能捕捉交互；计算成本高};
+\node[tag, below=2mm of c3] {与模型绑定；相关特征间分摊重要性};
+\end{tikzpicture}

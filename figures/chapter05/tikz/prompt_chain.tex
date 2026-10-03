@@ -1,0 +1,13 @@
+\begin{tikzpicture}[st/.style={abox, text width=19mm, minimum height=12mm, font=\footnotesize},
+  g/.style={hbox, diamond, aspect=1.5, inner sep=0.5pt, font=\scriptsize, text width=10mm, align=flush center}]
+\foreach \t [count=\k] in {初始审查, 格式统一, 缺失值处理, 异常值处理, 一致性核查, 清洗总结}
+  \node[st] (s\k) at ({2.55*(\k-1)}, 0) {\textbf{\k}\\\t};
+\foreach \a/\b in {1/2,2/3,3/4,4/5,5/6} \draw[flow] (s\a) -- (s\b);
+\node[hbox, text width=19mm, font=\footnotesize, minimum height=10mm] (plan) at (5.1,-2.1) {AI 先用文字\\描述计划};
+\node[hbox, text width=19mm, font=\footnotesize, minimum height=10mm] (ok) at (7.65,-2.1) {人确认规则\\理解一致};
+\node[abox, text width=19mm, font=\footnotesize, minimum height=10mm] (run) at (10.2,-2.1) {执行并输出\\质量报告};
+\draw[flow] (plan) -- (ok); \draw[flow] (ok) -- (run);
+\draw[black!40, dashed] (s3.south) -- (plan.north west);
+\draw[black!40, dashed] (s3.south) -- (run.north east);
+\node[tag, anchor=east, text width=40mm, align=flush right] at (3.9,-2.1) {每一步内部：\\先计划、再执行、再验证；\\不通过就停在这一步};
+\end{tikzpicture}

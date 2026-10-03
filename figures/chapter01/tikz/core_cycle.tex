@@ -1,0 +1,13 @@
+\begin{tikzpicture}
+\node[abox, minimum width=34mm, minimum height=13mm] (ai) at (0,0) {\textbf{AI}\\\footnotesize 生成代码、方案与解释};
+\node[hbox, text width=36mm] (p) at (90:3.0)  {\textbf{Prompting}\\\footnotesize 把问题说清楚：目标、\\上下文、约束、验收标准};
+\node[hbox, text width=36mm] (m) at (-30:3.6) {\textbf{Modeling}\\\footnotesize 把问题表示成可计算的形式：\\分析单元、标签、特征、方法};
+\node[hbox, text width=36mm] (e) at (210:3.6) {\textbf{Evaluation}\\\footnotesize 判断结果能否被采用：\\基准、泄露、分组、边界};
+\draw[flow] (p.east) to[bend left=30] (m.north);
+\draw[flow] (m.south west) to[bend left=30] (e.south east);
+\draw[flow] (e.north) to[bend left=30] (p.west);
+\draw[-Stealth, black!45] (p.south) -- (ai.north);
+\draw[-Stealth, black!45] (m.west) -- (ai.east);
+\draw[Stealth-, black!45] (e.east) -- (ai.west);
+\node[tag] at (0,-3.25) {外圈：人不能外包的三项工作；它们反复往返，直到问题、方法与证据相互支持};
+\end{tikzpicture}

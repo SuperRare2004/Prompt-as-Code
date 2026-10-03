@@ -1,0 +1,11 @@
+\begin{tikzpicture}[node distance=2.5mm]
+\node[pbox, text width=88mm, align=left, anchor=north west] (t) at (0,0) {\textbf{任务说明}\quad 按本机构的内部标准，为事件描述标注等级};
+\node[hbox, text width=88mm, align=left, below=of t.south west, anchor=north west] (e1) {\textbf{示例 1}\quad 描述：…… $\Rightarrow$ 分类：A 级（重大拥堵事件）};
+\node[hbox, text width=88mm, align=left, below=of e1.south west, anchor=north west] (e2) {\textbf{示例 2}\quad 描述：…… $\Rightarrow$ 分类：C 级（轻微道路隐患）};
+\node[pbox, text width=88mm, align=left, below=of e2.south west, anchor=north west, fill=white, dashed] (q) {\textbf{待分类的新描述}\quad 描述：…… $\Rightarrow$ 分类：\textbf{？}};
+\node[draw=black!40, rounded corners=3pt, inner sep=2.5mm, fit=(t)(q)] (box) {};
+\node[abox, right=8mm of box, text width=22mm] (o) {按示例的\\格式与边界\\给出分类};
+\draw[flow] (box) -- (o);
+\draw[decorate, decoration={brace, amplitude=4pt}, thick, blue!50!black] ([xshift=-5mm]e2.south west) -- ([xshift=-5mm]e1.north west)
+  node[midway, left=5pt, tag, text width=14mm]{示例即隐含规范：应覆盖边界情况};
+\end{tikzpicture}

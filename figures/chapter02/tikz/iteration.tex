@@ -1,0 +1,14 @@
+\begin{tikzpicture}[node distance=7mm and 9mm]
+\node[hbox, text width=25mm] (p) {提交 Prompt};
+\node[abox, text width=25mm, right=of p] (o) {AI 输出};
+\node[hbox, text width=30mm, right=of o] (c) {对照验收标准\\检查输出};
+\node[gbox, text width=22mm, right=of c] (ok) {采用};
+\node[hbox, text width=58mm, below=10mm of o.south east, anchor=north, align=left, font=\footnotesize] (fix)
+  {\textbf{精确的修正}\\[2pt]1. 哪个部分有问题（行号、字段、格式）\\2. 问题是什么（报错、偏差、违反的约束）\\3. 应当如何修改（若已知方向）};
+\node[rbox, text width=40mm, right=6mm of fix, font=\footnotesize] (back)
+  {\textbf{两轮以上仍未解决}\\补充上下文，或重新\\澄清任务定义};
+\draw[flow] (p) -- (o); \draw[flow] (o) -- (c); \draw[flow] (c) -- node[tag, above]{通过} (ok);
+\draw[flow] (c.south) -- node[tag, right, pos=0.3]{不通过} (fix.north -| c.south);
+\draw[flow] (fix.west) -| (p.south);
+\draw[backflow] (fix.east) -- (back.west);
+\end{tikzpicture}

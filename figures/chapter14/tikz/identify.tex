@@ -1,0 +1,17 @@
+\begin{tikzpicture}[q/.style={hbox, text width=24mm, minimum height=11mm, font=\scriptsize},
+  st/.style={rbox, text width=24mm, font=\scriptsize, minimum height=9mm}]
+\foreach \t/\s [count=\k] in {当前角色是否\\已经变化？/降低 AI 的角色,
+                              证据链能否\\回溯到数据？/补充实验或来源,
+                              所需信息\\是否真的存在？/停下并请求补充,
+                              总体指标是否\\掩盖了风险？/回到分组与极端情景,
+                              结论是否超出\\适用范围？/缩小结论的范围,
+                              是否涉及因果、\\责任或高风险？/AI 退为参谋}
+{
+  \node[q] (q\k) at ({mod(\k-1,3)*4.7}, {-int((\k-1)/3)*2.7}) {\textbf{\k.} \t};
+  \node[st, below=4mm of q\k] (s\k) {\s};
+  \draw[-Stealth, red!50!black] (q\k) -- node[tag, right]{是} (s\k);
+}
+\draw[flow] (q1) -- (q2); \draw[flow] (q2) -- (q3);
+\draw[flow] (q4) -- (q5); \draw[flow] (q5) -- (q6);
+\node[tag, anchor=north] at (4.7,-5.35) {按 1 至 6 的顺序逐项排查；任何一项回答“是”，都说明已经到达边界，应当采取下方红框中的处理方式};
+\end{tikzpicture}

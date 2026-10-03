@@ -1,0 +1,15 @@
+\begin{tikzpicture}[m/.style={abox, text width=26mm, font=\footnotesize, minimum height=10mm},
+  r/.style={pbox, text width=58mm, font=\footnotesize, align=left, minimum height=10mm}]
+\node[hbox, text width=20mm, minimum height=24mm] (p) at (0,-1.95) {\textbf{现实现象}\\\footnotesize 某路段在某时段的车辆流量};
+\foreach \t/\rr [count=\k] in {感应线圈/压过线圈的轴次折算为辆数；多车道时存在车道间干扰,
+                               视频检测/图像识别计数；遮挡、夜间和拥挤时识别率下降,
+                               浮动车 GPS/只覆盖装有设备的车辆；占比随时间和地点变化,
+                               手机信令/依赖基站覆盖与开机状态；隧道和盲区系统性缺失}
+{
+  \node[m] (m\k) at (3.6, {-1.3*(\k-1)}) {\t};
+  \node[r] (r\k) at (8.7, {-1.3*(\k-1)}) {\rr};
+  \draw[-Stealth, black!50] (p.east) -- (m\k.west);
+  \draw[flow] (m\k) -- (r\k);
+}
+\node[tag, above=1mm of m1] {采集机制}; \node[tag, above=1mm of r1] {得到的记录及其内生局限};
+\end{tikzpicture}

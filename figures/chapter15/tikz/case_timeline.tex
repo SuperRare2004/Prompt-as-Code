@@ -1,0 +1,15 @@
+\begin{tikzpicture}[st/.style={pbox, text width=20mm, minimum height=10mm, font=\footnotesize},
+  ev/.style={rbox, text width=36mm, font=\scriptsize, align=flush center}]
+\foreach \t [count=\k] in {问题定义, 数据与证据, 基准与建模, 验证, 交付与试点}
+  \node[st] (s\k) at ({2.9*(\k-1)},0) {\t};
+\foreach \a/\b in {1/2,2/3,3/4,4/5} \draw[flow] (s\a) -- (s\b);
+\node[ev] (e1) at (2.9,-2.0) {只看 MetroCard：客流“下降” 35\%\\$\Rightarrow$ 标签改为两种支付之和};
+\node[ev] (e2) at (8.7,-2.0) {次日实测天气在预测时不可得\\$\Rightarrow$ 改用天气预报};
+\node[ev] (e3) at (10.6,1.9) {区间覆盖仅 74\%，散场低估约 40\%\\$\Rightarrow$ 交付改为区间 + 提示};
+\draw[backflow, red!50!black] (e1.north) to[bend left=15] node[tag, left, pos=0.4]{回到} (s1.south);
+\draw[backflow, red!50!black] (e2.north) to[bend left=15] node[tag, left, pos=0.4]{回到} (s2.south);
+\draw[backflow, red!50!black] (e3.south) to[bend left=10] (s5.north);
+\draw[black!40] (s2.south) -- (e1.north);
+\draw[black!40] (s4.south) -- (e2.north);
+\draw[black!40] (s4.north) to[bend left=20] (e3.west);
+\end{tikzpicture}

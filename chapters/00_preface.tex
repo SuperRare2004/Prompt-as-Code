@@ -73,6 +73,15 @@ AI 的初始做法：0 当作车速 + 随机划分 + 居中窗口 & 0.964 & 1.86
 \end{tabular}
 \end{table}
 
+图~\ref{fig:preface_leakage} 把其中几种做法的误差画在同一坐标上。看起来最好的两种做法，恰恰都使用了预测时刻不可能获得的信息；而修正后的模型，与“15 分钟后的车速等于现在”这一朴素基准之间的差距并不大。
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.92\textwidth]{figures/chapter00/preface_leakage.pdf}
+  \caption{METR-LA 上不同做法的测试集误差（数据见表~\ref{tab:preface_leakage}）}
+  \label{fig:preface_leakage}
+\end{figure}
+
 在这个案例中，AI 并没有“写错代码”：每一行代码都能运行，每一个数字都由程序真实计算得出。问题出在代码之前和代码之后——任务描述没有说明预测时刻能够获得哪些信息，没有说明 0 在这份数据中意味着什么，也没有要求将模型与最简单的基准进行比较。本案例的完整代码见本书配套代码 \texttt{code/case\_A\_freeway/preface\_leakage.py}，读者可以自行运行并得到与表中相同的结果。
 
 这个案例最终要说明的并不是“AI 会犯错”这样一个简单结论，而是一种更重要的工作原则：AI 能让我们更快到达一个答案，但不能保证那个答案是对的。过去，技术实现的困难会迫使我们缓慢前进；现在，生成答案变得容易，真正困难的部分则转移到了问题定义、约束表达和结果验证。
@@ -135,7 +144,14 @@ $\longrightarrow$
   \item[如何判断（Evaluation）] 判断决定了 AI 给出的答案能否被采用。我们需要使用基准比较、数量级检查、极端情景、可视化和证据链验证输出，同时识别数据泄露、评价偏差与不合理结论。一个漂亮的指标，只是判断的起点。
 \end{description}
 
-全书各部分围绕这三个问题逐步推进：第 1 至第 4 章帮助读者理解 AI、学习有效沟通，并把现实需求转化为清楚的问题；第 5 至第 11 章讨论如何准备数据、构造特征，并与 AI 协作完成不同类型的建模任务；第 12 至第 14 章重点讨论如何验证结果、识别错误与能力边界；第 15 至第 18 章则综合运用 Prompting、Modeling 与 Evaluation，将经过检验的方案推进到完整项目和真实应用中。
+全书各部分围绕这三个问题逐步推进：第 1 至第 4 章帮助读者理解 AI、学习有效沟通，并把现实需求转化为清楚的问题；第 5 至第 11 章讨论如何准备数据、构造特征，并与 AI 协作完成不同类型的建模任务；第 12 至第 14 章重点讨论如何验证结果、识别错误与能力边界；第 15 至第 18 章则综合运用 Prompting、Modeling 与 Evaluation，将经过检验的方案推进到完整项目和真实应用中。图~\ref{fig:preface_roadmap} 给出了全书的结构。
+
+\begin{figure}[H]
+  \centering
+  \fitinput{figures/chapter00/tikz/roadmap.tex}
+  \caption{全书结构：三项核心工作与综合实践}
+  \label{fig:preface_roadmap}
+\end{figure}
 
 这三件事并非单向推进。一次判断可能暴露建模假设的问题，一次建模尝试也可能说明最初的问题定义并不准确。人的这三件工作，正是在 Prompting、Modeling 与 Evaluation 之间不断往返，直到问题、方法与证据能够相互支持。
 

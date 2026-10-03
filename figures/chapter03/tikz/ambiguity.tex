@@ -1,0 +1,17 @@
+\begin{tikzpicture}[it/.style={pbox, text width=38mm, font=\footnotesize, minimum height=8mm},
+  ml/.style={abox, text width=42mm, font=\footnotesize, minimum height=8mm}]
+\node[hbox, text width=24mm, minimum height=16mm] (g) at (0,0) {\textbf{“缓解拥堵”}};
+\foreach \i/\a/\b in {1/减少拥堵发生的频率/分类：某时段是否会发生拥堵,
+                      2/缩短拥堵的持续时长/回归或生存分析：拥堵持续多久,
+                      3/降低平均延误/回归：预测平均行程时间,
+                      4/减少极端延误事件/分位数回归：预测高分位行程时间,
+                      5/让更多人准时到达/优化：在资源约束下分配通行能力}
+{
+  \node[it] (a\i) at (4.3, {2.6-1.3*(\i-1)}) {\a};
+  \node[ml] (b\i) at (9.4, {2.6-1.3*(\i-1)}) {\b};
+  \draw[-Stealth, black!50] (g.east) -- (a\i.west);
+  \draw[flow] (a\i) -- (b\i);
+}
+\node[tag, above=1mm of a1] {现实目标的不同解读};
+\node[tag, above=1mm of b1] {对应的机器学习问题};
+\end{tikzpicture}

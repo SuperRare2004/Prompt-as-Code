@@ -1,0 +1,18 @@
+\begin{tikzpicture}[dim/.style={hbox, minimum width=24mm, minimum height=8.5mm, font=\footnotesize\bfseries},
+  q/.style={font=\footnotesize, anchor=west, text width=56mm, align=left}]
+\foreach \t/\qq [count=\k] in {预测对象/分析单元是路段、门店、患者还是一次事件？,
+                              任务类型/预测、分类、聚类、异常检测，还是因果推断？,
+                              标签来源/由谁记录、按什么口径、可靠性如何？,
+                              时空粒度/结果服务于哪一个层次、哪一个时间窗口的决策？,
+                              错误成本/哪一种错误最不可接受？代价相差多少？}
+{
+  \node[dim] (d\k) at (0, {-1.05*(\k-1)}) {\t};
+  \node[q] at (1.4, {-1.05*(\k-1)}) {\qq};
+}
+\node[pbox, text width=17mm, minimum height=22mm] (r) at (-3.2,-2.1) {\textbf{现实问题}\\\footnotesize 模糊、多目标、\\代价因人而异};
+\node[gbox, text width=17mm, minimum height=22mm] (m) at (8.75,-2.1) {\textbf{机器学习}\\\textbf{问题定义}\\\footnotesize 可以写进\\Prompt};
+\foreach \k in {1,...,5} \draw[-Stealth, black!45] (r.east) -- (d\k.west);
+\draw[flow] (7.4,-2.1) -- (m.west);
+\draw[decorate, decoration={brace, amplitude=5pt}, thick, black!50] (7.2,0.45) -- (7.2,-4.65);
+\node[tag, below=1mm of d5.south east, anchor=north, xshift=12mm] {每一个维度都是价值判断，而不只是技术细节};
+\end{tikzpicture}

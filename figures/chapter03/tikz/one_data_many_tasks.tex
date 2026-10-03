@@ -1,0 +1,8 @@
+\begin{tikzpicture}[t/.style={pbox, text width=30mm, font=\footnotesize, minimum height=11mm}]
+\node[hbox, text width=30mm, minimum height=20mm] (d) at (0,0) {\textbf{同一份事故记录}\\\footnotesize 时间、地点、类型、严重程度、道路与气象条件};
+\foreach \ang/\t [count=\k] in {90/路段事故率预测\\{\scriptsize（回归）}, 45/严重程度分类\\{\scriptsize（多分类）}, 0/高风险时段检测\\{\scriptsize（二分类）}, -45/事故黑点识别\\{\scriptsize（聚类）}, -90/影响因素分析\\{\scriptsize（可解释建模）}, -135/改造效果评估\\{\scriptsize（因果推断）}, 180/漏报检测\\{\scriptsize（异常检测）}, 135/路径安全排序\\{\scriptsize（排序学习）}}
+{
+  \node[t] (t\k) at (\ang:4.7cm and 2.75cm) {\t};
+  \draw[-Stealth, black!50] (d) -- (t\k);
+}
+\end{tikzpicture}

@@ -1,0 +1,14 @@
+\begin{tikzpicture}[x=7mm, cell/.style={draw=black!35, minimum width=6mm, minimum height=5mm, inner sep=0pt}]
+\foreach \y/\a/\b/\c/\t in {0/-5/0/blue!25/{正确：只使用 $t$ 及以前的 6 个时刻},
+                            -1.1/-4/1/red!25/{泄露：窗口截止于 $t+1$，包含了目标本身（相当于漏掉 \texttt{shift(1)}）},
+                            -2.2/-3/3/red!25/{泄露：居中窗口，用到了 $t+1$ 至 $t+3$（前言中的案例）}}
+{
+  \foreach \i in {-6,...,4} \node[cell, fill=black!3] at (\i,\y) {};
+  \foreach \i in {\a,...,\b} \node[cell, fill=\c] at (\i,\y) {};
+  \node[cell, draw=green!45!black, thick] at (1,\y) {};
+  \node[tag, anchor=west, text width=62mm, align=left] at (4.8,\y) {\t};
+}
+\draw[very thick, red!60!black] (0.5,0.45) -- (0.5,-2.65);
+\node[tag, anchor=south] at (0.5,0.45) {预测时刻 $t$};
+\node[tag, anchor=north, text=green!40!black] at (1,-2.65) {目标 $t+1$};
+\end{tikzpicture}

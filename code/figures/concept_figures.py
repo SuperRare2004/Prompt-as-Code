@@ -453,6 +453,610 @@ def grid_values():
     return f
 
 
+# ---------------- 前言、第 1 章（由运行日志中的真实结果绘制） ----------------
+OUT = ROOT / "outputs"
+
+
+def _parse_log(name, pattern):
+    import re
+    return re.findall(pattern, (OUT / name).read_text(encoding="utf-8"))
+
+
+@fig("chapter00", "preface_leakage")
+def preface_leakage():
+    rows = dict((k.strip(), (float(r), float(m))) for k, r, m in _parse_log(
+        "A_preface_leakage.txt", r"^(.+?)\s+R2=([\d.]+)\s+MAE=([\d.]+) mph$".replace("^", "(?m)^")))
+    items = [("AI 初始做法\n（0 当作车速 + 随机划分 + 居中窗口）", "AI initial: zeros kept + random + centered", RED),
+             ("时间划分 + 居中窗口", "time split + centered window", RED),
+             ("随机划分 + 过去窗口", "random split + past window", ORANGE),
+             ("修正后的做法\n（时间划分 + 过去窗口）", "time split + past window", BLUE),
+             ("持续性基准\n（15 分钟后 = 现在）", "persistence baseline (time split)", GRAY)]
+    f, ax = plt.subplots(figsize=(7.6, 3.4))
+    for i, (lab, key, c) in enumerate(items):
+        r2, mae = rows[key]
+        ax.barh(i, mae, color=c, height=0.62)
+        ax.text(mae + 0.05, i, f"MAE {mae:.2f}  ($R^2$ = {r2:.3f})", va="center", fontsize=9)
+    ax.set_yticks(range(len(items)), [x[0] for x in items], fontsize=8.5)
+    ax.invert_yaxis(); ax.set_xlim(0, 4.6); ax.set_xlabel("测试集 MAE（mph），越小越好")
+    ax.axvline(rows["persistence baseline (time split)"][1], color=GRAY, ls="--", lw=1)
+    ax.set_title("红色：使用了预测时刻不可得的信息；蓝色：修正后；灰色：朴素基准", fontsize=9)
+    return f
+
+
+@fig("chapter01", "default_vs_audit")
+def default_vs_audit():
+    txt = (OUT / "B_ch01_default_vs_audit.txt").read_text(encoding="utf-8")
+    import re
+    d_auc, d_pr = map(float, re.search(r"\[默认做法\].*?ROC-AUC=([\d.]+) PR-AUC=([\d.]+)", txt).groups())
+    a_auc, a_pr, rnd = map(float, re.search(r"\[审查后\].*?ROC-AUC=([\d.]+) PR-AUC=([\d.]+).*?≈([\d.]+)", txt).groups())
+    pol = eval(re.search(r"按警员是否到场： (\{.*\})", txt).group(1))
+    f, axes = plt.subplots(1, 2, figsize=(8.4, 3.3), gridspec_kw={"width_ratios": [1.25, 1]})
+    ax = axes[0]; x = np.arange(2); w = 0.36
+    for k, (vals, lab, c) in enumerate([((d_auc, d_pr), "一键建模（全部字段 + 随机划分）", RED),
+                                         ((a_auc, a_pr), "审查后（事前字段 + 时间划分）", BLUE)]):
+        b = ax.bar(x + (k - 0.5) * w, vals, w, color=c, label=lab)
+        ax.bar_label(b, fmt="%.3f", fontsize=8.5, padding=2)
+    ax.axhline(rnd, color=GRAY, ls="--", lw=1)
+    ax.text(0.5, rnd - 0.02, f"随机猜测\nPR-AUC\n≈{rnd:.3f}", fontsize=7.5, color="#555555", ha="center", va="top",
+            bbox=dict(fc="white", ec="none", pad=0.5))
+    ax.set_xticks(x, ["ROC-AUC", "PR-AUC"]); ax.set_ylim(0, 1.42); ax.set_yticks(np.arange(0, 1.01, 0.2))
+    ax.legend(fontsize=8, loc="upper center", frameon=False, ncol=1)
+    ax.set_title("(a) 同一份数据上的两种做法", fontsize=9.5)
+    ax = axes[1]
+    labs = {1: "警员到场", 2: "警员未到场", 3: "当事人\n自行报告"}
+    ks = [k for k in (1, 2, 3) if k in pol]
+    b = ax.bar(range(len(ks)), [pol[k] * 100 for k in ks], color=[ORANGE, GRAY, GRAY], width=0.6)
+    ax.bar_label(b, fmt="%.1f%%", fontsize=8.5, padding=2)
+    ax.set_xticks(range(len(ks)), [labs[k] for k in ks], fontsize=8.5)
+    ax.set_ylabel("死亡或重伤（KSI）事故占比（%）"); ax.set_ylim(0, 36)
+    ax.set_title("(b) 事后字段与标签的关联", fontsize=9.5)
+    return f
+
+
+
+# ---------------- 第 2 章 ----------------
+@fig("chapter02", "prompt_levels")
+def prompt_levels():
+    import re
+    txt = (OUT / "A_preface_leakage.txt").read_text(encoding="utf-8")
+    get = lambda key: tuple(map(float, re.search(re.escape(key) + r"\s+R2=([\d.]+)\s+MAE=([\d.]+)", txt).groups()))
+    rows = [("只说目标", get("AI initial: zeros kept + random + centered"), RED),
+            ("+ 数据说明\n（0 表示缺失）", get("random split + centered window"), RED),
+            ("+ 约束与验收标准\n（时间划分、只用过去数据）", get("time split + past window"), BLUE)]
+    base = get("persistence baseline (time split)")
+    f, axes = plt.subplots(1, 2, figsize=(8.2, 3.0))
+    for ax, j, lab in [(axes[0], 0, "$R^2$（越大越好）"), (axes[1], 1, "MAE，mph（越小越好）")]:
+        vals = [r[1][j] for r in rows]
+        b = ax.bar(range(3), vals, color=[r[2] for r in rows], width=0.6)
+        ax.bar_label(b, fmt="%.3f" if j == 0 else "%.2f", fontsize=8.5, padding=2)
+        ax.axhline(base[j], color=GRAY, ls="--", lw=1, label=f"持续性基准（{base[j]:.3f}）" if j == 0 else f"持续性基准（{base[j]:.2f}）")
+        ax.legend(fontsize=8, frameon=False, loc="upper right" if j == 0 else "upper left")
+        ax.set_xticks(range(3), [r[0] for r in rows], fontsize=8)
+        ax.set_title(lab, fontsize=9.5)
+        ax.set_ylim(0, (1.25 if j == 0 else 4.5))
+    return f
+
+
+# ---------------- 第 3 章 ----------------
+def _metr():
+    sys.path.insert(0, str(ROOT / "case_A_freeway"))
+    from common import load_speed
+    return load_speed(zero_as_missing=True)
+
+
+@fig("chapter03", "weekly_profile")
+def weekly_profile():
+    df = _metr()
+    net = df.mean(axis=1)                       # 每个时刻全网平均车速（跳过缺失）
+    d = net.to_frame("v")
+    d["tod"] = d.index.hour + d.index.minute / 60
+    d["date"] = d.index.normalize()
+    holidays = [pd.Timestamp("2012-05-28")]     # 阵亡将士纪念日
+    d["kind"] = np.where((d.index.dayofweek >= 5) | d["date"].isin(holidays), "周末与节假日", "工作日")
+    f, ax = plt.subplots(figsize=(7.4, 3.2))
+    for kind, c in [("工作日", BLUE), ("周末与节假日", ORANGE)]:
+        g = d[d.kind == kind].groupby("tod").v
+        q = g.quantile([0.1, 0.5, 0.9]).unstack()
+        ax.fill_between(q.index, q[0.1], q[0.9], color=c, alpha=0.18, lw=0)
+        ax.plot(q.index, q[0.5], color=c, lw=1.8, label=f"{kind}（中位数与 10%–90% 区间，{d[d.kind == kind].date.nunique()} 天）")
+    ax.set_xlim(0, 24); ax.set_xticks(range(0, 25, 3))
+    ax.set_xlabel("一天中的时刻"); ax.set_ylabel("全网平均车速（mph）")
+    ax.legend(fontsize=8, frameon=False, loc="lower left")
+    return f
+
+
+# ---------------- 第 4 章 ----------------
+def _metr_raw():
+    sys.path.insert(0, str(ROOT / "case_A_freeway"))
+    from common import load_speed
+    return load_speed(zero_as_missing=False)
+
+
+@fig("chapter04", "sensor_week")
+def sensor_week():
+    raw = _metr_raw()
+    allz = (raw == 0).all(axis=1)
+    sid, a, b = "717472", "2012-03-26", "2012-04-01 23:55"
+    x = raw.loc[a:b, sid]; az = allz.loc[a:b]
+    f, ax = plt.subplots(figsize=(8.2, 3.0))
+    ax.plot(x.index, x.where(x > 0), color=BLUE, lw=0.9, label="有效读数")
+    own = x[(x == 0) & ~az]
+    ax.scatter(own.index, own.values, s=8, color=RED, zorder=3, label=f"该检测器单独为 0（{len(own)} 个时刻）")
+    run = az.astype(int).diff().fillna(az.iloc[0]).ne(0).cumsum()
+    first = True
+    for _, g in az[az].groupby(run[az]):
+        ax.axvspan(g.index[0], g.index[-1] + pd.Timedelta("5min"), color=GRAY, alpha=0.3, lw=0,
+                   label=f"全部 207 个检测器同时为 0（{int(az.sum())} 个时刻）" if first else None)
+        first = False
+    ax.set_ylim(-3, 75); ax.set_ylabel("车速（mph）")
+    import matplotlib.dates as mdates
+    ax.xaxis.set_major_locator(mdates.DayLocator()); ax.xaxis.set_major_formatter(mdates.DateFormatter("%m-%d"))
+    ax.legend(fontsize=7.5, frameon=False, loc="upper left", ncol=3, bbox_to_anchor=(0, -0.1))
+    ax.set_title(f"检测器 {sid}，2012 年 3 月 26 日至 4 月 1 日", fontsize=9)
+    print("sensor_week own zeros", len(own), "network-zero ts", int(az.sum()))
+    return f
+
+
+@fig("chapter04", "aggregation")
+def aggregation():
+    w = _metr()
+    sid, day = "717472", "2012-03-28"
+    x = w.loc[day, sid]
+    h = x.resample("1h").mean()
+    f, ax = plt.subplots(figsize=(7.4, 3.0))
+    ax.plot(x.index, x, color=BLUE, lw=1.0, label="5 分钟")
+    ax.step(h.index, h, where="post", color=ORANGE, lw=1.6, label="1 小时平均")
+    ax.axhline(x.mean(), color=GRAY, ls="--", lw=1.2, label=f"全天平均（{x.mean():.1f} mph）")
+    import matplotlib.dates as mdates
+    ax.xaxis.set_major_formatter(mdates.DateFormatter("%H:%M"))
+    ax.set_ylabel("车速（mph）"); ax.set_ylim(0, 75)
+    ax.legend(fontsize=8, frameon=False, loc="lower left")
+    ax.set_title(f"检测器 {sid}，2012 年 3 月 28 日（星期三）", fontsize=9)
+    print("aggregation min5", round(x.min(), 1), "minhour", round(h.min(), 1), "daymean", round(x.mean(), 1))
+    return f
+
+
+@fig("chapter04", "label_thresholds")
+def label_thresholds():
+    w = _metr()
+    v = w.stack()
+    ref = w.quantile(0.85)                       # 各检测器的“畅通车速”：85% 分位数
+    rel = (w.div(ref, axis=1) < 0.6).where(w.notna()).stack()
+    items = [("车速 < 25 mph", (v < 25).mean()), ("车速 < 35 mph", (v < 35).mean()),
+             ("车速 < 45 mph", (v < 45).mean()), ("低于该检测器\n畅通车速的 60%", rel.mean())]
+    f, ax = plt.subplots(figsize=(6.4, 2.9))
+    b = ax.bar(range(4), [100 * x[1] for x in items], color=[BLUE, BLUE, BLUE, ORANGE], width=0.58)
+    ax.bar_label(b, fmt="%.1f%%", fontsize=8.5, padding=2)
+    ax.set_xticks(range(4), [x[0] for x in items], fontsize=8.5)
+    ax.set_ylabel("被标记为“拥堵”的记录占比（%）"); ax.set_ylim(0, max(100 * x[1] for x in items) * 1.25)
+    print("label_thresholds", [(k.replace(chr(10), ""), round(100 * x, 1)) for k, x in items])
+    return f
+
+
+@fig("chapter04", "speed_heatmap")
+def speed_heatmap():
+    w = _metr()
+    net = w.mean(axis=1)
+    t = net.groupby([net.index.dayofweek, net.index.hour]).mean().unstack()
+    f, ax = plt.subplots(figsize=(7.6, 2.6))
+    im = ax.imshow(t.values, aspect="auto", cmap="RdYlGn", vmin=t.values.min(), vmax=t.values.max())
+    ax.set_yticks(range(7), ["周一", "周二", "周三", "周四", "周五", "周六", "周日"], fontsize=8.5)
+    ax.set_xticks(range(0, 24, 2), [f"{h}" for h in range(0, 24, 2)], fontsize=8.5)
+    ax.set_xlabel("小时")
+    c = f.colorbar(im, ax=ax, pad=0.015); c.set_label("全网平均车速（mph）", fontsize=8.5)
+    return f
+
+
+# ---------------- 第 5 章 ----------------
+@fig("chapter05", "missing_matrix")
+def missing_matrix():
+    raw = _metr_raw()
+    z = (raw == 0)
+    daily = z.groupby(raw.index.normalize()).mean().T          # 检测器 x 日期
+    order = daily.mean(axis=1).sort_values().index
+    daily = daily.loc[order]
+    f, ax = plt.subplots(figsize=(8.2, 3.4))
+    im = ax.imshow(daily.values * 100, aspect="auto", cmap="Greys", vmin=0, vmax=100, interpolation="nearest")
+    ticks = [i for i, d in enumerate(daily.columns) if d.day == 1 or d.day == 15]
+    ax.set_xticks(ticks, [daily.columns[i].strftime("%m-%d") for i in ticks], fontsize=8)
+    ax.set_yticks([]); ax.set_ylabel("207 个检测器\n（按总体缺失率排序）", fontsize=8.5)
+    c = f.colorbar(im, ax=ax, pad=0.015); c.set_label("当日读数为 0 的比例（%）", fontsize=8.5)
+    full = (daily.mean(axis=0) > 0.1).sum()
+    print("missing_matrix days with >10% network zeros", int(full), "sensors >5% overall", int((z.mean() > 0.05).sum()))
+    return f
+
+
+@fig("chapter05", "gap_lengths")
+def gap_lengths():
+    raw = _metr_raw()
+    allz = (raw == 0).all(axis=1)
+    lens_own, lens_net = [], []
+    for sid in raw.columns:
+        zz = (raw[sid] == 0).values
+        own = zz & ~allz.values
+        for arr, out in [(own, lens_own)]:
+            r = np.diff(np.concatenate([[0], arr.astype(int), [0]]))
+            st, en = np.where(r == 1)[0], np.where(r == -1)[0]
+            out.extend(en - st)
+    r = np.diff(np.concatenate([[0], allz.values.astype(int), [0]]))
+    lens_net = np.where(r == -1)[0] - np.where(r == 1)[0]
+    lens_own = np.array(lens_own)
+    bins = [1, 2, 4, 7, 13, 37, 289, 10**6]
+    labs = ["1 步\n(5 分钟)", "2–3 步", "4–6 步", "7–12 步\n(≤1 小时)", "13–36 步\n(≤3 小时)", "37–288 步\n(≤1 天)", "> 1 天"]
+    h_own = np.histogram(lens_own, bins=bins)[0]
+    h_net = np.histogram(lens_net, bins=bins)[0]
+    f, ax = plt.subplots(figsize=(7.6, 3.0))
+    x = np.arange(len(labs)); w = 0.4
+    b1 = ax.bar(x - w / 2, h_own, w, color=BLUE, label=f"单个检测器的缺失段（共 {len(lens_own):,} 段）")
+    b2 = ax.bar(x + w / 2, h_net, w, color=GRAY, label=f"全网同时缺失的时段（共 {len(lens_net)} 段）")
+    ax.bar_label(b1, fontsize=7.5, padding=1); ax.bar_label(b2, fontsize=7.5, padding=1)
+    ax.set_yscale("log"); ax.set_ylim(0.8, h_own.max() * 4)
+    ax.set_xticks(x, labs, fontsize=8); ax.set_ylabel("缺失段数（对数刻度）")
+    ax.legend(fontsize=8, frameon=False)
+    print("gap_lengths own", len(lens_own), "share<=3 steps", round((lens_own <= 3).mean() * 100, 1),
+          "share>12", round((lens_own > 12).mean() * 100, 1), "net segments", len(lens_net), list(h_own), list(h_net))
+    return f
+
+
+@fig("chapter05", "imputation")
+def imputation():
+    w = _metr()
+    sid = "717472"
+    x = w[sid]
+    day = "2012-03-28"
+    a, b = pd.Timestamp(f"{day} 08:00"), pd.Timestamp(f"{day} 08:55")      # 人为挖去一小时（早高峰拥堵段）
+    truth = x.loc[a:b]
+    masked = x.copy(); masked.loc[a:b] = np.nan
+    lin = masked.interpolate(limit_area="inside").loc[a:b]
+    ffill = masked.ffill().loc[a:b]
+    hist = x[(x.index.dayofweek == 2) & (x.index < "2012-03-28")]
+    hist = hist.groupby(hist.index.time).mean()
+    hm = pd.Series([hist.get(t.time(), np.nan) for t in truth.index], index=truth.index)
+    show = x.loc[f"{day} 06:00":f"{day} 11:00"]
+    f, ax = plt.subplots(figsize=(7.6, 3.1))
+    ax.axvspan(a, b + pd.Timedelta("5min"), color=GRAY, alpha=0.15, lw=0)
+    ax.plot(show.index, show, color="black", lw=1.2, label="真实读数（灰色区间被人为挖去）")
+    res = {}
+    for s_, lab, c, ls in [(lin, "线性插值", BLUE, "-"), (ffill, "前向填充", ORANGE, "--"), (hm, "此前各周三同一时刻的均值", GREEN, "-.")]:
+        mae = (s_ - truth).abs().mean(); res[lab] = round(mae, 1)
+        ax.plot(s_.index, s_, color=c, lw=1.8, ls=ls, label=f"{lab}（MAE {mae:.1f} mph）")
+    import matplotlib.dates as mdates
+    ax.xaxis.set_major_formatter(mdates.DateFormatter("%H:%M"))
+    ax.set_ylabel("车速（mph）"); ax.set_ylim(0, 80)
+    ax.legend(fontsize=7.8, frameon=False, loc="lower left")
+    ax.set_title(f"检测器 {sid}，2012 年 3 月 28 日早高峰", fontsize=9)
+    print("imputation MAE", res)
+    return f
+
+
+@fig("chapter05", "hourly_box")
+def hourly_box():
+    w = _metr()
+    sid = "717472"
+    x = w[sid].dropna()
+    x = x[x.index.dayofweek < 5]
+    q1, q3 = x.quantile([0.25, 0.75])
+    lo = q1 - 1.5 * (q3 - q1)                      # 箱线图规则，按全部数据统一计算
+    data = [x[x.index.hour == h].values for h in range(24)]
+    f, ax = plt.subplots(figsize=(7.8, 3.1))
+    ax.boxplot(data, positions=range(24), widths=0.6, showfliers=True, flierprops=dict(markersize=1.5, alpha=0.4),
+               medianprops=dict(color=ORANGE), patch_artist=True, boxprops=dict(facecolor="#dfe6f1", edgecolor=BLUE))
+    ax.axhline(lo, color=RED, ls="--", lw=1.2, label=f"全局阈值：$Q_1 - 1.5\\,\\mathrm{{IQR}}$（{lo:.1f} mph）")
+    flagged = x[x < lo]
+    peak = flagged.index.hour.isin(list(range(6, 10)) + list(range(15, 20))).mean()
+    ax.set_xticks(range(0, 24, 2), [str(h) for h in range(0, 24, 2)])
+    ax.set_xlabel("小时（工作日）"); ax.set_ylabel("车速（mph）")
+    ax.legend(fontsize=8, frameon=False, loc="lower left")
+    ax.set_title(f"检测器 {sid}：被全局阈值判为“异常”的 {len(flagged)} 条记录中，{peak * 100:.0f}% 位于早晚高峰", fontsize=9)
+    print("hourly_box lo", round(lo, 1), "flagged", len(flagged), "peak share", round(peak * 100, 1))
+    return f
+
+
+# ---------------- 第 6 章 ----------------
+@fig("chapter06", "acf")
+def acf():
+    w = _metr()
+    lags = np.arange(0, 2 * 288 + 1)
+    vals = []
+    for sid in w.columns:
+        x = w[sid]
+        x = x - x.mean()
+        v0 = (x * x).mean()
+        vals.append([(x * x.shift(k)).mean() / v0 for k in lags])
+    r = np.nanmedian(np.array(vals), axis=0)
+    f, ax = plt.subplots(figsize=(7.6, 2.9))
+    ax.plot(lags * 5 / 60, r, color=BLUE, lw=1.4)
+    ax.axhline(0, color=GRAY, lw=0.8)
+    for k, lab in [(1, "5 分钟"), (12, "1 小时"), (288, "1 天")]:
+        ax.plot(k * 5 / 60, r[k], "o", color=ORANGE, ms=4)
+        ax.annotate(f"{lab}：{r[k]:.2f}", (k * 5 / 60, r[k]), xytext=(6, 6), textcoords="offset points", fontsize=8)
+    ax.set_xlabel("滞后（小时）"); ax.set_ylabel("自相关系数（207 个检测器的中位数）")
+    ax.set_xticks(range(0, 49, 6)); ax.set_xlim(0, 48)
+    print("acf", {k: round(float(r[k]), 3) for k in (1, 3, 12, 144, 288)})
+    return f
+
+
+@fig("chapter06", "cyclic_encoding")
+def cyclic_encoding():
+    h = np.arange(24)
+    f, axes = plt.subplots(1, 2, figsize=(7.6, 3.2), gridspec_kw={"width_ratios": [1.5, 1]})
+    ax = axes[0]
+    ax.scatter(h, np.zeros(24), c=h, cmap="twilight", s=30, zorder=3)
+    for k in (0, 6, 12, 18, 23):
+        ax.annotate(f"{k}", (k, 0), xytext=(0, 8), textcoords="offset points", ha="center", fontsize=8)
+    ax.annotate("", xy=(23, -0.25), xytext=(0, -0.25), arrowprops=dict(arrowstyle="<->", color=RED))
+    ax.text(11.5, -0.42, "数值上 0 与 23 相距最远", ha="center", fontsize=8.5, color=RED)
+    ax.set_ylim(-0.6, 0.5); ax.set_yticks([]); ax.set_xlabel("小时 $h$ 作为普通数值")
+    ax.spines["left"].set_visible(False)
+    ax = axes[1]
+    th = 2 * np.pi * h / 24
+    ax.scatter(np.sin(th), np.cos(th), c=h, cmap="twilight", s=30, zorder=3)
+    for k in (0, 6, 12, 18, 23):
+        ax.annotate(f"{k}", (np.sin(th[k]), np.cos(th[k])), xytext=(7 * np.sin(th[k]), 7 * np.cos(th[k])),
+                    textcoords="offset points", ha="center", va="center", fontsize=8)
+    ax.plot([np.sin(th[23]), np.sin(th[0])], [np.cos(th[23]), np.cos(th[0])], color=GREEN, lw=2)
+    ax.set_aspect("equal"); ax.set_xlim(-1.35, 1.35); ax.set_ylim(-1.35, 1.35)
+    ax.set_xlabel(r"$\sin(2\pi h/24)$"); ax.set_ylabel(r"$\cos(2\pi h/24)$")
+    ax.set_title("编码后 0 与 23 相邻", fontsize=8.5, color=GREEN)
+    return f
+
+
+@fig("chapter06", "rf_importance")
+def rf_importance():
+    import re
+    txt = (OUT / "B_ch08_logit_forest.txt").read_text(encoding="utf-8")
+    block = txt.split("随机森林置换重要性 Top10：")[1].split("\n\n")[0]
+    rows = re.findall(r"^\s*(\S+)\s+([\d.]+)$", block, flags=re.M)
+    names = {"inv_motorcycle": "涉及摩托车", "inv_pedestrian": "涉及行人", "speed_per10": "限速（每 10 mph）",
+             "area_rural": "农村道路", "inv_pedal_cycle": "涉及自行车", "night": "夜间",
+             "road_roundabout": "环岛", "road_dual_cw": "双幅路", "junction_junction": "交叉口",
+             "light_dark_lit": "黑暗但有路灯"}
+    rows = rows[::-1]
+    f, ax = plt.subplots(figsize=(6.6, 3.2))
+    vals = [float(v) for _, v in rows]
+    ax.barh(range(len(rows)), vals, color=[ORANGE if k.startswith("inv_") else BLUE for k, _ in rows], height=0.6)
+    for i, v in enumerate(vals):
+        ax.text(v + 0.001, i, f"{v:.4f}", va="center", fontsize=8)
+    ax.set_yticks(range(len(rows)), [names.get(k, k) for k, _ in rows], fontsize=8.5)
+    ax.set_xlabel("置换重要性（打乱该特征后 PR-AUC 的下降）")
+    ax.set_xlim(0, max(vals) * 1.22)
+    ax.set_title("橙色：由车辆表与伤亡人员表汇总的“涉事方”特征", fontsize=8.5)
+    return f
+
+
+@fig("chapter06", "interaction")
+def interaction():
+    txt = (OUT / "B_ch08_logit_forest.txt").read_text(encoding="utf-8")
+    block = txt.split("限速 x 光照 KSI 占比：")[1].strip().splitlines()
+    rows = []
+    for l in block[2:]:
+        parts = l.split()
+        if len(parts) != 3:
+            break
+        rows.append(parts)
+    sp = [float(r[0]) for r in rows]; dark = [float(r[1]) for r in rows]; day = [float(r[2]) for r in rows]
+    f, ax = plt.subplots(figsize=(6.4, 3.0))
+    ax.plot(sp, [100 * d for d in day], "o-", color=BLUE, label="白天")
+    ax.plot(sp, [100 * d for d in dark], "s-", color=ORANGE, label="黑暗且无路灯")
+    for x_, a_, b_ in zip(sp, day, dark):
+        ax.annotate(f"{100 * (b_ - a_):+.1f}", (x_, 100 * b_), xytext=(0, 7), textcoords="offset points", ha="center", fontsize=7.5, color=ORANGE)
+    ax.set_xlabel("限速（mph）"); ax.set_ylabel("KSI 事故占比（%）"); ax.set_xticks(sp)
+    ax.legend(fontsize=8, frameon=False, loc="lower right")
+    ax.set_ylim(15, 43)
+    ax.set_title("橙色数字：同一限速下，黑暗无路灯比白天高出的百分点", fontsize=8.5, pad=10)
+    return f
+
+
+# ---------------- 第 11 章 ----------------
+@fig("chapter11", "nhtsa_eval")
+def nhtsa_eval():
+    import re
+    txt = (OUT / "ch11_nhtsa_eval.txt").read_text(encoding="utf-8")
+    llm_acc = float(re.search(r"准确率=([\d.]+) 宏平均F1", txt).group(1))
+    base = [(int(n.replace(",", "")), float(a)) for n, a in re.findall(r"训练样本\s+([\d,]+)：准确率=([\d.]+)", txt)]
+    blk = txt.split("混淆矩阵（行=NHTSA 部件字段，列=LLM）：")[1].split("\n\n")[0].strip().splitlines()
+    classes = ["AIR BAGS", "ELECTRICAL SYSTEM", "ENGINE", "POWER TRAIN", "SEAT BELTS", "SERVICE BRAKES", "STEERING", "STRUCTURE"]
+    M = np.array([[int(v) for v in l.split()[-8:]] for l in blk[1:]])     # 每行最后 8 个数为计数
+    zh = ["安全气囊", "电气系统", "发动机", "动力传动", "安全带", "制动系统", "转向", "车身结构"]
+    f, axes = plt.subplots(1, 2, figsize=(8.6, 3.6), gridspec_kw={"width_ratios": [1, 1.25]})
+    ax = axes[0]
+    xs = [b[0] for b in base]
+    ax.plot(xs, [b[1] for b in base], "o-", color=BLUE, label="TF-IDF + 逻辑回归")
+    for x_, y_ in base:
+        ax.annotate(f"{y_:.3f}", (x_, y_), xytext=(0, -13), textcoords="offset points", ha="center", fontsize=8)
+    ax.axhline(llm_acc, color=ORANGE, ls="--", lw=1.4, label=f"大语言模型（无训练样本）：{llm_acc:.3f}")
+    ax.set_xscale("log"); ax.set_xticks(xs, [f"{x:,}" for x in xs])
+    ax.set_xlabel("基线的训练样本数（对数刻度）"); ax.set_ylabel("评价集准确率"); ax.set_ylim(0.7, 0.96)
+    ax.legend(fontsize=7.8, frameon=False, loc="lower right")
+    ax.set_title("(a) 与低成本基线比较", fontsize=9)
+    ax = axes[1]
+    ax.imshow(M, cmap="Blues", vmin=0, vmax=20)
+    for i in range(8):
+        for j in range(8):
+            if M[i, j]:
+                ax.text(j, i, M[i, j], ha="center", va="center", fontsize=7.5, color="white" if M[i, j] > 12 else "black")
+    ax.set_xticks(range(8), zh, rotation=45, ha="right", fontsize=7.5); ax.set_yticks(range(8), zh, fontsize=7.5)
+    ax.set_xlabel("大语言模型的分类", fontsize=8.5); ax.set_ylabel("参照标签（NHTSA 部件字段）", fontsize=8.5)
+    ax.set_title("(b) 大语言模型的混淆矩阵（160 条）", fontsize=9)
+    return f
+
+
+# ---------------- 第 13 章 ----------------
+def _report_rows(name):
+    """从案例 A 的运行日志中读取最后一张 report() 输出的 MAE 表。"""
+    lines = (OUT / name).read_text(encoding="utf-8").splitlines()
+    tables, cur = [], None
+    for l in lines:
+        parts = l.split()
+        if parts[:1] == ["method"]:
+            cur = {}; tables.append(cur); continue
+        if cur is not None and len(parts) >= 7:
+            try:
+                vals = list(map(float, parts[-6:]))
+            except ValueError:
+                cur = None; continue
+            cur[" ".join(parts[:-6])] = dict(zip(["MAE", "RMSE", "AM_peak", "PM_peak", "other", "onset"], vals))
+        else:
+            cur = None
+    return tables[-1]
+
+
+@fig("chapter13", "method_compare")
+def method_compare():
+    a = _report_rows("A_ch07_baselines_ridge.txt")
+    b = _report_rows("A_ch09_mlp_lstm.txt")
+    g = _report_rows("A_ch09_graph_neighbors.txt")
+    methods = [("持续性基准", a["persist"], GRAY), ("历史同时段均值", a["hist"], "#B0B0B0"), ("岭回归", a["ridge"], BLUE),
+               ("前馈网络", b["mlp_s0"], GREEN), ("LSTM", b["lstm"], ORANGE), ("前馈网络 + 路网下游邻居", g["own+road_downstream_nb"], RED)]
+    groups = [("MAE", "总体"), ("AM_peak", "早高峰"), ("PM_peak", "晚高峰"), ("other", "其他时段")]
+    f, axes = plt.subplots(1, 2, figsize=(8.6, 3.3), gridspec_kw={"width_ratios": [2.2, 1]})
+    ax = axes[0]; w = 0.13
+    for k, (lab, d, c) in enumerate(methods):
+        ax.bar(np.arange(4) + (k - 2.5) * w, [d[g_] for g_, _ in groups], w, color=c, label=lab)
+    ax.set_xticks(range(4), [x[1] for x in groups]); ax.set_ylabel("测试集 MAE（mph）")
+    ax.set_ylim(0, 9.5); ax.legend(fontsize=7.2, frameon=False, ncol=2, loc="upper left")
+    ax.set_title("(a) 总体与各时段", fontsize=9)
+    ax = axes[1]
+    vals = [d["onset"] for _, d, _ in methods]
+    bb = ax.bar(range(len(methods)), vals, color=[c for *_, c in methods], width=0.65)
+    ax.bar_label(bb, fmt="%.1f", fontsize=7.5, padding=1)
+    ax.set_xticks([]); ax.set_ylim(0, 40)
+    ax.set_title("(b) 拥堵形成阶段", fontsize=9)
+    return f
+
+
+def _persist_test():
+    sys.path.insert(0, str(ROOT / "case_A_freeway"))
+    from common import load_speed, to_long, split, H, onset_mask
+    df = to_long(load_speed())
+    g = df.groupby("sensor")["speed"]
+    df["target"] = g.shift(-H)
+    for k in range(1, 6):
+        df[f"lag{k}"] = g.shift(k)
+    _, _, te = split(df)
+    te = te.dropna(subset=["speed", "target"] + [f"lag{k}" for k in range(1, 6)])
+    te["onset"] = onset_mask(te["speed"].to_numpy(), te["target"].to_numpy())
+    return te
+
+
+@fig("chapter13", "persist_scatter")
+def persist_scatter():
+    te = _persist_test()
+    err = (te["target"] - te["speed"]).abs()
+    f, axes = plt.subplots(1, 2, figsize=(8.6, 3.4), gridspec_kw={"width_ratios": [1, 1.35]})
+    ax = axes[0]
+    hb = ax.hexbin(te["speed"], te["target"], gridsize=45, bins="log", cmap="Blues", mincnt=1, extent=(0, 75, 0, 75))
+    ax.plot([0, 75], [0, 75], color=GRAY, lw=1)
+    ax.add_patch(Rectangle((50, 0), 25, 35, fill=False, ec=RED, lw=1.5, ls="--"))
+    ax.text(51, 2, "拥堵形成\n阶段", color=RED, fontsize=7.5)
+    ax.set_xlabel("当前车速 = 持续性基准的预测（mph）", fontsize=8.5); ax.set_ylabel("15 分钟后的实际车速（mph）", fontsize=8.5)
+    ax.set_aspect("equal")
+    ax.set_title(f"(a) 预测与实际（测试集 {len(te):,} 个样本）", fontsize=9)
+    ax = axes[1]
+    te = te.assign(err=err, hour=te.timestamp.dt.hour, wd=te.timestamp.dt.dayofweek < 5)
+    for flag, lab, c in [(True, "工作日", BLUE), (False, "周末", ORANGE)]:
+        h = te[te.wd == flag].groupby("hour").err.mean()
+        ax.plot(h.index, h.values, "o-", ms=3, color=c, label=lab)
+    ax.axhline(err.mean(), color=GRAY, ls="--", lw=1, label=f"总体 MAE {err.mean():.2f}")
+    ax.set_xticks(range(0, 24, 3)); ax.set_xlabel("小时"); ax.set_ylabel("MAE（mph）")
+    ax.legend(fontsize=8, frameon=False)
+    ax.set_title("(b) 误差的日内分布", fontsize=9)
+    print("persist_scatter n", len(te), "mae", round(err.mean(), 3), "onset", int(te.onset.sum()))
+    return f
+
+
+# ---------------- 第 16 章 ----------------
+@fig("chapter16", "station_profiles")
+def station_profiles():
+    d = pd.read_parquet(ROOT / "data" / "mta_clean.parquet")
+    d = d[d.ts.dt.dayofweek < 5]
+    d = d.assign(hour=d.ts.dt.hour)
+    sts = [("Grand Central-42 St", "Grand Central-42 St（通勤枢纽）", BLUE),
+           ("Flushing-Main St", "Flushing-Main St（居住区）", GREEN),
+           ("161 St-Yankee Stadium", "161 St-Yankee Stadium（球场）", ORANGE)]
+    f, ax = plt.subplots(figsize=(7.4, 3.0))
+    for st, lab, c in sts:
+        x = d[d.station == st].groupby("hour").entries.mean()
+        ax.plot(x.index, 100 * x / x.sum(), "o-", ms=3, color=c, label=lab)
+    ax.set_xticks(range(0, 24, 3)); ax.set_xlabel("小时（工作日）")
+    ax.set_ylabel("占全天进站量的比例（%）")
+    ax.legend(fontsize=8, frameon=False)
+    return f
+
+
+@fig("chapter16", "coverage")
+def coverage():
+    import re
+    t3 = (OUT / "C_step3_models.txt").read_text(encoding="utf-8")
+    t4 = (OUT / "C_step4_validate.txt").read_text(encoding="utf-8")
+    overall = float(re.search(r"80% 预测区间实际覆盖率：([\d.]+)", t3).group(1))
+    by_type = eval(re.search(r"80% 预测区间实际覆盖率：[\d.]+；按日期类型： (\{.*\})", t3).group(1))
+    by_st = eval(re.search(r"80% 区间覆盖率按车站： (\{.*\})", t4).group(1))
+    rel = {}
+    blk = t4.split("按车站：")[1].split("\n\n")[0].strip().splitlines()[2:]
+    for l in blk:
+        parts = l.split()
+        rel[" ".join(parts[:-4])] = float(parts[-1])
+    f, axes = plt.subplots(1, 2, figsize=(8.6, 3.3), gridspec_kw={"width_ratios": [1, 1.6]})
+    ax = axes[0]
+    names = {"regular_weekday": "常规工作日", "weekend": "周末", "holiday±1": "节假日前后", "game_day": "比赛日"}
+    ks = ["regular_weekday", "weekend", "holiday±1", "game_day"]
+    b = ax.bar(range(4), [100 * by_type[k] for k in ks], color=[BLUE, BLUE, ORANGE, ORANGE], width=0.6)
+    ax.bar_label(b, fmt="%.1f", fontsize=8, padding=1)
+    ax.axhline(80, color=RED, ls="--", lw=1.2, label="名义覆盖率 80%")
+    ax.axhline(100 * overall, color=GRAY, ls=":", lw=1.2, label=f"总体 {100 * overall:.1f}%")
+    ax.set_xticks(range(4), [names[k] for k in ks], fontsize=8); ax.set_ylim(50, 92)
+    ax.set_ylabel("实际覆盖率（%）"); ax.legend(fontsize=7.5, frameon=False, loc="upper center", ncol=2, bbox_to_anchor=(0.5, 1.0))
+    ax.set_title("(a) 80% 预测区间的实际覆盖率", fontsize=9)
+    ax = axes[1]
+    order = sorted(rel, key=rel.get)
+    ax.barh(range(len(order)), [100 * rel[k] for k in order], color=[ORANGE if ("Stadium" in k or "Willets" in k) else BLUE for k in order], height=0.6)
+    for i, k in enumerate(order):
+        ax.text(100 * rel[k] + 0.6, i, f"{100 * rel[k]:.0f}%  （覆盖率 {100 * by_st[k]:.1f}%）", va="center", fontsize=7.5)
+    ax.set_yticks(range(len(order)), order, fontsize=7.5); ax.set_xlim(0, 80)
+    ax.set_xlabel("相对误差：MAE / 平均进站量（%）")
+    ax.set_title("(b) 各车站的相对误差（橙色为球场车站）", fontsize=9)
+    return f
+
+
+# ---------------- 第 17 章 ----------------
+@fig("chapter17", "error_pairs")
+def error_pairs():
+    import re
+    t = (OUT / "B_ch17_error_audit.txt").read_text(encoding="utf-8")
+    t1 = (OUT / "B_ch01_default_vs_audit.txt").read_text(encoding="utf-8")
+    d_auc = float(re.search(r"\[默认做法\].*?ROC-AUC=([\d.]+)", t1).group(1))
+    pre = float(re.search(r"事前字段\s+ROC-AUC=([\d.]+)", t).group(1))
+    post = float(re.search(r"事前 \+ 事后字段\s+ROC-AUC=([\d.]+)", t).group(1))
+    num = float(re.search(r"数值编码： ROC-AUC=([\d.]+)", t).group(1))
+    oh = float(re.search(r"独热编码： ROC-AUC=([\d.]+)", t).group(1))
+    rs = float(re.search(r"随机划分： ROC-AUC=([\d.]+)", t).group(1))
+    gs = float(re.search(r"按事故分组： ROC-AUC=([\d.]+)", t).group(1))
+    cal = re.findall(r"injury_based=(\d): 预测 ([\d.]+) vs 实际 ([\d.]+)", t)
+    pairs = [("错误一：标签派生字段入模", d_auc, pre), ("错误二：事后字段入模", post, pre),
+             ("错误三：车辆级记录随机划分", rs, gs), ("错误六：类别编码当作连续数值", num, oh)]
+    f, axes = plt.subplots(1, 2, figsize=(8.8, 3.1), gridspec_kw={"width_ratios": [1.6, 1]})
+    ax = axes[0]
+    for i, (lab, wv, cv) in enumerate(pairs[::-1]):
+        ax.plot([cv, wv], [i, i], color=GRAY, lw=1.5, zorder=1)
+        ax.scatter([wv], [i], color=RED, s=36, zorder=2, label="错误做法" if i == 0 else None)
+        ax.scatter([cv], [i], color=BLUE, s=36, zorder=2, label="修正后" if i == 0 else None)
+        ax.text(max(wv, cv) + 0.008, i, f"{wv:.3f} → {cv:.3f}", va="center", fontsize=7.8)
+    ax.set_yticks(range(4), [p[0] for p in pairs[::-1]], fontsize=8)
+    ax.set_xlim(0.6, 1.12); ax.set_xlabel("ROC-AUC")
+    ax.legend(fontsize=8, frameon=False, loc="lower right")
+    ax.set_title("(a) 错误对指标的影响：方向并不总是“变高”", fontsize=9)
+    ax = axes[1]
+    labs = {"0": "警员现场判断", "1": "基于伤情的系统"}
+    x = np.arange(len(cal)); w = 0.35
+    b1 = ax.bar(x - w / 2, [100 * float(c[1]) for c in cal], w, color=GRAY, label="模型平均预测")
+    b2 = ax.bar(x + w / 2, [100 * float(c[2]) for c in cal], w, color=ORANGE, label="实际 KSI 占比")
+    ax.bar_label(b1, fmt="%.1f", fontsize=7.5, padding=1); ax.bar_label(b2, fmt="%.1f", fontsize=7.5, padding=1)
+    ax.set_xticks(x, [labs[c[0]] for c in cal], fontsize=8); ax.set_ylim(0, 34)
+    ax.set_ylabel("%"); ax.legend(fontsize=7.5, frameon=False, loc="upper left")
+    ax.set_title("(b) 2025 年测试集：按报告系统的校准", fontsize=9)
+    return f
+
 if __name__ == "__main__":
     names = sys.argv[1:] or list(FIGS)
     for n in names:

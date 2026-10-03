@@ -1,0 +1,17 @@
+\begin{tikzpicture}[lvl/.style={hbox, minimum width=20mm, minimum height=9mm, font=\small\bfseries},
+  use/.style={font=\footnotesize, text width=30mm, align=flush center},
+  dec/.style={abox, font=\footnotesize, text width=30mm, minimum height=10mm}]
+\draw[-Stealth, thick, black!60] (-0.2,0) -- (14.2,0);
+\node[tag] at (7.1,-2.35) {从左到右：时间粒度变粗，所支持决策的提前量变长};
+\foreach \x/\l/\u/\d in {1.7/5 分钟/实时信号控制、\\突发事件检测/动态发车、\\现场临时调度,
+                         5.3/小时/日内需求预测、\\人员与车辆调度/前一天制定\\发班或排班计划,
+                         8.9/日/趋势分析、\\政策效果评估/月度运力或\\库存配置,
+                         12.5/周、月/中长期规划、\\季节性研究/设施规划、\\年度预算}
+{
+  \node[lvl] (l) at (\x,0) {\l};
+  \node[use, above=2mm of l] {\u};
+  \node[dec, below=3mm of l] {\d};
+}
+\node[tag, anchor=east] at (-0.3,-1.3) {支持的\\决策};
+\node[tag, anchor=east] at (-0.3,1.05) {典型\\用途};
+\end{tikzpicture}

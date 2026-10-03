@@ -1,0 +1,10 @@
+\begin{tikzpicture}[node distance=5mm]
+\node[hbox, text width=30mm, minimum height=22mm] (said) {\textbf{Prompt 中说清楚的}\\\footnotesize 数据是什么\\要做什么分析};
+\node[rbox, text width=30mm, minimum height=22mm, below=3mm of said, dashed] (gap) {\textbf{没有说的}\\\footnotesize 0 是什么意思？\\如何划分数据？\\用什么指标？};
+\node[abox, text width=38mm, minimum height=22mm, right=14mm of gap] (fill) {\textbf{训练数据中最常见的假设}\\\footnotesize 0 就是车辆停止\\随机划分 8:2\\均方误差最小就是最好};
+\node[pbox, text width=34mm, minimum height=50mm, right=14mm of fill.east |- said.north, anchor=north west] (res)
+  {\textbf{AI 的输出}\\[4pt]\footnotesize 代码能运行\\指标很漂亮\\解释很流畅\\[6pt]\textcolor{red!60!black}{但回答的可能是\\另一个问题}};
+\draw[flow] (gap) -- node[tag, above]{自动补齐} (fill);
+\draw[flow] (said.east) -- (res.west |- said.east);
+\draw[flow] (fill.east) -- (res.west |- fill.east);
+\end{tikzpicture}

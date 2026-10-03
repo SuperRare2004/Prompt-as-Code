@@ -1,0 +1,25 @@
+\begin{tikzpicture}[q/.style={hbox, font=\footnotesize, text width=27mm, minimum height=10mm},
+  a/.style={gbox, font=\footnotesize, text width=19mm, minimum height=9mm},
+  lab/.style={font=\scriptsize, text=black!70, fill=white, inner sep=1pt}]
+\node[q] (q0) at (0,0) {行动是否会改变\\未来的状态？};
+\node[a] (rl) at (5.2,0) {强化学习\\序列决策};
+\node[q] (qc) at (0,-1.7) {问题是“如果采取\\干预会怎样”？};
+\node[a] (ci) at (5.2,-1.7) {因果推断};
+\node[q] (q1) at (0,-3.4) {是否有可靠的\\标签？};
+\node[q] (q2) at (-3.6,-5.2) {标签是连续值\\还是类别？};
+\node[q] (q3) at (3.6,-5.2) {想发现什么？};
+\node[a] (reg) at (-5.3,-7.0) {回归};
+\node[a] (cls) at (-1.9,-7.0) {分类};
+\node[a] (clu) at (1.4,-7.0) {聚类\\\scriptsize 自然分组};
+\node[a] (ano) at (3.7,-7.0) {异常检测\\\scriptsize 偏离正常};
+\node[a] (dim) at (6.0,-7.0) {降维\\\scriptsize 主要变化模式};
+\draw[flow] (q0) -- node[lab, above]{是} (rl);
+\draw[flow] (q0) -- node[lab, right]{否} (qc);
+\draw[flow] (qc) -- node[lab, above]{是} (ci);
+\draw[flow] (qc) -- node[lab, right]{否} (q1);
+\draw[flow] (q1) -| node[lab, above, pos=0.25]{有：监督学习} (q2);
+\draw[flow] (q1) -| node[lab, above, pos=0.25]{没有：无监督学习} (q3);
+\draw[flow] (q2) -- node[lab]{连续} (reg);
+\draw[flow] (q2) -- node[lab]{类别} (cls);
+\draw[flow] (q3) -- (clu); \draw[flow] (q3) -- (ano); \draw[flow] (q3) -- (dim);
+\end{tikzpicture}

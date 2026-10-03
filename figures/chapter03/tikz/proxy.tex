@@ -1,0 +1,11 @@
+\begin{tikzpicture}[node distance=6mm and 12mm]
+\node[hbox, text width=30mm] (goal) {\textbf{真实目标}\\\footnotesize 乘客出行体验\\（难以直接测量）};
+\node[abox, text width=30mm, below=16mm of goal] (proxy) {\textbf{代理指标}\\\footnotesize 准点率\\（容易测量、被优化）};
+\node[gbox, text width=34mm, left=16mm of $(goal)!0.5!(proxy)$] (good) {\textbf{手段 A}\\\footnotesize 改善运营效率、\\调整时刻表};
+\node[rbox, text width=34mm, right=16mm of $(goal)!0.5!(proxy)$] (bad) {\textbf{手段 B}\\\footnotesize 取消晚点班次};
+\draw[flow, green!45!black] (good) -- node[tag, above, sloped]{提升} (goal);
+\draw[flow, green!45!black] (good) -- node[tag, below, sloped]{提升} (proxy);
+\draw[flow, red!55!black] (bad) -- node[tag, below, sloped]{提升} (proxy);
+\draw[flow, red!55!black, dashed] (bad) -- node[tag, above, sloped]{损害} (goal);
+\draw[backflow] (proxy) -- node[tag, right]{假设：两者同向变化} (goal);
+\end{tikzpicture}

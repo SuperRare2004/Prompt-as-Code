@@ -1,0 +1,14 @@
+\begin{tikzpicture}[node distance=6mm and 10mm]
+\node[hbox, text width=24mm] (u) {\textbf{使用者}\\\footnotesize 提出任务};
+\node[pbox, text width=30mm, right=of u] (sys) {\textbf{系统提示}\\\footnotesize 角色、权限、格式、\\安全边界};
+\node[abox, text width=30mm, right=of sys] (m) {\textbf{大语言模型}\\\footnotesize 读上下文，生成下一步\\计划或工具调用};
+\node[pbox, text width=30mm, below=14mm of m] (t) {\textbf{外部工具}\\\footnotesize 读文件、运行代码、\\查询数据库、调用 API};
+\node[gbox, text width=30mm, below=14mm of sys] (r) {\textbf{工具结果}\\\footnotesize 加入上下文};
+\node[hbox, text width=24mm, below=14mm of u] (h) {\textbf{人工确认}\\\footnotesize 高风险操作、\\停止条件触发};
+\draw[flow] (u) -- (sys); \draw[flow] (sys) -- (m);
+\draw[flow] (m) -- node[tag, right]{执行} (t);
+\draw[flow] (t) -- (r);
+\draw[flow] (r) -- node[tag, right, pos=0.4]{下一轮} (m);
+\draw[backflow] (r) -- (h);
+\node[tag, above=1mm of m] {ReAct：推理与行动交替进行};
+\end{tikzpicture}

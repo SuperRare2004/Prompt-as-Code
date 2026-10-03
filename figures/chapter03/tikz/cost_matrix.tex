@@ -1,0 +1,9 @@
+\begin{tikzpicture}[c/.style={minimum width=40mm, minimum height=17mm, draw=black!55, align=flush center, font=\footnotesize}]
+\node[c, fill=green!9]   (tp) at (0,0)      {\textbf{正确报警}\\发现真实隐患，及时处置};
+\node[c, fill=yellow!16] (fp) at (4.0,0)    {\textbf{误报}\\正常桥梁被判为危险\\代价：一次额外检查};
+\node[c, fill=red!14]    (fn) at (0,-1.7)   {\textbf{漏报}\\危险桥梁被判为安全\\\textcolor{red!60!black}{\textbf{可能导致灾难性事故}}};
+\node[c, fill=green!9]   (tn) at (4.0,-1.7) {\textbf{正确放行}\\无需额外处置};
+\node[tag, above=1mm of tp] {实际：存在隐患}; \node[tag, above=1mm of fp] {实际：结构正常};
+\node[tag, anchor=east] at (-2.1,0) {预测：\\危险}; \node[tag, anchor=east] at (-2.1,-1.7) {预测：\\安全};
+\node[tag, anchor=west, text width=40mm, align=left] at (6.3,-0.85) {两类错误的代价相差几个数量级：\\评价时应赋予召回率更高的权重，\\而不是追求总体准确率};
+\end{tikzpicture}

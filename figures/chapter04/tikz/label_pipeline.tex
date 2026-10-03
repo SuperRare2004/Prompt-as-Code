@@ -1,0 +1,14 @@
+\begin{tikzpicture}[st/.style={pbox, text width=22mm, minimum height=13mm, font=\footnotesize},
+  loss/.style={rbox, text width=24mm, font=\scriptsize, minimum height=8mm}]
+\node[st, fill=blue!8]  (s1) at (0,0)    {真实事件发生};
+\node[st]               (s2) at (2.95,0) {是否被观测\\或报告};
+\node[st]               (s3) at (5.9,0)  {由谁判断\\严重程度};
+\node[st]               (s4) at (8.85,0) {按什么口径\\编码};
+\node[st, fill=green!8] (s5) at (11.8,0) {标签进入\\数据集};
+\node[loss] (l2) at (2.95,-1.6) {漏报：轻微事件\\常不被报告};
+\node[loss] (l3) at (5.9,-1.6)  {判断者不同，\\标准也不同};
+\node[loss] (l4) at (8.85,-1.6) {口径随制度\\或系统变化};
+\foreach \a/\b in {1/2,2/3,3/4,4/5} \draw[flow] (s\a) -- (s\b);
+\foreach \k in {2,3,4} \draw[-Stealth, red!50!black, dashed] (s\k) -- (l\k);
+\node[tag] at (5.9,-2.6) {每一步都可能让标签偏离真实事件，而且这种偏离往往是系统性的，而不是随机噪声};
+\end{tikzpicture}

@@ -1,0 +1,11 @@
+\begin{tikzpicture}[node distance=5mm and 9mm]
+\node[pbox, text width=20mm] (in) {全部投诉文本};
+\node[abox, text width=26mm, right=of in] (llm) {\textbf{大语言模型}\\\footnotesize 分类与信息抽取\\（执行者）};
+\node[pbox, text width=28mm, right=of llm] (rule) {\textbf{程序化检查}\\\footnotesize 格式、名录匹配、\\证据是否为原文子串};
+\node[gbox, text width=22mm, right=of rule, yshift=9mm] (ok) {进入结构化\\数据集};
+\node[hbox, text width=22mm, right=of rule, yshift=-9mm] (q) {人工复核队列};
+\draw[flow] (in) -- (llm); \draw[flow] (llm) -- (rule);
+\draw[flow] (rule.east) -- node[tag, above left, pos=0.7]{通过} (ok.west);
+\draw[flow] (rule.east) -- node[tag, below left, pos=0.75]{未通过或“其他”} (q.west);
+\draw[backflow] (ok.north) -- ++(0,0.5) -| node[tag, above, pos=0.25]{定期随机抽检，监测准确率是否下降} (llm.north);
+\end{tikzpicture}

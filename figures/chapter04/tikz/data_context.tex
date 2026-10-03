@@ -1,0 +1,8 @@
+\begin{tikzpicture}[e/.style={hbox, text width=30mm, font=\footnotesize, minimum height=13mm}]
+\node[abox, minimum width=30mm, minimum height=14mm] (c) at (0,0) {\textbf{数据上下文}\\\footnotesize 交给 AI 的数据说明};
+\foreach \ang/\t/\q in {90/来源/谁、用什么设备或规则采集, 30/观测单位/每一行代表什么、主键是什么, -30/字段语义/含义、单位、特殊值的约定, -90/时空范围/时间跨度、空间覆盖、粒度, 210/质量问题/已知缺失、异常与口径变化, 150/标签含义/标签如何产生、可靠性如何}
+{
+  \node[e] (e\ang) at (\ang:4.0cm and 2.3cm) {\textbf{\t}\\\q};
+  \draw[black!45] (c) -- (e\ang);
+}
+\end{tikzpicture}

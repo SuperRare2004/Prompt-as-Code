@@ -1,0 +1,8 @@
+\begin{tikzpicture}[b/.style={draw=black!45, rounded corners=2pt, minimum height=9mm, text width=21mm, align=flush center, font=\footnotesize}]
+\foreach \t/\q/\c [count=\k] in {知识边界/没有提供的信息/blue!8, 数据边界/没有覆盖的场景/blue!14, 统计边界/不稳定的高分/blue!20,
+                                 因果边界/预测不等于干预/orange!16, 工程边界/模型不等于系统/orange!24, 责任边界/建议不等于决定/red!14}
+{
+  \node[b, fill=\c, anchor=south] (b\k) at ({2.35*(\k-1)}, {0.32*(\k-1)}) {\textbf{\t}\\[1pt]\scriptsize \q};
+}
+\draw[-Stealth, thick, black!50] (-1.2,-0.35) -- (13.1,-0.35) node[midway, below, tag]{从“模型知道什么”到“谁来负责”：越往右，越不能靠更好的 Prompt 或更复杂的模型解决};
+\end{tikzpicture}

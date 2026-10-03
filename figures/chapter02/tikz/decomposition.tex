@@ -1,0 +1,9 @@
+\begin{tikzpicture}[st/.style={abox, text width=21mm, minimum height=15mm, font=\footnotesize},
+  ck/.style={hbox, diamond, aspect=1.6, inner sep=1pt, font=\scriptsize, minimum width=9mm}]
+\foreach \i/\t [count=\k] in {1/读取数据\\输出摘要, 2/检查缺失\\与异常, 3/处理异常\\对比前后, 4/构造时间与\\滞后特征, 5/按时间\\划分数据, 6/训练基准\\输出误差}
+  \node[st] (s\k) at ({mod(\k-1,3)*4.9}, {-int((\k-1)/3)*2.8}) {\textbf{第 \i 步}\\\t};
+\foreach \a/\b in {1/2, 2/3, 4/5, 5/6}
+  \draw[flow] (s\a) -- node[ck, fill=blue!10]{验} (s\b);
+\draw[flow] (s3.south) -- ++(0,-0.55) -| node[ck, fill=blue!10, pos=0.25]{验} (s4.north);
+\node[tag, below=2mm of s5] {每一步的验证标准在执行前写好；验证不通过就停在这一步，不进入下一步};
+\end{tikzpicture}

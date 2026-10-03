@@ -1,0 +1,11 @@
+\begin{tikzpicture}[ver/.style={hbox, text width=38mm, minimum height=24mm, font=\footnotesize, align=left},
+  res/.style={font=\scriptsize, text width=38mm, align=flush center, text=black!75}]
+\node[ver] (v1) at (0,0)   {\textbf{v1}\quad 只说目标\\[2pt]“建立预测未来 15 分钟车速的模型，精度尽量高”};
+\node[ver] (v2) at (4.9,0) {\textbf{v2}\quad + 数据说明\\[2pt]“速度为 0 表示缺失，\\不是车辆停止”};
+\node[ver] (v3) at (9.8,0) {\textbf{v3}\quad + 约束与验收\\[2pt]“按时间划分；只用过去数据；必须与持续性基准比较”};
+\draw[flow] (v1) -- (v2); \draw[flow] (v2) -- (v3);
+\node[res, below=1.5mm of v1] {$R^2=0.964$，MAE 1.86 mph\\“几乎完美”};
+\node[res, below=1.5mm of v2] {$R^2=0.954$，MAE 1.72 mph\\泄露仍在};
+\node[res, below=1.5mm of v3] {$R^2=0.826$，MAE 3.09 mph\\只比基准好约 9\%};
+\node[tag, above=2mm of v2] {每个版本都与修改原因、运行结果一起保存，日后可以回溯“为什么这样写”};
+\end{tikzpicture}

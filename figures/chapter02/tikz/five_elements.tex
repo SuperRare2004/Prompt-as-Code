@@ -1,0 +1,16 @@
+\begin{tikzpicture}[
+  seg/.style={pbox, minimum width=22mm, minimum height=11mm, font=\small\bfseries},
+  ex/.style={font=\footnotesize, text width=86mm, anchor=west, align=left}]
+\foreach \y/\n/\c/\t/\q in {
+  0/角色/blue!12/Role/{你是一位数据分析工程师，读者是项目组的技术人员。},
+  -1.25/上下文/teal!12/Context/{数据为 METR-LA，5 分钟平均车速（mph）；0 表示缺失，不是停车。},
+  -2.5/任务/orange!14/Task/{预测每个检测器 15 分钟后的车速，并与持续性基准比较。},
+  -3.75/约束/red!10/Constraint/{按时间顺序划分；特征只能使用预测时刻之前的数据。},
+  -5/输出格式/green!12/Format/{可运行的 Python 脚本，外加一张按时段汇总的误差表。}}
+{
+  \node[seg, fill=\c] (s\n) at (0,\y) {\n\\[-1pt]{\scriptsize\mdseries \t}};
+  \node[ex] at (1.6,\y) {\q};
+}
+\draw[decorate, decoration={brace, amplitude=5pt, mirror}, thick, black!50] (-1.35,0.55) -- (-1.35,-5.55)
+  node[midway, left=6pt, tag, text width=12mm]{一条完整的 Prompt};
+\end{tikzpicture}

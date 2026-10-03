@@ -1,0 +1,14 @@
+\begin{tikzpicture}[node distance=5mm and 4mm,
+  col/.style={pbox, text width=27mm, minimum height=30mm, font=\footnotesize, anchor=north},
+  head/.style={font=\small\bfseries, text width=29mm, inner sep=3pt, rounded corners=2pt, align=flush center}]
+\node[head, fill=blue!18]   (h1) at (0,0)      {如何提问\\\footnotesize\mdseries Prompting};
+\node[head, fill=orange!20] (h2) at (3.55,0)   {如何建模\\\footnotesize\mdseries Modeling};
+\node[head, fill=green!18]  (h3) at (7.1,0)    {如何判断\\\footnotesize\mdseries Evaluation};
+\node[head, fill=black!12]  (h4) at (10.65,0)  {综合与落地\\\footnotesize\mdseries Project};
+\node[col, fill=blue!5,   below=1.5mm of h1] (c1) {第 1–4 章\\[3pt]AI 工具箱\\Prompting 基础\\问题建模\\数据思维};
+\node[col, fill=orange!6, below=1.5mm of h2] (c2) {第 5–11 章\\[3pt]数据清洗 · 特征工程\\机器学习基础\\传统模型 · 神经网络\\强化学习\\大语言模型};
+\node[col, fill=green!5,  below=1.5mm of h3] (c3) {第 12–14 章\\[3pt]AI 会犯哪些错\\验证 AI 输出\\识别 AI 的边界};
+\node[col, fill=black!4,  below=1.5mm of h4] (c4) {第 15–18 章\\[3pt]完整项目的结构\\综合案例一、二\\展望};
+\foreach \a/\b in {c1/c2, c2/c3, c3/c4} \draw[flow] (\a.east) -- (\b.west);
+\draw[backflow] (c3.south) to[bend left=22] node[tag, below]{判断暴露建模假设或问题定义的缺陷时，回到前面的环节} (c1.south);
+\end{tikzpicture}

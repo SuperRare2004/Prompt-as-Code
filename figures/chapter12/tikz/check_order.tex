@@ -1,0 +1,8 @@
+\begin{tikzpicture}[st/.style={hbox, text width=17mm, minimum height=14mm, font=\scriptsize}]
+\foreach \t [count=\k] in {任务目标与\\预测时点, 字段、单位、\\标签含义, 处理后的行数\\范围与样例, 特征、预处理\\与划分是否泄露, 是否优于\\简单基准, 数字与解释是否\\符合常识, 引用与事实\\是否可核验}
+  \node[st] (s\k) at ({2.05*(\k-1)},0) {\t};
+\foreach \a/\b in {1/2,2/3,3/4,4/5,5/6,6/7} \draw[flow] (s\a) -- (s\b);
+\draw[decorate, decoration={brace, amplitude=4pt, mirror}, thick, black!45] (-0.9,-0.95) -- (12.95,-0.95)
+  node[midway, below=5pt, tag]{上游的错误会污染全部下游结果：先把上游排查清楚，再看模型分数};
+\node[tag, anchor=south] at (0,0.8) {上游}; \node[tag, anchor=south] at (12.3,0.8) {下游};
+\end{tikzpicture}

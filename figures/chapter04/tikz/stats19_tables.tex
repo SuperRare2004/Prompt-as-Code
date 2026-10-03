@@ -1,0 +1,12 @@
+\begin{tikzpicture}[tb/.style={draw=black!60, rounded corners=2pt, fill=white, align=left, font=\footnotesize, inner sep=0pt, text width=40mm},
+  hd/.style={font=\small\bfseries, align=flush center}]
+\node[tb] (c) at (0,0) {\parbox{40mm}{\centering\colorbox{blue!12}{\parbox{38.5mm}{\centering\textbf{事故表}（每行一起事故）}}}\\[2pt]
+  \hspace*{2mm}collision\_index（主键）\\\hspace*{2mm}时间、地点、道路类型\\\hspace*{2mm}限速、光照、天气\\\hspace*{2mm}collision\_severity（标签）\\[2pt]\hspace*{2mm}\textbf{513,801 行}\\[-1pt]};
+\node[tb] (v) at (6.2,1.3) {\parbox{40mm}{\centering\colorbox{orange!14}{\parbox{38.5mm}{\centering\textbf{车辆表}（每行一辆车）}}}\\[2pt]
+  \hspace*{2mm}collision\_index（外键）\\\hspace*{2mm}车辆类型、行驶操作\\[2pt]\hspace*{2mm}\textbf{937,265 行}\\[-1pt]};
+\node[tb] (k) at (6.2,-1.5) {\parbox{40mm}{\centering\colorbox{green!12}{\parbox{38.5mm}{\centering\textbf{伤亡人员表}（每行一人）}}}\\[2pt]
+  \hspace*{2mm}collision\_index（外键）\\\hspace*{2mm}伤亡类别、伤情严重程度\\[2pt]\hspace*{2mm}\textbf{652,821 行}\\[-1pt]};
+\draw[flow] (c.east) -- node[tag, above, sloped]{1 对多：平均 1.82 辆} (v.west);
+\draw[flow] (c.east) -- node[tag, below, sloped]{1 对多：平均 1.27 人} (k.west);
+\node[tag, text width=118mm, anchor=north] at (2.9,-3.0) {如果把三张表直接按 collision\_index 合并后再统计“事故占比”，一起事故会因为车辆和伤亡人员的数量被重复计算；\\观测单位必须先确定，再决定如何汇总（STATS19，2021—2025 年）};
+\end{tikzpicture}

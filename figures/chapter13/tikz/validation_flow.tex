@@ -1,0 +1,16 @@
+\begin{tikzpicture}[st/.style={hbox, text width=19mm, minimum height=17mm, font=\scriptsize},
+  q/.style={font=\scriptsize, text width=19mm, align=flush center, text=black!70}]
+\foreach \t/\qq [count=\k] in {确认\\评价对象/验证的是代码、\\数据、预测\\还是结论？,
+                              建立基准与\\合理范围/看结果之前\\先画好两条线,
+                              常规评价与\\误差可视化/总体、分组、\\图形与错误案例,
+                              测试关键\\极端情景/先写预期，\\再看如何失效,
+                              反向追问\\核对证据/中立提问；\\回到原始数据,
+                              形成带条件\\的结论/何时可用、\\何时停用}
+{
+  \node[st] (s\k) at ({2.38*(\k-1)},0) {\textbf{\k}\\\t};
+  \node[q, below=1.5mm of s\k] {\qq};
+}
+\node[st, fill=green!10] at (s6) {\textbf{6}\\形成带条件\\的结论};
+\foreach \a/\b in {1/2,2/3,3/4,4/5,5/6} \draw[flow] (s\a) -- (s\b);
+\draw[backflow] (s4.north) to[bend right=25] node[tag, above]{发现问题时回到前面的步骤} (s2.north);
+\end{tikzpicture}

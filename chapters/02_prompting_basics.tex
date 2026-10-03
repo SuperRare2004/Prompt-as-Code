@@ -50,6 +50,15 @@
 三次提问使用的是同一份数据、同一个模型家族，得到的却是三个完全不同的结论。差别不在 AI 的能力，而在 Prompt 中说清楚了多少东西。
 \end{quote}
 
+图~\ref{fig:ch02_levels} 把三次提问的结果画在一起。值得注意的是：Prompt 说得越清楚，指标反而越“难看”，但它越来越接近模型在真实使用中能够达到的水平。
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{figures/chapter02/prompt_levels.pdf}
+  \caption{同一任务的三个 Prompt 版本得到的测试集指标（METR-LA）}
+  \label{fig:ch02_levels}
+\end{figure}
+
 \subsection{AI如何填补信息空白}
 
 当 Prompt 缺失关键信息时，模型会自动补充假设。这些假设来自训练数据中最常见的模式，在通用任务中可能恰好适用，但在有特殊约束的专业任务中，往往不适用。
@@ -64,6 +73,15 @@
   \item 分析中涉及的约束与公开文献中的通用做法一致。
 \end{itemize}
 
+图~\ref{fig:ch02_gap} 示意了这一过程：Prompt 中没有说清楚的部分，并不会保持空白，而是被训练数据中最常见的做法自动补齐。
+
+\begin{figure}[H]
+  \centering
+  \fitinput{figures/chapter02/tikz/info_gap.tex}
+  \caption{信息空白如何被 AI 的默认假设填补}
+  \label{fig:ch02_gap}
+\end{figure}
+
 这些假设中的每一条，在特定场景下都可能是错误的。数据泄露、不适当的评价指标、忽视领域异常值——这些问题中相当一部分来自信息空白，而不是 AI 能力本身的限制。一个关键推论是：\textbf{Prompt 的质量决定了 AI 所处理问题的质量}。写出更清晰的 Prompt，本质上是在帮助自己更清楚地思考问题本身。
 
 % ----------------------------------------------------------------
@@ -71,6 +89,14 @@
 % ----------------------------------------------------------------
 
 一个高质量 Prompt 可以从五个维度来设计：角色、上下文、任务、约束和输出格式。这五个维度并非总是同等重要，也不需要每次都完整填写，但对于专业任务而言，系统地审视这五个问题，往往能够显著减少后续的反复调整。
+图~\ref{fig:ch02_five} 用前言中的车速预测任务展示了五个要素如何组成一条完整的 Prompt。
+
+\begin{figure}[H]
+  \centering
+  \fitinput{figures/chapter02/tikz/five_elements.tex}
+  \caption{Prompt 的五个构成要素及示例}
+  \label{fig:ch02_five}
+\end{figure}
 
 \subsection{角色（Role）}
 
@@ -178,6 +204,15 @@
 
 少样本提示中的示例对 AI 的输出具有强烈引导作用。如果示例本身包含错误或偏差，AI 可能学到并延续这些问题。因此，示例的质量与数量同样重要。
 
+图~\ref{fig:ch02_fewshot} 给出了少样本提示的一般结构：任务说明、若干带答案的示例，以及待处理的新输入。
+
+\begin{figure}[H]
+  \centering
+  \fitinput{figures/chapter02/tikz/few_shot.tex}
+  \caption{少样本提示的结构}
+  \label{fig:ch02_fewshot}
+\end{figure}
+
 \subsection{思维链提示}
 
 思维链提示最初用于通过中间推理步骤改善复杂推理任务表现\cite{wei2022chain}；后续研究还发现，即使不提供示例，简短的分步思考指令也可能提高部分任务的正确率\cite{kojima2022large}。然而，中间推理文本仍然是模型生成的文本，不等于可审计的真实思维过程，更不能替代外部证据。实践中更可靠的做法，是要求 AI 给出\textbf{可检查的中间产物}，例如假设列表、公式、数据查询、测试用例和来源，而不是把一段听起来合理的解释本身视为验证。
@@ -216,6 +251,15 @@
   \item 训练基准模型，输出训练集和测试集上的误差指标。\textit{验证：基准误差合理，测试集表现不显著优于训练集（否则可能存在数据泄露）。}
 \end{enumerate}
 
+图~\ref{fig:ch02_decomp} 把上述六个步骤画成一条带“验证关卡”的流水线。
+
+\begin{figure}[H]
+  \centering
+  \fitinput{figures/chapter02/tikz/decomposition.tex}
+  \caption{把复杂任务拆成带验证关卡的步骤}
+  \label{fig:ch02_decomp}
+\end{figure}
+
 注意，每一步的验证标准应在执行前确定，而不是在看到输出之后临时评价。事先确定验证标准，能够有效防止“结果看起来不错就接受”的确认偏误。
 
 \subsection{迭代修正}
@@ -230,13 +274,62 @@
 
 这比“统计方法有问题，请修改”有效得多。精确的修正使 AI 更容易正确响应，也使对话历史更有条理，便于后续复查。
 
+图~\ref{fig:ch02_iter} 概括了迭代修正的流程。
+
+\begin{figure}[H]
+  \centering
+  \fitinput{figures/chapter02/tikz/iteration.tex}
+  \caption{迭代修正的流程}
+  \label{fig:ch02_iter}
+\end{figure}
+
 当一个问题经过两轮以上迭代仍无法解决时，通常意味着需要补充更多上下文，或者任务的定义本身需要重新澄清。继续机械地重复修正往往效率不高；更有价值的做法是退一步，重新审视当前 Prompt 中哪个要素描述得不够清晰。
+
+表~\ref{tab:ch02_techniques} 对本节介绍的几种技术作一比较。它们可以组合使用：例如，对一个多阶段任务先做分步拆解，在方法选择的那一步使用思维链，在需要统一分类口径的那一步使用少样本示例。
+
+\begin{table}[H]
+\centering
+\caption{几种提示技术的适用情形}
+\label{tab:ch02_techniques}
+\small
+\begin{tabular}{L{2.2cm}L{5.4cm}L{5.4cm}}
+\toprule
+技术 & 适用情形 & 需要注意 \\
+\midrule
+零样本 & 任务描述清晰，输出格式通用 & 规则特殊或格式难以描述时，结果不稳定 \\
+少样本 & 机构内部的分类规则、特殊格式、需要一致的风格 & 示例本身就是隐含规范，必须覆盖边界情况 \\
+思维链 & 方法选择、处理策略、需要向他人解释的结论 & 推理文本不等于验证；简单任务只会徒增长度 \\
+分步拆解 & 多阶段、错误会向下游累积的复杂任务 & 每一步的验证标准要在执行前确定 \\
+迭代修正 & 第一次输出存在局部偏差 & 两轮仍未解决时，应回到上下文或任务定义 \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 % ----------------------------------------------------------------
 \section{常见提示陷阱与修复方法}
 % ----------------------------------------------------------------
 
 理解 Prompt 的构成之后，还需要识别常见的失败模式。以下五类陷阱在实际工作中最为普遍，每类均附有可操作的修复方式。
+
+表~\ref{tab:ch02_traps} 先概括这五类陷阱的典型症状与修复方向，下面各小节逐一展开。
+
+\begin{table}[H]
+\centering
+\caption{常见提示陷阱：症状与修复}
+\label{tab:ch02_traps}
+\small
+\begin{tabular}{L{3.0cm}L{5.0cm}L{5.0cm}}
+\toprule
+陷阱 & 典型症状 & 修复方向 \\
+\midrule
+目标模糊 & 输出通用、看似完整，却与真实需求不符 & 先完成问题定义：对象、粒度、数据、评价方式和约束 \\
+缺少领域上下文 & 套用通用惯例，例如把表示缺失的 0 当作有效值 & 提供字段语义、特殊值约定和已知质量问题 \\
+约束未声明 & 随机划分、未来信息入模，测试指标虚高 & 显式声明划分方式与信息可得性 \\
+一次要求太多 & 输出冗长，出错后难以定位到具体环节 & 拆成可单独验证的步骤，逐步推进 \\
+输出无法验证 & 只给出一个结论或模型名称 & 要求对比实验、指标和可检查的中间产物 \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \subsection{目标模糊，依赖AI猜测}
 
@@ -298,6 +391,15 @@
   \item \textbf{记录迭代历史：}保存 Prompt 的修改版本，记录每次修改的原因，使分析过程可以被回溯；
   \item \textbf{与团队共享：}在合作项目中，分享关键 Prompt 的方式应与分享代码或分析笔记相同。
 \end{enumerate}
+
+图~\ref{fig:ch02_versions} 以前言中的车速预测为例，展示了一条 Prompt 的三个版本。只有把每个版本与修改原因、运行结果一起保存，才能在日后解释“为什么这样写”。
+
+\begin{figure}[H]
+  \centering
+  \fitinput{figures/chapter02/tikz/versions.tex}
+  \caption{一条 Prompt 的版本记录（结果来自 METR-LA 上的实际运行）}
+  \label{fig:ch02_versions}
+\end{figure}
 
 \subsection{为常见任务建立模板}
 

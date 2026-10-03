@@ -1,0 +1,13 @@
+\begin{tikzpicture}[st/.style={pbox, text width=27mm, minimum height=15mm, font=\footnotesize},
+  o/.style={font=\scriptsize, text width=27mm, align=flush center, text=black!70}]
+\node[hbox, st] (s1) at (0,0)    {\textbf{1. 领域规则过滤}\\物理上不可能的值};
+\node[abox, st] (s2) at (3.5,0)  {\textbf{2. 统计初筛}\\IQR、Z 分数（分时段）};
+\node[hbox, st] (s3) at (7.0,0)  {\textbf{3. 上下文验证}\\相邻检测器、历史同期、外部记录};
+\node[hbox, st] (s4) at (10.5,0) {\textbf{4. 人工抽查}\\校正自动规则的系统偏差};
+\foreach \a/\b in {1/2,2/3,3/4} \draw[flow] (s\a) -- (s\b);
+\node[o, below=2mm of s1] {确定的错误：\\删除并记录};
+\node[o, below=2mm of s2] {输出“候选异常”\\而不是“删除名单”};
+\node[o, below=2mm of s3] {多源一致 $\Rightarrow$ 真实事件：\\保留并标记};
+\node[o, below=2mm of s4] {抽查 5\%–10\%\\修订规则};
+\node[tag, above=2mm of s2.north east, xshift=4mm] {越往后越依赖人的判断，处理也越保守};
+\end{tikzpicture}
